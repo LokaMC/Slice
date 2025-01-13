@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 12 Jan 2025 09:12:20 -0600
+Subject: [PATCH] Add Force Crit to PlayerPreAttackEntityEvent
+
+
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index 3ae542153bf1538d17e7c0fe6acc9e7f8605750c..a6323b4724e0dd5b3d0130b4b924a09dcd351501 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1257,7 +1257,7 @@ public abstract class Player extends LivingEntity {
+                         }
+ 
+                         f += weaponItem.getItem().getAttackDamageBonus(target, f, damageSource);
+-                        boolean flag2 = flag
++                        boolean flag2 = playerAttackEntityEvent.isForceCrit() || (flag
+                             && this.fallDistance > 0.0F
+                             && !this.onGround()
+                             && !this.onClimbable()
+@@ -1265,7 +1265,7 @@ public abstract class Player extends LivingEntity {
+                             && !this.hasEffect(MobEffects.BLINDNESS)
+                             && !this.isPassenger()
+                             && target instanceof LivingEntity
+-                            && !this.isSprinting();
++                            && !this.isSprinting());
+                         flag2 = flag2 && !this.level().paperConfig().entities.behavior.disablePlayerCrits; // Paper - Toggleable player crits
+                         if (flag2) {
+                             damageSource = damageSource.critical(true); // Paper start - critical damage API
