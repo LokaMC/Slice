@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 19 Jan 2025 08:35:56 -0600
+Subject: [PATCH] Expose getBlockPosBelowThatAffectsMyMovement
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index ddf7829eee5e3f0ded9319a5a0a7b2e2486320a4..8b2cb3444cfc1da1d019e8b74349bb02fb038e9b 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -1196,4 +1196,12 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     void broadcastHurtAnimation(@NotNull java.util.Collection<Player> players);
+     // Paper end - broadcast hurt animation
++
++    // Slice start
++    /**
++     * Returns the Block that is currently supporting the player, particularly in the case of
++     * crouching over the edge of a block.
++     */
++    org.bukkit.block.Block getBlockStandingOn();
++    // Slice end
+ }
