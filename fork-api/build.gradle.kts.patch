@@ -1,7 +1,12 @@
 --- a/paper-api/build.gradle.kts
 +++ b/paper-api/build.gradle.kts
-@@ -93,7 +_,7 @@
+@@ -91,9 +_,12 @@
+     testImplementation("org.ow2.asm:asm-tree:9.7.1")
+     mockitoAgent("org.mockito:mockito-core:5.14.1") { isTransitive = false } // configure mockito agent that is needed in newer java versions
      testRuntimeOnly("org.junit.platform:junit-platform-launcher")
++
++    // Slice
++    implementation("org.mongodb:bson:4.11.1") // Slice - MongoDB Bson Library for ObjectIds
  }
  
 -val generatedApiPath: java.nio.file.Path = layout.projectDirectory.dir("src/generated/java").asFile.toPath()
@@ -51,13 +56,3 @@
                  include("**/doc-files/**")
              }
              into("build/docs/javadoc")
-@@ -91,6 +91,9 @@
-     testImplementation("org.ow2.asm:asm-tree:9.7.1")
-     mockitoAgent("org.mockito:mockito-core:5.14.1") { isTransitive = false } // configure mockito agent that is needed in newer java versions
-     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-+
-+    // Slice
-+    implementation("org.mongodb:bson:4.11.1") // Slice - MongoDB Bson Library for ObjectIds
- }
-
- val generatedApiPath: java.nio.file.Path = rootProject.layout.projectDirectory.dir("paper-api/src/generated/java").asFile.toPath()
