@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 21 Jan 2025 10:53:14 -0600
+Subject: [PATCH] Add ObjectId
+
+
+diff --git a/src/main/java/io/papermc/paper/event/player/PlayerResolveObjectIdEvent.java b/src/main/java/io/papermc/paper/event/player/PlayerResolveObjectIdEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4c28994757812f9c7f59d9eb827908bb64e63118
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/player/PlayerResolveObjectIdEvent.java
+@@ -0,0 +1,44 @@
++package io.papermc.paper.event.player;
++
++import org.bson.types.ObjectId;
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.Objects;
++
++/**
++ * Called when a player trades with a standalone merchant GUI.
++ */
++public class PlayerResolveObjectIdEvent extends PlayerEvent {
++    private static final HandlerList handlers = new HandlerList();
++    private ObjectId objectId;
++
++    public PlayerResolveObjectIdEvent(@NotNull Player player) {
++        super(player, !Bukkit.isPrimaryThread());
++    }
++
++    @Nullable
++    public ObjectId getObjectId() {
++        return this.objectId;
++    }
++
++    public void setObjectId(@NotNull ObjectId objectId) {
++        this.objectId = Objects.requireNonNull(objectId, "ObjectId cannot be null!");
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++
++}
+diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
+index 34538999ef88b63fa37023edd81ab7b48392de73..a4c6531be56d97d8f22acd4f78e86e8922cd7ee3 100644
+--- a/src/main/java/org/bukkit/entity/HumanEntity.java
++++ b/src/main/java/org/bukkit/entity/HumanEntity.java
+@@ -26,6 +26,11 @@ import org.jetbrains.annotations.Nullable;
+  */
+ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder {
+ 
++    // Slice start
++    org.bson.types.@Nullable ObjectId getObjectId();
++    void setObjectId(@Nullable org.bson.types.ObjectId objectId);
++    // Slice end
++
+     // Paper start
+     @Override
+     org.bukkit.inventory.@NotNull EntityEquipment getEquipment();

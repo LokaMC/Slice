@@ -5,7 +5,7 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
-index 7a83c002be6464011b91ba7e1bfc3cfdd50933fd..04251b28c91266b93f406ea9dc75d947a0f862f0 100644
+index 3d90f9f1ac1bd281edf6bb0f93ea821657d5bd2f..1cb8fb87265dcd648f3cee0d177b3ca7573666dd 100644
 --- a/net/minecraft/network/syncher/SynchedEntityData.java
 +++ b/net/minecraft/network/syncher/SynchedEntityData.java
 @@ -54,11 +54,27 @@ public class SynchedEntityData {
@@ -64,7 +64,7 @@ index 7a83c002be6464011b91ba7e1bfc3cfdd50933fd..04251b28c91266b93f406ea9dc75d947
      @Nullable
      public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
          List<SynchedEntityData.DataValue<?>> list = null;
-@@ -196,11 +232,14 @@ public class SynchedEntityData {
+@@ -195,11 +231,14 @@ public class SynchedEntityData {
          T value;
          private final T initialValue;
          private boolean dirty;
@@ -79,7 +79,7 @@ index 7a83c002be6464011b91ba7e1bfc3cfdd50933fd..04251b28c91266b93f406ea9dc75d947
          }
  
          public EntityDataAccessor<T> getAccessor() {
-@@ -230,6 +269,36 @@ public class SynchedEntityData {
+@@ -229,6 +268,36 @@ public class SynchedEntityData {
          public SynchedEntityData.DataValue<T> value() {
              return SynchedEntityData.DataValue.create(this.accessor, this.value);
          }
