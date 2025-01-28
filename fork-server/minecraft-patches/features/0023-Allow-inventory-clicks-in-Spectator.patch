@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 28 Jan 2025 08:06:32 -0600
+Subject: [PATCH] Allow inventory clicks in Spectator
+
+
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 5738709f5fa6fee2ed88ba41a7718c976b780e96..8d5249da979922d05484a27ad40660cdf28bc450 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2910,7 +2910,7 @@ public class ServerGamePacketListenerImpl
+         if (this.player.isImmobile()) return; // CraftBukkit
+         this.player.resetLastActionTime();
+         if (this.player.containerMenu.containerId == packet.getContainerId() && this.player.containerMenu.stillValid(this.player)) { // CraftBukkit
+-            boolean cancelled = this.player.isSpectator(); // CraftBukkit - see below if
++            boolean cancelled = false; //Slice - allow spectator inv management this.player.isSpectator(); // CraftBukkit - see below if
+             if (false/*this.player.isSpectator()*/) { // CraftBukkit
+                 this.player.containerMenu.sendAllDataToRemote();
+             } else if (!this.player.containerMenu.stillValid(this.player)) {
