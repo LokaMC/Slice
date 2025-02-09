@@ -5,7 +5,7 @@ Subject: [PATCH] Non-saveable-entities
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 55d4082b47cb194fcc44dacac3a05c35e6a38601..72ade6df51c50720862f9c8ada6597179220c251 100644
+index ef9bfd7270359fe77e305e030491c8c5ec7ecc2f..53720da41c9025cfcb561802162d0b186e755f13 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -342,6 +342,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -16,7 +16,7 @@ index 55d4082b47cb194fcc44dacac3a05c35e6a38601..72ade6df51c50720862f9c8ada659717
  
      public void inactiveTick() {
      }
-@@ -4955,6 +4956,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -4951,6 +4952,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
  
      @Override
      public boolean shouldBeSaved() {

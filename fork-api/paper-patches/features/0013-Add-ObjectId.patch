@@ -55,18 +55,18 @@ index 0000000000000000000000000000000000000000..4c28994757812f9c7f59d9eb827908bb
 +
 +}
 diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
-index 34538999ef88b63fa37023edd81ab7b48392de73..a4c6531be56d97d8f22acd4f78e86e8922cd7ee3 100644
+index 9811e7983f8ebfa8e0c1dabd3e8ee21bf966499d..662dbeeec59772ed8a0aadb9f3208b02a43030d9 100644
 --- a/src/main/java/org/bukkit/entity/HumanEntity.java
 +++ b/src/main/java/org/bukkit/entity/HumanEntity.java
-@@ -26,6 +26,11 @@ import org.jetbrains.annotations.Nullable;
-  */
+@@ -27,6 +27,11 @@ import org.jspecify.annotations.Nullable;
+ @NullMarked
  public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder {
  
 +    // Slice start
 +    org.bson.types.@Nullable ObjectId getObjectId();
-+    void setObjectId(@Nullable org.bson.types.ObjectId objectId);
++    void setObjectId(org.bson.types.@Nullable ObjectId objectId);
 +    // Slice end
 +
      // Paper start
      @Override
-     org.bukkit.inventory.@NotNull EntityEquipment getEquipment();
+     org.bukkit.inventory.EntityEquipment getEquipment();

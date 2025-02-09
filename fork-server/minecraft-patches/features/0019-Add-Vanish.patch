@@ -5,7 +5,7 @@ Subject: [PATCH] Add Vanish
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 63c000832a5c9220da7afff9020c940c87d33567..b228607516b060c036c97433dce93966d666de59 100644
+index 243e1eb46ae4cc47716133b5aa5fe8e6bafefdb4..0faa3a0ef9a56d0e7d25fe0752b4dc05ce09790b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -353,6 +353,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -16,7 +16,7 @@ index 63c000832a5c9220da7afff9020c940c87d33567..b228607516b060c036c97433dce93966
  
      public void inactiveTick() {
      }
-@@ -1313,7 +1314,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -1309,7 +1310,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      }
  
      private boolean vibrationAndSoundEffectsFromBlock(BlockPos pos, BlockState state, boolean playStepSound, boolean broadcastGameEvent, Vec3 entityPos) {

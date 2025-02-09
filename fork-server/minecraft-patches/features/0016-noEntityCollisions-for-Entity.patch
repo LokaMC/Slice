@@ -17,10 +17,10 @@ index e04bd54744335fb5398c6e4f7ce8b981f35bfb7d..8276c3d8006b1dcda8397b9146a5eabe
  
          boolean ret = false;
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 72ade6df51c50720862f9c8ada6597179220c251..7e429f2679e54f4ab62f5bca98ecc958fe43b3ce 100644
+index 53720da41c9025cfcb561802162d0b186e755f13..933aae88c54efc297fac17fb7593bf0898b9eee2 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -384,6 +384,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -380,6 +380,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      private int sectionY = Integer.MIN_VALUE;
      private int sectionZ = Integer.MIN_VALUE;
      private boolean updatingSectionStatus;

@@ -5,10 +5,10 @@ Subject: [PATCH] Don't send fire packets if player has FR
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b228607516b060c036c97433dce93966d666de59..16ddfde42f8601bfbb4aa59fc1fc2d0c6ab173ab 100644
+index 0faa3a0ef9a56d0e7d25fe0752b4dc05ce09790b..fa7d48f15e5a69b4996d86a59142a69724082ca9 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -899,7 +899,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -895,7 +895,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
  
          this.checkBelowWorld();
          if (!this.level().isClientSide) {
