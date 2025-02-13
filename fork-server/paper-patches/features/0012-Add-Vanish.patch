@@ -5,10 +5,10 @@ Subject: [PATCH] Add Vanish
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 98b983cbc41ab95dda327070237ff040182334c7..e33f488ece0815af654ce750113547a214b95b25 100644
+index 19ff3782d9127bcec19f252f35963d58f7e9b263..94a299defda6d0b90d76e20ad3d4eb93a0d355f6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1353,4 +1353,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1352,4 +1352,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          this.entity.saveable = saveable;
      }
      // Slice end

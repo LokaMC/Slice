@@ -5,10 +5,10 @@ Subject: [PATCH] Expose getBlockPosBelowThatAffectsMyMovement
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 6d81a19741868983c54aff6c2c4c0e2bf690ba0d..8c35e3fe9e7e9749bde334b275bb7e23d3f3c732 100644
+index f8762064e0f377740688932c62145f7c789ea7ed..03eaf6cee9e44581a10cfffa21547f620e8a301d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1333,4 +1333,12 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1332,4 +1332,12 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          }
      }
      // Paper end - broadcast hurt animation
