@@ -5,10 +5,10 @@ Subject: [PATCH] Map Events
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 128e4d23bfebd1dc92b367a021597b5eb97d62f5..701544da7f6d4ddda811171a354ffeacec0d87cc 100644
+index 0eaced10a33110d2d6500c0eab7c0949324a39eb..1923674dfdb6e07a6c956bfa6dc201435e289dfc 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2140,6 +2140,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2142,6 +2142,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
  
      @Override
      public MapId getFreeMapId() {

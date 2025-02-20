@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 20 Feb 2025 13:54:54 -0600
+Subject: [PATCH] Custom Tracking Ranges
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 5418fbf2f8f941bbae11505147207892cd3f633c..23b22c507b126ef85e34ceac9575e1407ca83d57 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -355,6 +355,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     public long activatedImmunityTick = Integer.MIN_VALUE;
+     public boolean saveable = true; // Slice
+     public boolean vanished; // Slice
++    public int trackingRange; // Slice
+ 
+     public void inactiveTick() {
+     }

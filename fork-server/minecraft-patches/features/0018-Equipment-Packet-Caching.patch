@@ -51,7 +51,7 @@ index ed976e95de37d653b3f1499a25f27bc768c1e9d5..8ddb629ee9f4bcaa796302acf07794d1
  
          if (!this.entity.getPassengers().isEmpty()) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 239c443ddc9bacc08a39a8ef2ab17016a2480549..ef5cd95356b9cb2cb327dc39b7bc159c202036c0 100644
+index d87e31572aa85bffc62dc017520dd408560f79b4..731975398869ba59bc3fb67006d26b8b13311d00 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -302,6 +302,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
@@ -74,7 +74,7 @@ index 239c443ddc9bacc08a39a8ef2ab17016a2480549..ef5cd95356b9cb2cb327dc39b7bc159c
                  this.handleEquipmentChanges(map);
              }
          }
-@@ -3311,7 +3317,25 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -3329,7 +3335,25 @@ public abstract class LivingEntity extends Entity implements Attackable {
                      this.lastBodyItemStack = itemStack;
              }
          });
@@ -101,7 +101,7 @@ index 239c443ddc9bacc08a39a8ef2ab17016a2480549..ef5cd95356b9cb2cb327dc39b7bc159c
      }
  
      private ItemStack getLastArmorItem(EquipmentSlot slot) {
-@@ -4520,4 +4544,85 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -4538,4 +4562,85 @@ public abstract class LivingEntity extends Entity implements Attackable {
  
      public record Fallsounds(SoundEvent small, SoundEvent big) {
      }

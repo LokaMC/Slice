@@ -5,10 +5,10 @@ Subject: [PATCH] Non-saveable-entities
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index ef9bfd7270359fe77e305e030491c8c5ec7ecc2f..53720da41c9025cfcb561802162d0b186e755f13 100644
+index 6734954191fd7521d13dec9fbab9d064e50e0492..5169952f920c8a05022744d26f8cfa9a3c98cd0b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -342,6 +342,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -343,6 +343,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
      public long activatedTick = Integer.MIN_VALUE;
      public boolean isTemporarilyActive;
      public long activatedImmunityTick = Integer.MIN_VALUE;
@@ -16,7 +16,7 @@ index ef9bfd7270359fe77e305e030491c8c5ec7ecc2f..53720da41c9025cfcb561802162d0b18
  
      public void inactiveTick() {
      }
-@@ -4951,6 +4952,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -4952,6 +4953,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
  
      @Override
      public boolean shouldBeSaved() {

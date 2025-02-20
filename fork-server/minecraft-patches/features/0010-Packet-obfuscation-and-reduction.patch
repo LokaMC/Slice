@@ -143,10 +143,10 @@ index 0fb253aa55a24b56b17f524b3261c5b75c7d7e59..ed976e95de37d653b3f1499a25f27bc7
  
          if (this.entity instanceof LivingEntity) {
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b268b428ec8f2e50737e1dd5cc705c537322433c..ef9bfd7270359fe77e305e030491c8c5ec7ecc2f 100644
+index 1b54cf07616a10d93e9336dbd299ba5f09678a28..6734954191fd7521d13dec9fbab9d064e50e0492 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -3472,7 +3472,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3473,7 +3473,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
              this.entityData.markDirty(Entity.DATA_AIR_SUPPLY_ID);
              return;
          }
@@ -156,7 +156,7 @@ index b268b428ec8f2e50737e1dd5cc705c537322433c..ef9bfd7270359fe77e305e030491c8c5
      }
  
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 36ca237231fa9ebfb45998741a923b71efa5bbe0..4191d1ca08f5fbbf1d943a72533577cb4db33bc8 100644
+index 05c10b531a38eed68c6a6ca60ce12049b4cfaf3a..1c86ac4f6e0abc33a8ac305b3033cb9e24ed8222 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -672,7 +672,7 @@ public abstract class Player extends LivingEntity {
