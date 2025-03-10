@@ -61,5 +61,5 @@
 +    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
 +    // Slice end
  }
-
+ 
  tasks.jar {
