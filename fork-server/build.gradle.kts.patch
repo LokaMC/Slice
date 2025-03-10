@@ -49,17 +49,3 @@
      implementation("ca.spottedleaf:concurrentutil:0.0.3")
      implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
      implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
-@@ -175,6 +_,13 @@
-     // Spark
-     implementation("me.lucko:spark-api:0.1-20240720.200737-2")
-     implementation("me.lucko:spark-paper:1.10.119-20241121.092015-1")
-+
-+    // Slice
-+    implementation("org.mongodb:bson:4.11.1") // Slice - MongoDB Bson Library for ObjectIds
-+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
-+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
-+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
-+    // Slice end 
- }
-
- tasks.jar {
