@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
+@@ -331,7 +_,7 @@
+                     iterator.remove();
+                 }
+                 // Paper start - Fix bees aging inside; use exitTickCounter to keep actual bee life
+-                else if (level.paperConfig().entities.behavior.cooldownFailedBeehiveReleases) {
++                else {
+                     beeData.exitTickCounter = beeData.occupant.minTicksInHive / 2;
+                 }
+                 // Paper end - Fix bees aging inside; use exitTickCounter to keep actual bee life

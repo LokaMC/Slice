@@ -1,0 +1,20 @@
+--- a/src/main/java/org/bukkit/block/Skull.java
++++ b/src/main/java/org/bukkit/block/Skull.java
+@@ -82,8 +_,6 @@
+      * may appear as the texture depending on skull type.
+      *
+      * @return the profile of the owning player
+-     *
+-     * @deprecated Use {@link #getPlayerProfile()} instead.
+      */
+     @Nullable
+     @Deprecated // Paper
+@@ -100,8 +_,6 @@
+      * @param profile the profile of the owning player
+      * @throws IllegalArgumentException if the profile does not contain the
+      * necessary information
+-     *
+-     * @deprecated Use {@link #setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile)} instead.
+      */
+     @Deprecated // Paper
+     void setOwnerProfile(@Nullable PlayerProfile profile);

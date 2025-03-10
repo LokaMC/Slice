@@ -1,0 +1,10 @@
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -2590,7 +_,6 @@
+     final class EntityCallbacks implements LevelCallback<Entity> {
+         @Override
+         public void onCreated(Entity entity) {
+-            entity.setOldPosAndRot(); // Paper - update old pos / rot for new entities as it will default to Vec3.ZERO
+         }
+ 
+         @Override

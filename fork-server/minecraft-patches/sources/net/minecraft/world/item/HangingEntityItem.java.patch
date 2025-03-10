@@ -1,0 +1,10 @@
+--- a/net/minecraft/world/item/HangingEntityItem.java
++++ b/net/minecraft/world/item/HangingEntityItem.java
+@@ -76,7 +_,6 @@
+                     level.getCraftServer().getPluginManager().callEvent(event);
+ 
+                     if (event.isCancelled()) {
+-                        if (player != null) player.containerMenu.sendAllDataToRemote(); // Paper - Fix inventory desync
+                         return InteractionResult.FAIL;
+                     }
+                     // CraftBukkit end

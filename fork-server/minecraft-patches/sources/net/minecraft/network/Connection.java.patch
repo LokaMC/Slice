@@ -1,0 +1,12 @@
+--- a/net/minecraft/network/Connection.java
++++ b/net/minecraft/network/Connection.java
+@@ -957,8 +_,7 @@
+                 packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket ||
+                 packet instanceof net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket ||
+                 packet instanceof net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket ||
+-                packet instanceof net.minecraft.network.protocol.game.ClientboundBossEventPacket ||
+-                packet instanceof net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
++                packet instanceof net.minecraft.network.protocol.game.ClientboundBossEventPacket;
+         }
+     }
+ 

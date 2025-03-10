@@ -1,0 +1,11 @@
+--- a/src/main/java/io/papermc/paper/threadedregions/scheduler/FoliaAsyncScheduler.java
++++ b/src/main/java/io/papermc/paper/threadedregions/scheduler/FoliaAsyncScheduler.java
+@@ -181,7 +_,7 @@
+ 
+         private void setDelay(final ScheduledFuture<?> delay) {
+             this.delay = delay;
+-            this.state = delay == null ? STATE_SCHEDULED_EXECUTOR : STATE_ON_TIMER;
++            this.state = STATE_SCHEDULED_EXECUTOR;
+         }
+ 
+         @Override

@@ -1,0 +1,31 @@
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1725,7 +_,6 @@
+ 
+         if (recipe.isPresent()) {
+             RecipeHolder<CraftingRecipe> recipeCrafting = recipe.get();
+-            inventoryCrafting.setCurrentRecipe(recipeCrafting);
+             if (craftResult.setRecipeUsed(craftPlayer.getHandle(), recipeCrafting)) {
+                 itemstack = recipeCrafting.value().assemble(inventoryCrafting.asCraftInput(), craftWorld.getHandle().registryAccess());
+             }
+@@ -3054,7 +_,7 @@
+ 
+         @Override
+         public void restart() {
+-            CraftServer.this.restart();
++            org.spigotmc.RestartCommand.restart();
+         }
+ 
+         @Override
+@@ -3077,11 +_,6 @@
+         return this.spigot;
+     }
+     // Spigot end
+-
+-    @Override
+-    public void restart() {
+-        org.spigotmc.RestartCommand.restart();
+-    }
+ 
+     @Override
+     public double[] getTPS() {

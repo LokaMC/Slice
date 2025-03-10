@@ -1,0 +1,73 @@
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/components/CraftCustomModelDataComponent.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/components/CraftCustomModelDataComponent.java
+@@ -1,5 +_,6 @@
+ package org.bukkit.craftbukkit.inventory.components;
+ 
++import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.LinkedHashMap;
+ import java.util.List;
+@@ -56,7 +_,7 @@
+ 
+     @Override
+     public void setFloats(List<Float> floats) {
+-        this.handle = new CustomModelData(List.copyOf(floats), this.handle.flags(), this.handle.strings(), this.handle.colors());
++        this.handle = new CustomModelData(new ArrayList<>(floats), this.handle.flags(), this.handle.strings(), this.handle.colors());
+     }
+ 
+     @Override
+@@ -66,7 +_,7 @@
+ 
+     @Override
+     public void setFlags(List<Boolean> flags) {
+-        this.handle = new CustomModelData(this.handle.floats(), List.copyOf(flags), this.handle.strings(), this.handle.colors());
++        this.handle = new CustomModelData(this.handle.floats(), List.copyOf(flags), this.handle.strings(), this.handle.colors()); // Paper
+     }
+ 
+     @Override
+@@ -76,17 +_,17 @@
+ 
+     @Override
+     public void setStrings(List<String> strings) {
+-        this.handle = new CustomModelData(this.handle.floats(), this.handle.flags(), List.copyOf(strings), this.handle.colors());
++        this.handle = new CustomModelData(this.handle.floats(), this.handle.flags(), List.copyOf(strings), this.handle.colors()); // Paper
+     }
+ 
+     @Override
+     public List<Color> getColors() {
+-        return this.getHandle().colors().stream().map(color -> Color.fromRGB(color & 0x00FFFFFF)).toList(); // skip alpha channel
++        return this.getHandle().colors().stream().map(Color::fromRGB).toList();
+     }
+ 
+     @Override
+     public void setColors(List<Color> colors) {
+-        this.handle = new CustomModelData(this.handle.floats(), this.handle.flags(), this.handle.strings(), colors.stream().map(Color::asRGB).toList());
++        this.handle = new CustomModelData(this.handle.floats(), this.handle.flags(), this.handle.strings(), colors.stream().map(Color::asRGB).toList()); // Paper
+     }
+ 
+     @Override
+@@ -94,11 +_,14 @@
+         if (this == obj) {
+             return true;
+         }
+-        if (obj == null || this.getClass() != obj.getClass()) {
++        if (obj == null) {
++            return false;
++        }
++        if (this.getClass() != obj.getClass()) {
+             return false;
+         }
+         final CraftCustomModelDataComponent other = (CraftCustomModelDataComponent) obj;
+-        return this.handle.equals(other.handle);
++        return Objects.equals(this.handle, other.handle);
+     }
+ 
+     @Override
+@@ -110,6 +_,6 @@
+ 
+     @Override
+     public String toString() {
+-        return "CraftCustomModelDataComponent{component=" + this.handle + '}';
++        return "CraftCustomModelDataComponent{" + "handle=" + this.handle + '}';
+     }
+ }

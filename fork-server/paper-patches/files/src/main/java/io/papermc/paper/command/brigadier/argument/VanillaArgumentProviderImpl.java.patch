@@ -1,0 +1,14 @@
+--- a/src/main/java/io/papermc/paper/command/brigadier/argument/VanillaArgumentProviderImpl.java
++++ b/src/main/java/io/papermc/paper/command/brigadier/argument/VanillaArgumentProviderImpl.java
+@@ -367,11 +_,6 @@
+         }
+ 
+         @Override
+-        public <S> P parse(final StringReader reader, final S source) throws CommandSyntaxException {
+-            return this.converter.convert(this.nmsBase.parse(reader, source));
+-        }
+-
+-        @Override
+         public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+             return this.nmsBase.listSuggestions(context, builder);
+         }

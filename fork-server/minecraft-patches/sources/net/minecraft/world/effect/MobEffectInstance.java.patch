@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/effect/MobEffectInstance.java
++++ b/net/minecraft/world/effect/MobEffectInstance.java
+@@ -409,7 +_,7 @@
+                     .apply(instance, MobEffectInstance.Details::create)
+             )
+         );
+-        public static final StreamCodec<net.minecraft.network.FriendlyByteBuf, MobEffectInstance.Details> STREAM_CODEC = StreamCodec.recursive( // Paper - Track codec depth
++        public static final StreamCodec<ByteBuf, MobEffectInstance.Details> STREAM_CODEC = StreamCodec.recursive(
+             codec -> StreamCodec.composite(
+                 ByteBufCodecs.VAR_INT,
+                 MobEffectInstance.Details::amplifier,
+@@ -421,7 +_,7 @@
+                 MobEffectInstance.Details::showParticles,
+                 ByteBufCodecs.BOOL,
+                 MobEffectInstance.Details::showIcon,
+-                codec.apply(ByteBufCodecs::increaseDepth).apply(ByteBufCodecs::optional), // Paper - Track codec depth
++                codec.apply(ByteBufCodecs::optional),
+                 MobEffectInstance.Details::hiddenEffect,
+                 MobEffectInstance.Details::new
+             )

@@ -1,0 +1,18 @@
+--- a/src/main/java/org/bukkit/event/block/BlockFadeEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockFadeEvent.java
+@@ -33,11 +_,11 @@
+     }
+ 
+     /**
+-     * Gets the state of the new block that will replace the block
+-     * fading, melting or disappearing.
++     * Gets the state of the block that will be fading, melting or
++     * disappearing.
+      *
+-     * @return The block state of the new block that replaces the block
+-     *     fading, melting or disappearing
++     * @return The block state of the block that will be fading, melting or
++     *     disappearing
+      */
+     @NotNull
+     public BlockState getNewState() {

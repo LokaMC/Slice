@@ -1,0 +1,11 @@
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServerTickManager.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServerTickManager.java
+@@ -72,7 +_,7 @@
+ 
+     @Override
+     public boolean requestGameToSprint(final int ticks) {
+-        return this.manager.requestGameToSprint(ticks, true);
++        return this.manager.requestGameToSprint(ticks);
+     }
+ 
+     @Override

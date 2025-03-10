@@ -1,0 +1,14 @@
+--- a/src/main/java/org/bukkit/craftbukkit/CraftRegistry.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftRegistry.java
+@@ -234,11 +_,6 @@
+     }
+ 
+     @Override
+-    public int size() {
+-        return this.minecraftRegistry.size();
+-    }
+-
+-    @Override
+     public Iterator<B> iterator() {
+         return this.stream().iterator();
+     }

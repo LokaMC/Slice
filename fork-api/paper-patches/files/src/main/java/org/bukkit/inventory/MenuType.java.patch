@@ -1,0 +1,11 @@
+--- a/src/main/java/org/bukkit/inventory/MenuType.java
++++ b/src/main/java/org/bukkit/inventory/MenuType.java
+@@ -116,7 +_,7 @@
+      */
+     MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> SHULKER_BOX = get("shulker_box");
+     /**
+-     * A MenuType which represents a smithing table.
++     * A MenuType which represents a stonecutter.
+      */
+     MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> SMITHING = get("smithing");
+     /**

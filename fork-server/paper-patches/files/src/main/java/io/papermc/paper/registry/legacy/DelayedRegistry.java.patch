@@ -1,0 +1,14 @@
+--- a/src/main/java/io/papermc/paper/registry/legacy/DelayedRegistry.java
++++ b/src/main/java/io/papermc/paper/registry/legacy/DelayedRegistry.java
+@@ -50,11 +_,6 @@
+     }
+ 
+     @Override
+-    public int size() {
+-        return this.delegate().size();
+-    }
+-
+-    @Override
+     public @Nullable NamespacedKey getKey(final T value) {
+         return this.delegate().getKey(value);
+     }

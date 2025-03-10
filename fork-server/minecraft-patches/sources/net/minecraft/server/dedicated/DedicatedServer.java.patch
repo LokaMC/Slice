@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -731,8 +_,6 @@
+     }
+ 
+     public String runCommand(RconConsoleSource rconConsoleSource, String s) {
+-        if (s.isBlank()) return ""; // Paper - Do not process empty rcon commands
+-
+         rconConsoleSource.prepareForCommand();
+         this.executeBlocking(() -> {
+             CommandSourceStack wrapper = rconConsoleSource.createCommandSourceStack();

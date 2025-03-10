@@ -1,0 +1,144 @@
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -315,7 +_,6 @@
+     private final FutureChain chatMessageChain;
+     private boolean waitingForSwitchToConfig;
+     private static final int MAX_SIGN_LINE_LENGTH = Integer.getInteger("Paper.maxSignLength", 80); // Paper - Limit client sign length
+-    private final io.papermc.paper.event.packet.ClientTickEndEvent tickEndEvent; // Paper - add client tick end event
+ 
+     public ServerGamePacketListenerImpl(MinecraftServer server, Connection connection, ServerPlayer player, CommonListenerCookie cookie) {
+         super(server, connection, cookie, player); // CraftBukkit
+@@ -325,7 +_,6 @@
+         player.getTextFilter().join();
+         this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(player.getUUID(), server::enforceSecureProfile);
+         this.chatMessageChain = new FutureChain(server.chatExecutor); // CraftBukkit - async chat
+-        this.tickEndEvent = new io.papermc.paper.event.packet.ClientTickEndEvent(player.getBukkitEntity()); // Paper - add client tick end event
+     }
+ 
+     @Override
+@@ -659,7 +_,7 @@
+                 // CraftBukkit end
+ 
+                 this.player.serverLevel().getChunkSource().move(this.player);
+-                if (!rootVehicle.isSpectator() && rootVehicle.isAffectedByBlocks()) rootVehicle.recordMovementThroughBlocks(new Vec3(x, y, z), rootVehicle.position()); // Paper - Do not record movement for vehicles/players unaffected by blocks
++                if (!rootVehicle.isSpectator() && rootVehicle.isAffectedByBlocks()) rootVehicle.recordMovementThroughBlocks(new Vec3(x, y, z), rootVehicle.position());
+                 Vec3 vec3 = new Vec3(rootVehicle.getX() - x, rootVehicle.getY() - y, rootVehicle.getZ() - z);
+                 this.handlePlayerKnownMovement(vec3);
+                 rootVehicle.setOnGroundWithMovement(packet.onGround(), vec3);
+@@ -1034,7 +_,6 @@
+ 
+             this.player.connection.send(new ClientboundSetHeldSlotPacket(inventory.selected));
+             this.player.inventoryMenu.broadcastChanges();
+-            this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+         }
+     }
+ 
+@@ -1577,7 +_,7 @@
+                                 Vec3 vec3 = new Vec3(this.player.getX() - x, this.player.getY() - y, this.player.getZ() - z);
+                                 this.player.setOnGroundWithMovement(packet.isOnGround(), packet.horizontalCollision(), vec3);
+                                 this.player.doCheckFallDamage(vec3.x, vec3.y, vec3.z, packet.isOnGround());
+-                                if (!this.player.isSpectator() && this.player.isAffectedByBlocks()) this.player.recordMovementThroughBlocks(new Vec3(x, y, z), this.player.position()); // Paper - Do not record movement for vehicles/players unaffected by blocks
++                                if (!this.player.isSpectator() && this.player.isAffectedByBlocks()) this.player.recordMovementThroughBlocks(new Vec3(x, y, z), this.player.position());
+                                 this.handlePlayerKnownMovement(vec3);
+                                 if (flag) {
+                                     this.player.resetFallDistance();
+@@ -1802,7 +_,6 @@
+                         }
+                         // CraftBukkit end
+                         this.player.stopUsingItem();
+-                        this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                     }
+ 
+                     return;
+@@ -1824,26 +_,23 @@
+                         }
+                         // CraftBukkit end
+                         this.player.drop(false);
+-                        this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                     }
+ 
+                     return;
+                 case DROP_ALL_ITEMS:
+                     if (!this.player.isSpectator()) {
+                         this.player.drop(true);
+-                        this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                     }
+ 
+                     return;
+                 case RELEASE_USE_ITEM:
+                     if (this.player.getUseItem() == this.player.getItemInHand(this.player.getUsedItemHand())) this.player.releaseUsingItem(); // Paper - validate use item before processing release
+-                    this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                     return;
+                 case START_DESTROY_BLOCK:
+                 case ABORT_DESTROY_BLOCK:
+                 case STOP_DESTROY_BLOCK:
+                     // Paper start - Don't allow digging into unloaded chunks
+-                    if (this.player.level().getChunkIfLoadedImmediately(pos.getX() >> 4, pos.getZ() >> 4) == null || !this.player.canInteractWithBlock(pos, 1.0)) {
++                    if (this.player.level().getChunkIfLoadedImmediately(pos.getX() >> 4, pos.getZ() >> 4) == null) {
+                         this.player.connection.ackBlockChangesUpTo(packet.getSequence());
+                         return;
+                     }
+@@ -1870,7 +_,6 @@
+                         }
+                     }
+                     // Paper end - Send block entities after destroy prediction
+-                    this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                     return;
+                 default:
+                     throw new IllegalArgumentException("Invalid player action");
+@@ -1959,7 +_,6 @@
+ 
+                         this.player.connection.send(new ClientboundBlockUpdatePacket(serverLevel, blockPos));
+                         this.player.connection.send(new ClientboundBlockUpdatePacket(serverLevel, blockPos.relative(direction)));
+-                        this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                     } else {
+                         LOGGER.warn(
+                             "Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.",
+@@ -2139,7 +_,6 @@
+ 
+             this.player.getInventory().selected = packet.getSlot();
+             this.player.resetLastActionTime();
+-            this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+         } else {
+             LOGGER.warn("{} tried to set an invalid carried item", this.player.getName().getString());
+             this.disconnect(Component.literal("Invalid hotbar selection (Hacking?)"), org.bukkit.event.player.PlayerKickEvent.Cause.ILLEGAL_ACTION); // CraftBukkit // Paper - kick event cause
+@@ -2865,7 +_,6 @@
+                 });
+             }
+             // Paper end - PlayerUseUnknownEntityEvent
+-            this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+         }
+     }
+ 
+@@ -3282,7 +_,6 @@
+                     } else {
+                         this.player.containerMenu.broadcastChanges();
+                     }
+-                    this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+                 }
+             }
+         }
+@@ -3377,7 +_,6 @@
+                 if (flag) {
+                     this.player.containerMenu.broadcastChanges();
+                 }
+-                this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+             }
+         }
+     }
+@@ -3435,7 +_,6 @@
+                 this.player.inventoryMenu.getSlot(packet.slotNum()).setByPlayer(itemStack);
+                 this.player.inventoryMenu.setRemoteSlot(packet.slotNum(), itemStack);
+                 this.player.inventoryMenu.broadcastChanges();
+-                this.player.detectEquipmentUpdatesPublic(); // Paper - Force update attributes.
+             } else if (flag && flag2) {
+                 if (this.dropSpamThrottler.isUnderThreshold()) {
+                     this.dropSpamThrottler.increment();
+@@ -3606,7 +_,6 @@
+     @Override
+     public void handleClientTickEnd(ServerboundClientTickEndPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.serverLevel());
+-        this.tickEndEvent.callEvent(); // Paper - add client tick end event
+         if (!this.receivedMovementThisTick) {
+             this.player.setKnownMovement(Vec3.ZERO);
+         }

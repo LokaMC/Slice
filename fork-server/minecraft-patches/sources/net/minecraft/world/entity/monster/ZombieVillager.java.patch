@@ -1,0 +1,10 @@
+--- a/net/minecraft/world/entity/monster/ZombieVillager.java
++++ b/net/minecraft/world/entity/monster/ZombieVillager.java
+@@ -234,6 +_,7 @@
+                     SlotAccess slot = villager.getSlot(equipmentSlot.getIndex() + 300);
+                     slot.set(this.getItemBySlot(equipmentSlot));
+                 }
++                this.forceDrops = false; // CraftBukkit
+ 
+                 villager.setVillagerData(this.getVillagerData());
+                 if (this.gossips != null) {

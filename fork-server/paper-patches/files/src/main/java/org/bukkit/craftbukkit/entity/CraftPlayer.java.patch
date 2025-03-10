@@ -1,0 +1,57 @@
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -2827,9 +_,14 @@
+     }
+ 
+     public void updateScaledHealth(boolean sendHealth) {
++        AttributeMap attributemapserver = this.getHandle().getAttributes();
++        Collection<AttributeInstance> set = attributemapserver.getSyncableAttributes();
++
++        this.injectScaledMaxHealth(set, true);
++
+         // SPIGOT-3813: Attributes before health
+         if (this.getHandle().connection != null) {
+-            this.getHandle().connection.send(new ClientboundUpdateAttributesPacket(this.getHandle().getId(), Set.of(this.getScaledMaxHealth())));
++            this.getHandle().connection.send(new ClientboundUpdateAttributesPacket(this.getHandle().getId(), set));
+             if (sendHealth) {
+                 this.sendHealthUpdate();
+             }
+@@ -2869,11 +_,8 @@
+                 break;
+             }
+         }
+-        collection.add(getScaledMaxHealth());
+-    }
+-
+-    public AttributeInstance getScaledMaxHealth() {
+         AttributeInstance dummy = new AttributeInstance(Attributes.MAX_HEALTH, (attribute) -> { });
++        // Spigot start
+         double healthMod = this.scaledHealth ? this.healthScale : this.getMaxHealth();
+         if ( healthMod >= Float.MAX_VALUE || healthMod <= 0 )
+         {
+@@ -2881,7 +_,8 @@
+             this.getServer().getLogger().warning( this.getName() + " tried to crash the server with a large health attribute" );
+         }
+         dummy.setBaseValue(healthMod);
+-        return dummy;
++        // Spigot end
++        collection.add(dummy);
+     }
+ 
+     @Override
+@@ -3595,15 +_,5 @@
+         final boolean backwardMovement = this.getHandle().getLastClientInput().backward();
+ 
+         return forwardMovement == backwardMovement ? 0 : forwardMovement ? 1 : -1;
+-    }
+-
+-    @Override
+-    public int getDeathScreenScore() {
+-        return getHandle().getScore();
+-    }
+-
+-    @Override
+-    public void setDeathScreenScore(final int score) {
+-        getHandle().setScore(score);
+     }
+ }

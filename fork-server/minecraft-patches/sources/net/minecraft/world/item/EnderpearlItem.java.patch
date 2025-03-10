@@ -1,0 +1,15 @@
+--- a/net/minecraft/world/item/EnderpearlItem.java
++++ b/net/minecraft/world/item/EnderpearlItem.java
+@@ -45,11 +_,7 @@
+                 );
+                 player.awardStat(Stats.ITEM_USED.get(this));
+             } else {
+-                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+-                    serverPlayer.deregisterEnderPearl(thrownEnderpearl.projectile());
+-                    serverPlayer.connection.send(new net.minecraft.network.protocol.game.ClientboundCooldownPacket(player.getCooldowns().getCooldownGroup(itemInHand), 0)); // prevent visual desync of cooldown on the slot
+-                }
+-                // Paper end - PlayerLaunchProjectileEvent
++            // Paper end - PlayerLaunchProjectileEvent
+                 player.containerMenu.sendAllDataToRemote();
+                 return InteractionResult.FAIL;
+             }
