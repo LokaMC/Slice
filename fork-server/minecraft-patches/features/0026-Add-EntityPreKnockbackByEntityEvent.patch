@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 3 Apr 2025 09:14:59 -0500
+Subject: [PATCH] Add EntityPreKnockbackByEntityEvent
+
+
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 1ed07fd23985a6bf8cf8300f74c92b7531a79fc6..bc9834c87814377543fa65732e3404db95f63772 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -1603,6 +1603,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+         boolean flag = source.hurtServer(level, damageSource, f);
+         if (flag) {
+             float knockback = this.getKnockback(source, damageSource);
++            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), knockback).callEvent()) {
++                knockback = 0;
++            }
++
+             if (knockback > 0.0F && source instanceof LivingEntity livingEntity) {
+                 livingEntity.knockback(
+                     knockback * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)), this, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.ENTITY_ATTACK // CraftBukkit // Paper - knockback events
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index ee546b950dca502670fb9b01e659b143272945fe..f1dfeb461cf2d206371cd1e774edfbf43819cae7 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1293,6 +1293,10 @@ public abstract class Player extends LivingEntity {
+                         boolean flag4 = target.hurtOrSimulate(damageSource, f2);
+                         if (flag4) {
+                             float f4 = this.getKnockback(target, damageSource) + (flag1 ? 1.0F : 0.0F);
++                            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), f4).callEvent()) {
++                                f4 = 0;
++                            }
++
+                             if (f4 > 0.0F) {
+                                 if (target instanceof LivingEntity livingEntity1) {
+                                     livingEntity1.knockback(
