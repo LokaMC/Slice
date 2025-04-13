@@ -1,0 +1,152 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 3 Apr 2025 09:14:59 -0500
+Subject: [PATCH] Packet obfuscation and reduction
+
+
+diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
+index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..41e48cd29de66c316596d017a8fdcbb88c1ab51f 100644
+--- a/net/minecraft/network/syncher/SynchedEntityData.java
++++ b/net/minecraft/network/syncher/SynchedEntityData.java
+@@ -95,43 +95,35 @@ public class SynchedEntityData {
+     }
+ 
+     @Nullable
+-    public List<SynchedEntityData.DataValue<?>> packDirty() {
++    public org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> packDirty() {
+         if (!this.isDirty) {
+             return null;
+         } else {
+             this.isDirty = false;
+-            List<SynchedEntityData.DataValue<?>> list = new ArrayList<>();
++            List<SynchedEntityData.DataValue<?>> list = new ArrayList<>(this.itemsById.length); // Slice
++            List<SynchedEntityData.DataValue<?>> foreignDirty = null;
+ 
+             for (SynchedEntityData.DataItem<?> dataItem : this.itemsById) {
+                 if (dataItem.isDirty()) {
++                    DataValue<?> value = dataItem.value();
+                     dataItem.setDirty(false);
+-                    list.add(dataItem.value());
+-                }
+-            }
++                    list.add(value);
+ 
+-            return list;
+-        }
+-    }
++                    if (dataItem.isForeignDirty()) {
++                        dataItem.setForeignDirty(false);
+ 
+-    // Slice start
+-    @Nullable
+-    public List<SynchedEntityData.DataValue<?>> packForeignDirty() {
+-        List<SynchedEntityData.DataValue<?>> list = null;
++                        if (foreignDirty == null) {
++                            foreignDirty = new ArrayList<>(this.itemsById.length);
++                        }
+ 
+-        for (DataItem<?> dataItem : this.itemsById) {
+-            if (dataItem.isDirty(true)) {
+-                dataItem.setForeignDirty(false);
+-                if (list == null) {
+-                    list = new ArrayList();
++                        foreignDirty.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
++                    }
+                 }
+-
+-                list.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
+             }
+-        }
+ 
+-        return list;
++            return org.apache.commons.lang3.tuple.Pair.of(list, foreignDirty);
++        }
+     }
+-    // Slice end
+ 
+     @Nullable
+     public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
+@@ -284,14 +276,10 @@ public class SynchedEntityData {
+             return foreignValue;
+         }
+ 
+-        public boolean isDirty(boolean foreign) {
+-            if (foreign) {
+-                //There must be a foreign value in order for this to be dirty, otherwise we consider this a normal
+-                //value and check the normal dirty flag.
+-                return foreignValue == null || this.foreignDirty;
+-            }
+-
+-            return this.dirty;
++        public boolean isForeignDirty() {
++            //There must be a foreign value in order for this to be dirty, otherwise we consider this a normal
++            //value and check the normal dirty flag.
++            return foreignValue == null || this.foreignDirty;
+         }
+ 
+         public void setForeignDirty(boolean dirty) {
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 8ddb629ee9f4bcaa796302acf07794d11d58839f..7c6af815a54485c9dc9267f22b763fecdf6c1a2d 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -389,21 +389,22 @@ public class ServerEntity {
+ 
+     private void sendDirtyEntityData() {
+         SynchedEntityData entityData = this.entity.getEntityData();
+-        List<SynchedEntityData.DataValue<?>> list = entityData.packDirty();
++        org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> list = entityData.packDirty();
+         if (list != null) {
+             this.trackedDataValues = entityData.getNonDefaultValues();
+             //this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), list));
++
+             // Slice start
+-            ClientboundSetEntityDataPacket dataPacket = new ClientboundSetEntityDataPacket(this.entity.getId(), list);
++            //We always send any dirty values to ourself.
++            List<SynchedEntityData.DataValue<?>> dirtyValues = list.getLeft();
+             if (this.entity instanceof ServerPlayer serverPlayer) {
+-                serverPlayer.connection.send(dataPacket);
++                serverPlayer.connection.send(new ClientboundSetEntityDataPacket(this.entity.getId(), dirtyValues));
+             }
+ 
+-            //Get the packedData that the original packet has, and then determine if any of those are changed in
+-            //the foreign version. If null, nothing to notify foreign trackers about.
+-            List<SynchedEntityData.DataValue<?>> dirtyItems = entityData.packForeignDirty();
+-            if (dirtyItems != null) {
+-                this.broadcast.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), dirtyItems));
++            //But only send dirty foreign values to other clients.
++            List<SynchedEntityData.DataValue<?>> foreignDirtyValues = list.getRight();
++            if (foreignDirtyValues != null) {
++                this.broadcast.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), foreignDirtyValues));
+             }
+             // Slice end
+         }
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 1ed07fd23985a6bf8cf8300f74c92b7531a79fc6..bc9834c87814377543fa65732e3404db95f63772 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -1603,6 +1603,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+         boolean flag = source.hurtServer(level, damageSource, f);
+         if (flag) {
+             float knockback = this.getKnockback(source, damageSource);
++            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), knockback).callEvent()) {
++                knockback = 0;
++            }
++
+             if (knockback > 0.0F && source instanceof LivingEntity livingEntity) {
+                 livingEntity.knockback(
+                     knockback * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)), this, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.ENTITY_ATTACK // CraftBukkit // Paper - knockback events
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index ee546b950dca502670fb9b01e659b143272945fe..f1dfeb461cf2d206371cd1e774edfbf43819cae7 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1293,6 +1293,10 @@ public abstract class Player extends LivingEntity {
+                         boolean flag4 = target.hurtOrSimulate(damageSource, f2);
+                         if (flag4) {
+                             float f4 = this.getKnockback(target, damageSource) + (flag1 ? 1.0F : 0.0F);
++                            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), f4).callEvent()) {
++                                f4 = 0;
++                            }
++
+                             if (f4 > 0.0F) {
+                                 if (target instanceof LivingEntity livingEntity1) {
+                                     livingEntity1.knockback(
