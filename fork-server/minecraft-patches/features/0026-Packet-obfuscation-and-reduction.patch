@@ -5,10 +5,10 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
-index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..41e48cd29de66c316596d017a8fdcbb88c1ab51f 100644
+index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ca88bcee5b1ed634db53a200d1318ed476aec1dc 100644
 --- a/net/minecraft/network/syncher/SynchedEntityData.java
 +++ b/net/minecraft/network/syncher/SynchedEntityData.java
-@@ -95,43 +95,35 @@ public class SynchedEntityData {
+@@ -95,59 +95,60 @@ public class SynchedEntityData {
      }
  
      @Nullable
@@ -65,8 +65,36 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..41e48cd29de66c316596d017a8fdcbb8
 -    // Slice end
  
      @Nullable
-     public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
-@@ -284,14 +276,10 @@ public class SynchedEntityData {
+-    public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
++    public org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> getNonDefaultValues() {
+         List<SynchedEntityData.DataValue<?>> list = null;
++        List<SynchedEntityData.DataValue<?>> foreignList = null;
+ 
+         for (SynchedEntityData.DataItem<?> dataItem : this.itemsById) {
+             if (!dataItem.isSetToDefault()) {
+                 if (list == null) {
+-                    list = new ArrayList<>();
++                    list = new ArrayList<>(this.itemsById.length);
+                 }
+ 
+                 list.add(dataItem.value());
++
++                if (dataItem.foreignValue != null && !dataItem.foreignValue.equals(dataItem.initialValue)) {
++                    if (foreignList == null) {
++                        foreignList = new ArrayList<>(this.itemsById.length);
++                    }
++
++                    foreignList.add(dataItem.foreignValue());
++                }
+             }
+         }
+ 
+-        return list;
++        return org.apache.commons.lang3.tuple.Pair.of(list, foreignList);
+     }
+ 
+     public void assignValues(List<SynchedEntityData.DataValue<?>> entries) {
+@@ -284,14 +285,10 @@ public class SynchedEntityData {
              return foreignValue;
          }
  
@@ -86,17 +114,50 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..41e48cd29de66c316596d017a8fdcbb8
  
          public void setForeignDirty(boolean dirty) {
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 8ddb629ee9f4bcaa796302acf07794d11d58839f..7c6af815a54485c9dc9267f22b763fecdf6c1a2d 100644
+index 8ddb629ee9f4bcaa796302acf07794d11d58839f..40d1eeb138f60969b5b10f881e9a2bf9c3bb0c2e 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
-@@ -389,21 +389,22 @@ public class ServerEntity {
+@@ -70,6 +70,7 @@ public class ServerEntity {
+     private boolean wasOnGround;
+     @Nullable
+     private List<SynchedEntityData.DataValue<?>> trackedDataValues;
++    private List<SynchedEntityData.DataValue<?>> trackedForeignDataValues;
+ 
+     // CraftBukkit start
+     private final Set<net.minecraft.server.network.ServerPlayerConnection> trackedPlayers;
+@@ -87,7 +88,9 @@ public class ServerEntity {
+         this.lastSentXRot = Mth.packDegrees(entity.getXRot());
+         this.lastSentYHeadRot = Mth.packDegrees(entity.getYHeadRot());
+         this.wasOnGround = entity.onGround();
+-        this.trackedDataValues = entity.getEntityData().getNonDefaultValues();
++        org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> nonDefaultValues = entity.getEntityData().getNonDefaultValues();
++        this.trackedDataValues = nonDefaultValues.getLeft();
++        this.trackedForeignDataValues = nonDefaultValues.getRight();
+     }
+ 
+     // Paper start - fix desync when a player is added to the tracker
+@@ -324,8 +327,8 @@ public class ServerEntity {
+ 
+         Packet<ClientGamePacketListener> addEntityPacket = this.entity.getAddEntityPacket(this);
+         consumer.accept(addEntityPacket);
+-        if (this.trackedDataValues != null) {
+-            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedDataValues));
++        if (this.trackedForeignDataValues != null) {
++            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedForeignDataValues));
+         }
+ 
+         boolean flag = this.trackDelta;
+@@ -389,21 +392,24 @@ public class ServerEntity {
  
      private void sendDirtyEntityData() {
          SynchedEntityData entityData = this.entity.getEntityData();
 -        List<SynchedEntityData.DataValue<?>> list = entityData.packDirty();
 +        org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> list = entityData.packDirty();
          if (list != null) {
-             this.trackedDataValues = entityData.getNonDefaultValues();
+-            this.trackedDataValues = entityData.getNonDefaultValues();
++            org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> nonDefaultValues = entityData.getNonDefaultValues();
++            this.trackedDataValues = nonDefaultValues.getLeft();
++            this.trackedForeignDataValues = nonDefaultValues.getRight();
              //this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), list));
 +
              // Slice start
