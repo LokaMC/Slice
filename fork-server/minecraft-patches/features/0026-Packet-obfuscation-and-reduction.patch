@@ -120,6 +120,80 @@ index 8ddb629ee9f4bcaa796302acf07794d11d58839f..7c6af815a54485c9dc9267f22b763fec
              }
              // Slice end
          }
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 731975398869ba59bc3fb67006d26b8b13311d00..7ac9c729b89f80d17e51490f6813ca27d8dfdbd4 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -305,6 +305,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     // Slice start
+     private static final java.util.Map<String, com.google.common.cache.Cache<Integer, ItemStack>> equipmentPacketCache = new java.util.HashMap<>();
+     protected final java.util.Map<String, net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket> cachedEquipmentPacket = new java.util.HashMap<>();
++    public boolean broadcastsPotionEffects = true;
+     // Slice end
+ 
+     @Override
+@@ -957,6 +958,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+             this.effectsDirty = false;
+         }
+ 
++        if (!broadcastsPotionEffects) return; // Slice - Simply don't emit ambient particle fx if this is off
++
+         List<ParticleOptions> list = this.entityData.get(DATA_EFFECT_PARTICLES);
+         if (!list.isEmpty()) {
+             boolean flag = this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
+@@ -979,6 +982,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     }
+ 
+     private void updateSynchronizedMobEffectParticles() {
++        // Slice start
++        if (!broadcastsPotionEffects) {
++            updateSynchronizedMobEffectParticlesNoBroadcast();
++            return;
++        }
++        // Slice end
++
+         List<ParticleOptions> list = this.activeEffects
+             .values()
+             .stream()
+@@ -989,6 +999,38 @@ public abstract class LivingEntity extends Entity implements Attackable {
+         this.entityData.set(DATA_EFFECT_AMBIENCE_ID, areAllEffectsAmbient(this.activeEffects.values()));
+     }
+ 
++    // Slice Start - When an entity broadcasts no particles, we want to still broadcast Invis ambient particles
++    // so players can still see those and track invis players at least.
++    private void updateSynchronizedMobEffectParticlesNoBroadcast() {
++        boolean allEffectsAmbient = true;
++        List<ParticleOptions> particleOptionsLocal = new ArrayList<>(this.activeEffects.size());
++        List<ParticleOptions> particleOptionsForeign = null;
++        for (Entry<Holder<MobEffect>, MobEffectInstance> entry : this.activeEffects.entrySet()) {
++            MobEffectInstance effect = entry.getValue();
++            boolean visible = effect.isVisible();
++            if (visible && !effect.isAmbient() && allEffectsAmbient) {
++                allEffectsAmbient = false;
++            }
++
++            if (visible) {
++                ParticleOptions options = effect.getParticleOptions();
++                particleOptionsLocal.add(options);
++
++                if (entry.getKey().equals(org.bukkit.craftbukkit.potion.CraftPotionEffectType.bukkitToMinecraftHolder(org.bukkit.potion.PotionEffectType.INVISIBILITY))) {
++                    if (particleOptionsForeign == null) {
++                        particleOptionsForeign = new ArrayList<>(this.activeEffects.size());
++                    }
++
++                    particleOptionsForeign.add(options);
++                }
++            }
++        }
++
++        this.entityData.set(DATA_EFFECT_PARTICLES, particleOptionsLocal, particleOptionsForeign != null ? particleOptionsForeign : java.util.Collections.emptyList());
++        this.entityData.set(DATA_EFFECT_AMBIENCE_ID, allEffectsAmbient, false, false);
++    }
++    // Slice end
++
+     private void updateGlowingStatus() {
+         boolean isCurrentlyGlowing = this.isCurrentlyGlowing();
+         if (this.getSharedFlag(6) != isCurrentlyGlowing) {
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
 index 1ed07fd23985a6bf8cf8300f74c92b7531a79fc6..bc9834c87814377543fa65732e3404db95f63772 100644
 --- a/net/minecraft/world/entity/Mob.java
