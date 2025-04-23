@@ -5,10 +5,10 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
-index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ca88bcee5b1ed634db53a200d1318ed476aec1dc 100644
+index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ba1432d86106c01e9162e258925aac8dac985d6d 100644
 --- a/net/minecraft/network/syncher/SynchedEntityData.java
 +++ b/net/minecraft/network/syncher/SynchedEntityData.java
-@@ -95,59 +95,60 @@ public class SynchedEntityData {
+@@ -95,59 +95,65 @@ public class SynchedEntityData {
      }
  
      @Nullable
@@ -78,8 +78,13 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ca88bcee5b1ed634db53a200d1318ed4
                  }
  
                  list.add(dataItem.value());
++                if (dataItem.foreignValue == null) {
++                    if (foreignList == null) {
++                        foreignList = new ArrayList<>(this.itemsById.length);
++                    }
 +
-+                if (dataItem.foreignValue != null && !dataItem.foreignValue.equals(dataItem.initialValue)) {
++                    foreignList.add(dataItem.value());
++                } else if (!dataItem.foreignValue.equals(dataItem.initialValue)) {
 +                    if (foreignList == null) {
 +                        foreignList = new ArrayList<>(this.itemsById.length);
 +                    }
@@ -94,7 +99,7 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ca88bcee5b1ed634db53a200d1318ed4
      }
  
      public void assignValues(List<SynchedEntityData.DataValue<?>> entries) {
-@@ -284,14 +285,10 @@ public class SynchedEntityData {
+@@ -284,14 +290,10 @@ public class SynchedEntityData {
              return foreignValue;
          }
  
