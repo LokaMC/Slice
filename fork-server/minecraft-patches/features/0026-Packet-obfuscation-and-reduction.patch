@@ -114,7 +114,7 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ca88bcee5b1ed634db53a200d1318ed4
  
          public void setForeignDirty(boolean dirty) {
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 8ddb629ee9f4bcaa796302acf07794d11d58839f..40d1eeb138f60969b5b10f881e9a2bf9c3bb0c2e 100644
+index 8ddb629ee9f4bcaa796302acf07794d11d58839f..e4329cde4176c3e8365b5d2f08766fa5f805ce83 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
 @@ -70,6 +70,7 @@ public class ServerEntity {
@@ -136,18 +136,19 @@ index 8ddb629ee9f4bcaa796302acf07794d11d58839f..40d1eeb138f60969b5b10f881e9a2bf9
      }
  
      // Paper start - fix desync when a player is added to the tracker
-@@ -324,8 +327,8 @@ public class ServerEntity {
+@@ -324,8 +327,9 @@ public class ServerEntity {
  
          Packet<ClientGamePacketListener> addEntityPacket = this.entity.getAddEntityPacket(this);
          consumer.accept(addEntityPacket);
 -        if (this.trackedDataValues != null) {
 -            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedDataValues));
-+        if (this.trackedForeignDataValues != null) {
-+            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedForeignDataValues));
++        List<SynchedEntityData.DataValue<?>> dataValues = this.entity instanceof ServerPlayer ? this.trackedForeignDataValues : this.trackedDataValues;
++        if (dataValues != null) {
++            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), dataValues));
          }
  
          boolean flag = this.trackDelta;
-@@ -389,21 +392,24 @@ public class ServerEntity {
+@@ -389,21 +393,24 @@ public class ServerEntity {
  
      private void sendDirtyEntityData() {
          SynchedEntityData entityData = this.entity.getEntityData();
