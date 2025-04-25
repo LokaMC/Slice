@@ -119,7 +119,7 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ba1432d86106c01e9162e258925aac8d
  
          public void setForeignDirty(boolean dirty) {
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 8ddb629ee9f4bcaa796302acf07794d11d58839f..e4329cde4176c3e8365b5d2f08766fa5f805ce83 100644
+index 8ddb629ee9f4bcaa796302acf07794d11d58839f..28d395adcc0b11904ca6b28e1c43598f7f884856 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
 @@ -70,6 +70,7 @@ public class ServerEntity {
@@ -153,7 +153,7 @@ index 8ddb629ee9f4bcaa796302acf07794d11d58839f..e4329cde4176c3e8365b5d2f08766fa5
          }
  
          boolean flag = this.trackDelta;
-@@ -389,21 +393,24 @@ public class ServerEntity {
+@@ -389,34 +393,45 @@ public class ServerEntity {
  
      private void sendDirtyEntityData() {
          SynchedEntityData entityData = this.entity.getEntityData();
@@ -187,19 +187,43 @@ index 8ddb629ee9f4bcaa796302acf07794d11d58839f..e4329cde4176c3e8365b5d2f08766fa5
              }
              // Slice end
          }
+ 
+-        if (this.entity instanceof LivingEntity) {
++        if (this.entity instanceof LivingEntity livingEntity) {
+             Set<AttributeInstance> attributesToSync = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
+             if (!attributesToSync.isEmpty()) {
++                boolean broadcastAttributes = livingEntity.broadcastsAttributes;
+                 // CraftBukkit start - Send scaled max health
+                 if (this.entity instanceof ServerPlayer serverPlayer) {
+                     serverPlayer.getBukkitEntity().injectScaledMaxHealth(attributesToSync, false);
++
++                    //If not broadcasting, we still need to send it to ourself.
++                    if (!broadcastAttributes) {
++                        serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                    }
+                 }
+                 // CraftBukkit end
+-                this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                if (broadcastAttributes) {
++                    this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                }
+             }
+ 
+             attributesToSync.clear();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 731975398869ba59bc3fb67006d26b8b13311d00..7ac9c729b89f80d17e51490f6813ca27d8dfdbd4 100644
+index 731975398869ba59bc3fb67006d26b8b13311d00..f6c8bad6bc7130cfd316518cea2adc0ba1aa9dab 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -305,6 +305,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -305,6 +305,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
      // Slice start
      private static final java.util.Map<String, com.google.common.cache.Cache<Integer, ItemStack>> equipmentPacketCache = new java.util.HashMap<>();
      protected final java.util.Map<String, net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket> cachedEquipmentPacket = new java.util.HashMap<>();
 +    public boolean broadcastsPotionEffects = true;
++    public boolean broadcastsAttributes = true;
      // Slice end
  
      @Override
-@@ -957,6 +958,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -957,6 +959,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
              this.effectsDirty = false;
          }
  
@@ -208,7 +232,7 @@ index 731975398869ba59bc3fb67006d26b8b13311d00..7ac9c729b89f80d17e51490f6813ca27
          List<ParticleOptions> list = this.entityData.get(DATA_EFFECT_PARTICLES);
          if (!list.isEmpty()) {
              boolean flag = this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
-@@ -979,6 +982,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -979,6 +983,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
      }
  
      private void updateSynchronizedMobEffectParticles() {
@@ -222,7 +246,7 @@ index 731975398869ba59bc3fb67006d26b8b13311d00..7ac9c729b89f80d17e51490f6813ca27
          List<ParticleOptions> list = this.activeEffects
              .values()
              .stream()
-@@ -989,6 +999,38 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -989,6 +1000,38 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.entityData.set(DATA_EFFECT_AMBIENCE_ID, areAllEffectsAmbient(this.activeEffects.values()));
      }
  
