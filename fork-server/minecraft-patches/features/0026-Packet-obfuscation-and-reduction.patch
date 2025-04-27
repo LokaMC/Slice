@@ -5,10 +5,10 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
-index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ba1432d86106c01e9162e258925aac8dac985d6d 100644
+index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..fb3f6d40fea375804549e1f6fb9e78bd6c667ccc 100644
 --- a/net/minecraft/network/syncher/SynchedEntityData.java
 +++ b/net/minecraft/network/syncher/SynchedEntityData.java
-@@ -95,59 +95,65 @@ public class SynchedEntityData {
+@@ -95,59 +95,66 @@ public class SynchedEntityData {
      }
  
      @Nullable
@@ -20,51 +20,62 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ba1432d86106c01e9162e258925aac8d
              this.isDirty = false;
 -            List<SynchedEntityData.DataValue<?>> list = new ArrayList<>();
 +            List<SynchedEntityData.DataValue<?>> list = new ArrayList<>(this.itemsById.length); // Slice
-+            List<SynchedEntityData.DataValue<?>> foreignDirty = null;
++            List<SynchedEntityData.DataValue<?>> foreignList = null;
  
              for (SynchedEntityData.DataItem<?> dataItem : this.itemsById) {
-                 if (dataItem.isDirty()) {
-+                    DataValue<?> value = dataItem.value();
-                     dataItem.setDirty(false);
+-                if (dataItem.isDirty()) {
+-                    dataItem.setDirty(false);
 -                    list.add(dataItem.value());
--                }
--            }
-+                    list.add(value);
++                boolean dirty = dataItem.isDirty();
++                boolean foreignDirty = dataItem.isForeignDirty();
++                if (dirty || foreignDirty) {
++                    if (dirty) {
++                        DataValue<?> value = dataItem.value();
++                        dataItem.setDirty(false);
++                        list.add(value);
++                    }
++
++                    if (foreignDirty || dataItem.foreignValue == null) {
++                        if (foreignList == null) {
++                            foreignList = new ArrayList<>(this.itemsById.length);
++                        }
++
++                        if (foreignDirty) {
++                            dataItem.setForeignDirty(false);
++                            foreignList.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
++                        } else {
++                            foreignList.add(dataItem.value());
++                        }
++                    }
+                 }
+             }
  
 -            return list;
--        }
--    }
-+                    if (dataItem.isForeignDirty()) {
-+                        dataItem.setForeignDirty(false);
++            return org.apache.commons.lang3.tuple.Pair.of(list, foreignList);
+         }
+     }
  
 -    // Slice start
--    @Nullable
+     @Nullable
 -    public List<SynchedEntityData.DataValue<?>> packForeignDirty() {
 -        List<SynchedEntityData.DataValue<?>> list = null;
-+                        if (foreignDirty == null) {
-+                            foreignDirty = new ArrayList<>(this.itemsById.length);
-+                        }
- 
+-
 -        for (DataItem<?> dataItem : this.itemsById) {
 -            if (dataItem.isDirty(true)) {
 -                dataItem.setForeignDirty(false);
 -                if (list == null) {
 -                    list = new ArrayList();
-+                        foreignDirty.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
-+                    }
-                 }
+-                }
 -
 -                list.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
-             }
+-            }
 -        }
- 
+-
 -        return list;
-+            return org.apache.commons.lang3.tuple.Pair.of(list, foreignDirty);
-+        }
-     }
+-    }
 -    // Slice end
- 
-     @Nullable
+-
+-    @Nullable
 -    public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
 +    public org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> getNonDefaultValues() {
          List<SynchedEntityData.DataValue<?>> list = null;
@@ -78,18 +89,12 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ba1432d86106c01e9162e258925aac8d
                  }
  
                  list.add(dataItem.value());
-+                if (dataItem.foreignValue == null) {
++                if (dataItem.foreignValue == null || !dataItem.foreignValue.equals(dataItem.initialValue)) {
 +                    if (foreignList == null) {
 +                        foreignList = new ArrayList<>(this.itemsById.length);
 +                    }
 +
-+                    foreignList.add(dataItem.value());
-+                } else if (!dataItem.foreignValue.equals(dataItem.initialValue)) {
-+                    if (foreignList == null) {
-+                        foreignList = new ArrayList<>(this.itemsById.length);
-+                    }
-+
-+                    foreignList.add(dataItem.foreignValue());
++                    foreignList.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
 +                }
              }
          }
@@ -99,7 +104,7 @@ index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..ba1432d86106c01e9162e258925aac8d
      }
  
      public void assignValues(List<SynchedEntityData.DataValue<?>> entries) {
-@@ -284,14 +290,10 @@ public class SynchedEntityData {
+@@ -284,14 +291,10 @@ public class SynchedEntityData {
              return foreignValue;
          }
  
@@ -235,7 +240,7 @@ index 8ddb629ee9f4bcaa796302acf07794d11d58839f..1d65972145f0c8ce0de38726c94bd629
  
              attributesToSync.clear();
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 731975398869ba59bc3fb67006d26b8b13311d00..f6c8bad6bc7130cfd316518cea2adc0ba1aa9dab 100644
+index 731975398869ba59bc3fb67006d26b8b13311d00..0545e29d52d0ee470614deb470cc41628b72293c 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -305,6 +305,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
@@ -247,7 +252,15 @@ index 731975398869ba59bc3fb67006d26b8b13311d00..f6c8bad6bc7130cfd316518cea2adc0b
      // Slice end
  
      @Override
-@@ -957,6 +959,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -327,6 +329,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+         this.yHeadRot = this.getYRot();
+         NbtOps nbtOps = NbtOps.INSTANCE;
+         this.brain = this.makeBrain(new Dynamic<>(nbtOps, nbtOps.createMap(ImmutableMap.of(nbtOps.createString("memories"), nbtOps.emptyMap()))));
++        if (this instanceof ServerPlayer) broadcastsAttributes = false; // Slice
+     }
+ 
+     public Brain<?> getBrain() {
+@@ -957,6 +960,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
              this.effectsDirty = false;
          }
  
@@ -256,7 +269,7 @@ index 731975398869ba59bc3fb67006d26b8b13311d00..f6c8bad6bc7130cfd316518cea2adc0b
          List<ParticleOptions> list = this.entityData.get(DATA_EFFECT_PARTICLES);
          if (!list.isEmpty()) {
              boolean flag = this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
-@@ -979,6 +983,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -979,6 +984,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
      }
  
      private void updateSynchronizedMobEffectParticles() {
@@ -270,7 +283,7 @@ index 731975398869ba59bc3fb67006d26b8b13311d00..f6c8bad6bc7130cfd316518cea2adc0b
          List<ParticleOptions> list = this.activeEffects
              .values()
              .stream()
-@@ -989,6 +1000,38 @@ public abstract class LivingEntity extends Entity implements Attackable {
+@@ -989,6 +1001,38 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.entityData.set(DATA_EFFECT_AMBIENCE_ID, areAllEffectsAmbient(this.activeEffects.values()));
      }
  
