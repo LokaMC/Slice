@@ -56,9 +56,9 @@
 +
 +    // Slice
 +    implementation("org.mongodb:bson:4.11.1") // Slice - MongoDB Bson Library for ObjectIds
-+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
-+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
-+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
++    implementation("com.fasterxml.jackson.core:jackson-core:2.15.3")
++    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.3")
++    implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.3")
 +    // Slice end
  }
  
