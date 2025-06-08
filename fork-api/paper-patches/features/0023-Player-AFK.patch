@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 8 Jun 2025 11:18:17 -0500
+Subject: [PATCH] Player AFK
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 320beb43c202636edabb4b9029391c9e7370dcc0..8c324b0b58dae025b6773be08ed7a5adf838fc42 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -3915,4 +3915,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @return the result of this method, holding leftovers and spawned items.
+      */
+     PlayerGiveResult give(Collection<ItemStack> items, boolean dropIfFull);
++
++    /**
++     * @return Whether this player is AFK.
++     */
++    // Slice start
++    boolean isAfk();
++
++    /**
++     * @param afk whether the player is AFK.
++     */
++    void setAfk(boolean afk);
++    // Slice end
+ }
