@@ -6,7 +6,7 @@
      testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 +
 +    // Slice
-+    implementation("org.mongodb:bson:4.11.1") // Slice - MongoDB Bson Library for ObjectIds
++    implementation("org.mongodb:bson:5.5.1") // Slice - MongoDB Bson Library for ObjectIds
  }
  
 -val generatedApiPath: java.nio.file.Path = layout.projectDirectory.dir("src/generated/java").asFile.toPath()
