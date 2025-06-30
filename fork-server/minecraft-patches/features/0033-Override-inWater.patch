@@ -5,7 +5,7 @@ Subject: [PATCH] Override inWater
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 5cd269767b5837c7f246ce894d3dabfddfad5491..5249fdbeb56a8629385aa886ea0325d5035f69b9 100644
+index 5cd269767b5837c7f246ce894d3dabfddfad5491..aa32a819caca0c9bd957d0621cc67c427f477ad9 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -356,6 +356,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
@@ -25,3 +25,12 @@ index 5cd269767b5837c7f246ce894d3dabfddfad5491..5249fdbeb56a8629385aa886ea0325d5
      }
  
      public boolean isInRain() {
+@@ -2025,7 +2026,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     public boolean isEyeInFluid(TagKey<Fluid> fluidTag) {
+-        return this.fluidOnEyes.contains(fluidTag);
++        return inWaterOverride || this.fluidOnEyes.contains(fluidTag);
+     }
+ 
+     public boolean isInLava() {
