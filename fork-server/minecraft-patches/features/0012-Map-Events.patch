@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 19 Jan 2025 09:17:43 -0600
+Subject: [PATCH] Map Events
+
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 0eaced10a33110d2d6500c0eab7c0949324a39eb..1923674dfdb6e07a6c956bfa6dc201435e289dfc 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -2142,6 +2142,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+ 
+     @Override
+     public MapId getFreeMapId() {
++        // Slice start
++        io.papermc.paper.event.server.MapGetFreeIndexEvent event = new io.papermc.paper.event.server.MapGetFreeIndexEvent();
++        event.callEvent();
++        int newIndex = event.getIndex();
++        if (newIndex != -1) {
++            return new MapId(newIndex);
++        }
++        // Slice end
+         return this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.factory(), "idcounts").getFreeAuxValueForMap();
+     }
+ 
+diff --git a/net/minecraft/world/level/storage/DimensionDataStorage.java b/net/minecraft/world/level/storage/DimensionDataStorage.java
+index ee8dd56b463aeaf7547deb7c22390443ab12b7c2..ba1d036d2d8521210c1eef9240265ef750ce3698 100644
+--- a/net/minecraft/world/level/storage/DimensionDataStorage.java
++++ b/net/minecraft/world/level/storage/DimensionDataStorage.java
+@@ -75,6 +75,23 @@ public class DimensionDataStorage implements AutoCloseable {
+     @Nullable
+     private <T extends SavedData> T readSavedData(BiFunction<CompoundTag, HolderLookup.Provider, T> reader, DataFixTypes dataFixType, String filename) {
+         try {
++            // Slice start
++            if (filename.startsWith("map_")) {
++                int mapId = Integer.parseInt(filename.split("map_")[1]);
++                io.papermc.paper.event.server.MapLoadEvent event = new io.papermc.paper.event.server.MapLoadEvent(mapId);
++                event.callEvent();
++                java.io.ByteArrayInputStream buf = event.getBuf();
++                if (buf != null) {
++                    try {
++                        CompoundTag tag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
++                        return reader.apply(tag.getCompound("data"), this.registries);
++                    } catch (IOException e) {
++                        LOGGER.error("Error loading saved data: {}", filename, e);
++                    }
++                }
++            }
++            // Slice end
++
+             Path dataFile = this.getDataFile(filename);
+             if (Files.exists(dataFile)) {
+                 CompoundTag tagFromDisk = this.readTagFromDisk(filename, dataFixType, SharedConstants.getCurrentVersion().getDataVersion().getVersion());

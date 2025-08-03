@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 19 Jan 2025 08:51:53 -0600
+Subject: [PATCH] Add PlayerData Events
+
+
+diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
+index 6c5205fe1dc6387a77b1edbdcab748d39e775d7f..743a10eb787031ce84c5c4b431b1e1d06db04259 100644
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -159,7 +159,12 @@ public class ServerStatsCounter extends StatsCounter {
+         return compoundTag;
+     }
+ 
+-    protected String toJson() {
++    // Slice start - OBFHELPER
++    public String toJson() {
++        return serialize().toString();
++    }
++
++    public JsonObject serialize() { // Slice end
+         Map<StatType<?>, JsonObject> map = Maps.newHashMap();
+ 
+         for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Stat<?>> entry : this.stats.object2IntEntrySet()) {
+@@ -176,7 +181,7 @@ public class ServerStatsCounter extends StatsCounter {
+         JsonObject jsonObject1 = new JsonObject();
+         jsonObject1.add("stats", jsonObject);
+         jsonObject1.addProperty("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+-        return jsonObject1.toString();
++        return jsonObject1; // Slice
+     }
+ 
+     private static <T> ResourceLocation getKey(Stat<T> stat) {
+diff --git a/net/minecraft/world/level/storage/PlayerDataStorage.java b/net/minecraft/world/level/storage/PlayerDataStorage.java
+index c44110b123ba5912af18faf0065e9ded780da9b7..bd75847de1e325ba1f5d736c6b1bc7ec145b04ac 100644
+--- a/net/minecraft/world/level/storage/PlayerDataStorage.java
++++ b/net/minecraft/world/level/storage/PlayerDataStorage.java
+@@ -34,6 +34,7 @@ public class PlayerDataStorage {
+ 
+     public void save(Player player) {
+         if (org.spigotmc.SpigotConfig.disablePlayerDataSaving) return; // Spigot
++        if (!new com.destroystokyo.paper.event.player.PlayerSaveDataEvent((org.bukkit.entity.Player) player.getBukkitEntity()).callEvent()) return; // Slice
+         try {
+             CompoundTag compoundTag = player.saveWithoutId(new CompoundTag());
+             Path path = this.playerDir.toPath();
+@@ -90,6 +91,21 @@ public class PlayerDataStorage {
+     }
+ 
+     public Optional<CompoundTag> load(Player player) {
++        // Slice start - If event supplies playerdata, use it. Otherwise just load from disk as usual
++        com.destroystokyo.paper.event.player.PlayerLoadDataEvent event = new com.destroystokyo.paper.event.player.PlayerLoadDataEvent(player.getUUID());
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++
++        Object playerData = event.getPlayerData();
++        if (playerData instanceof CompoundTag data) {
++            data = ca.spottedleaf.dataconverter.minecraft.MCDataConverter.convertTag(ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry.PLAYER,
++                    data,
++                    NbtUtils.getDataVersion(data, -1),
++                    net.minecraft.SharedConstants.getCurrentVersion().getDataVersion().getVersion()); // Paper - rewrite data conversion system
++            player.load(data);
++            return Optional.of(data);
++        }
++        // Slice end
++
+         // CraftBukkit start
+         return this.load(player.getName().getString(), player.getStringUUID()).map((tag) -> {
+             if (player instanceof ServerPlayer serverPlayer) {

@@ -1,0 +1,107 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 27 Apr 2025 08:18:32 -0500
+Subject: [PATCH] Set multiple team settings at once
+
+
+diff --git a/net/minecraft/world/scores/PlayerTeam.java b/net/minecraft/world/scores/PlayerTeam.java
+index 681f2293352ae1586c32554f7ce9e6a12935b147..81286310a0cde431403dd701539ea9fb6f964de5 100644
+--- a/net/minecraft/world/scores/PlayerTeam.java
++++ b/net/minecraft/world/scores/PlayerTeam.java
+@@ -28,6 +28,7 @@ public class PlayerTeam extends Team {
+     private ChatFormatting color = ChatFormatting.RESET;
+     private Team.CollisionRule collisionRule = Team.CollisionRule.ALWAYS;
+     private final Style displayNameStyle;
++    private boolean updateTeamChangeInstantly = true; // Slice
+ 
+     public PlayerTeam(Scoreboard scoreboard, String name) {
+         this.scoreboard = scoreboard;
+@@ -36,6 +37,12 @@ public class PlayerTeam extends Team {
+         this.displayNameStyle = Style.EMPTY.withInsertion(name).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(name)));
+     }
+ 
++    // Slice start
++    public void setUpdateTeamChangeInstantly(boolean updateTeamChangeInstantly) {
++        this.updateTeamChangeInstantly = updateTeamChangeInstantly;
++    }
++    // Slice end
++
+     public Scoreboard getScoreboard() {
+         return this.scoreboard;
+     }
+@@ -64,13 +71,13 @@ public class PlayerTeam extends Team {
+             throw new IllegalArgumentException("Name cannot be null");
+         } else {
+             this.displayName = name;
+-            this.scoreboard.onTeamChanged(this);
++            if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+         }
+     }
+ 
+     public void setPlayerPrefix(@Nullable Component playerPrefix) {
+         this.playerPrefix = playerPrefix == null ? CommonComponents.EMPTY : playerPrefix;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     public Component getPlayerPrefix() {
+@@ -79,7 +86,7 @@ public class PlayerTeam extends Team {
+ 
+     public void setPlayerSuffix(@Nullable Component playerSuffix) {
+         this.playerSuffix = playerSuffix == null ? CommonComponents.EMPTY : playerSuffix;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     public Component getPlayerSuffix() {
+@@ -113,7 +120,7 @@ public class PlayerTeam extends Team {
+ 
+     public void setAllowFriendlyFire(boolean friendlyFire) {
+         this.allowFriendlyFire = friendlyFire;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     @Override
+@@ -123,7 +130,7 @@ public class PlayerTeam extends Team {
+ 
+     public void setSeeFriendlyInvisibles(boolean friendlyInvisibles) {
+         this.seeFriendlyInvisibles = friendlyInvisibles;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     @Override
+@@ -138,12 +145,12 @@ public class PlayerTeam extends Team {
+ 
+     public void setNameTagVisibility(Team.Visibility visibility) {
+         this.nameTagVisibility = visibility;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     public void setDeathMessageVisibility(Team.Visibility visibility) {
+         this.deathMessageVisibility = visibility;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     @Override
+@@ -153,7 +160,7 @@ public class PlayerTeam extends Team {
+ 
+     public void setCollisionRule(Team.CollisionRule rule) {
+         this.collisionRule = rule;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     public int packOptions() {
+@@ -176,7 +183,7 @@ public class PlayerTeam extends Team {
+ 
+     public void setColor(ChatFormatting color) {
+         this.color = color;
+-        this.scoreboard.onTeamChanged(this);
++        if (updateTeamChangeInstantly) this.scoreboard.onTeamChanged(this); // Slice
+     }
+ 
+     @Override

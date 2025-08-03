@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Mon, 27 Jan 2025 08:35:24 -0600
+Subject: [PATCH] Don't send fire packets if player has FR
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 132111c83122de297d7790b5a2027cc0c5118a45..5418fbf2f8f941bbae11505147207892cd3f633c 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -896,7 +896,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+ 
+         this.checkBelowWorld();
+         if (!this.level().isClientSide) {
+-            this.setSharedFlagOnFire(this.remainingFireTicks > 0);
++            if (this instanceof net.minecraft.world.entity.LivingEntity livingEntity) {
++                this.setSharedFlagOnFire(this.remainingFireTicks > 0 && !livingEntity.hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE));
++            } else {
++                this.setSharedFlagOnFire(this.remainingFireTicks > 0);
++            }
+         }
+ 
+         this.firstTick = false;

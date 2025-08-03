@@ -1,0 +1,145 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 09:47:45 -0500
+Subject: [PATCH] Add BlockDestroyedByNeighborEvent
+
+
+diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
+index cfbf34964288526e93d0a5b212c1b60296c10430..ca9f7807fcf6bd0cff7885825c105692ae2a17ee 100644
+--- a/net/minecraft/server/level/ServerPlayerGameMode.java
++++ b/net/minecraft/server/level/ServerPlayerGameMode.java
+@@ -369,6 +369,7 @@ public class ServerPlayerGameMode {
+                 this.level.captureDrops = new java.util.ArrayList<>();
+                 // CraftBukkit end
+                 BlockState blockState1 = block.playerWillDestroy(this.level, pos, blockState, this.player);
++                level.pendingPlayerBlockEvents.put(pos, new Level.PendingBlockEvent(pos, this.player)); // Paper
+                 boolean flag = this.level.removeBlock(pos, false);
+                 if (flag) {
+                     block.destroy(this.level, pos, blockState1);
+@@ -394,6 +395,7 @@ public class ServerPlayerGameMode {
+                 // CraftBukkit start
+                 java.util.List<net.minecraft.world.entity.item.ItemEntity> itemsToDrop = this.level.captureDrops; // Paper - capture all item additions to the world
+                 this.level.captureDrops = null; // Paper - capture all item additions to the world; Remove this earlier so that we can actually drop stuff
++                level.pendingPlayerBlockEvents.remove(pos); // Paper
+                 if (event.isDropItems()) {
+                     org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, state, this.player, itemsToDrop); // Paper - capture all item additions to the world
+                 }
+diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
+index da16f4831c875e07c25d7ed041bed493db614658..32d4a19b36c6e03f4b99af2af32c525b6d8c44be 100644
+--- a/net/minecraft/world/item/ItemStack.java
++++ b/net/minecraft/world/item/ItemStack.java
+@@ -377,6 +377,7 @@ public final class ItemStack implements DataComponentHolder {
+             DataComponentPatch previousPatch = this.components.asPatch();
+             int oldCount = this.getCount();
+             ServerLevel serverLevel = (ServerLevel) context.getLevel();
++            if (player != null) serverLevel.pendingPlayerBlockEvents.put(clickedPos, new Level.PendingBlockEvent(clickedPos, player)); // Paper
+ 
+             if (!(item instanceof BucketItem/* || item instanceof SolidBucketItem*/)) { // if not bucket // Paper - Fix cancelled powdered snow bucket placement
+                 serverLevel.captureBlockStates = true;
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index be16627136f7b3979e62308f58b96a2b16ee9f62..9caeafaab4252db536142fa9fc812c243be1af7a 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -165,6 +165,28 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
+     public final Map<ServerExplosion.CacheKey, Float> explosionDensityCache = new java.util.HashMap<>(); // Paper - Optimize explosions
+     public java.util.ArrayDeque<net.minecraft.world.level.block.RedstoneTorchBlock.Toggle> redstoneUpdateInfos; // Paper - Faster redstone torch rapid clock removal; Move from Map in BlockRedstoneTorch to here
+ 
++    // Paper start - Holder class used to track what Player is responsible the last block event
++    public static class PendingBlockEvent {
++
++        public final BlockPos block;
++        public final Player player;
++        public @Nullable BlockPos sourceBlock;
++
++        public PendingBlockEvent(BlockPos block, Player player) {
++            this(block, player, null);
++        }
++
++        public PendingBlockEvent(BlockPos block, Player player, @Nullable BlockPos sourceBlock) {
++            this.block = block;
++            this.player = player;
++            this.sourceBlock = sourceBlock;
++        }
++
++    }
++    public final Map<BlockPos, PendingBlockEvent> pendingPlayerBlockEvents = new HashMap<>();
++    // Paper end
++
++
+     public CraftWorld getWorld() {
+         return this.world;
+     }
+@@ -1236,6 +1258,17 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
+         if (blockState.isAir()) {
+             return false;
+         } else {
++            // Paper start
++            PendingBlockEvent blockEvent = pendingPlayerBlockEvents.get(pos);
++            if (blockEvent != null && blockEvent.sourceBlock != null) {
++                io.papermc.paper.event.block.BlockDestroyedByNeighborEvent event =
++                        new io.papermc.paper.event.block.BlockDestroyedByNeighborEvent(org.bukkit.craftbukkit.block.CraftBlock.at(this, pos),
++                                (org.bukkit.entity.Player) blockEvent.player.getBukkitEntity(),
++                                org.bukkit.craftbukkit.block.CraftBlock.at(this, blockEvent.sourceBlock));
++                event.callEvent();
++            }
++            // Paper end
++
+             FluidState fluidState = this.getFluidState(pos);
+             // Paper start - BlockDestroyEvent; while the above removeBlock method looks very similar
+             // they are NOT used with same intent and the above should not fire this event. The above method is more of a BlockSetToAirEvent,
+@@ -1649,6 +1682,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
+                 this.capturedTileEntities.put(blockPos.immutable(), blockEntity);
+                 return;
+             }
++            pendingPlayerBlockEvents.remove(blockposition); // Paper
+             // CraftBukkit end
+             this.getChunkAt(blockPos).addAndRegisterBlockEntity(blockEntity);
+         }
+diff --git a/net/minecraft/world/level/block/DoublePlantBlock.java b/net/minecraft/world/level/block/DoublePlantBlock.java
+index c60f2f1fe80d6c7ffd25c90da4e757065a3bd138..28b32da0677736440d19964d15dfb4a198bfc7fc 100644
+--- a/net/minecraft/world/level/block/DoublePlantBlock.java
++++ b/net/minecraft/world/level/block/DoublePlantBlock.java
+@@ -124,6 +124,16 @@ public class DoublePlantBlock extends VegetationBlock {
+         if (doubleBlockHalf == DoubleBlockHalf.UPPER) {
+             BlockPos blockPos = pos.below();
+             BlockState blockState = level.getBlockState(blockPos);
++
++            Level.PendingBlockEvent blockEvent = level.pendingPlayerBlockEvents.remove(pos);
++            if (blockEvent != null) {
++                io.papermc.paper.event.block.BlockDestroyedByNeighborEvent event =
++                        new io.papermc.paper.event.block.BlockDestroyedByNeighborEvent(org.bukkit.craftbukkit.block.CraftBlock.at(level, blockPos),
++                                (org.bukkit.entity.Player) blockEvent.player.getBukkitEntity(),
++                                org.bukkit.craftbukkit.block.CraftBlock.at(level, pos));
++                if (!event.callEvent()) return;
++            }
++
+             if (blockState.is(state.getBlock()) && blockState.getValue(HALF) == DoubleBlockHalf.LOWER) {
+                 BlockState blockState1 = blockState.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
+                 level.setBlock(blockPos, blockState1, 35);
+diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
+index 834e27ef2f7b342b074ff9e1e390e02f3ca1c399..318f30cf0156ed69a609f135cb80cae79e71c867 100644
+--- a/net/minecraft/world/level/block/state/BlockBehaviour.java
++++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
+@@ -842,9 +842,22 @@ public abstract class BlockBehaviour implements FeatureElement {
+ 
+         public final void updateNeighbourShapes(LevelAccessor level, BlockPos pos, int flags, int recursionLeft) {
+             BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
++            BlockState blockState = level.getBlockState(pos); // Slice
+ 
+             for (Direction direction : BlockBehaviour.UPDATE_SHAPE_ORDER) {
+                 mutableBlockPos.setWithOffset(pos, direction);
++
++                // Paper start - Propagate the PendingBlockEvent from the current blockPos to the next block
++                // if it will break (!canSurvive)
++                if (blockState.getBukkitMaterial() == org.bukkit.Material.AIR && !level.getBlockState(mutableBlockPos).canSurvive(level, mutableBlockPos)) {
++                    Level.PendingBlockEvent blockEvent = ((Level) level).pendingPlayerBlockEvents.get(pos);
++                    if (blockEvent != null) {
++                        BlockPos blockPosCopy = mutableBlockPos.immutable();
++                        ((Level) level).pendingPlayerBlockEvents.put(blockPosCopy, new Level.PendingBlockEvent(blockPosCopy, blockEvent.player, pos));
++                    }
++                }
++                // Paper end
++
+                 level.neighborShapeChanged(direction.getOpposite(), mutableBlockPos, pos, this.asState(), flags, recursionLeft);
+             }
+         }

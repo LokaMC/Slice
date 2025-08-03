@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 11 May 2025 08:03:48 -0500
+Subject: [PATCH] Expose Entity.despawnTime
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index b2d1b074527cbefe03fcb43eddb8a22486e43074..b5c0adf252f738651657479f9aee54e3a217f177 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -1313,4 +1313,16 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     void setTrackingRange(int range);
+     // Slice end
++
++    /**
++     * @return Returns the amount of time in ticks that the entity will live before being discarded.
++     */
++    // Slice start
++    int getDespawnTime();
++
++    /**
++     * @param ticks Set the amount of time in ticks that the entity will live before being discarded.
++     */
++    void setDespawnTime(int ticks);
++    // Slice end
+ }
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index a7b4a1f0efef712472a45664bbf83f85ca343810..43bbfe7528167621b98b5b8c96d0e0de706697c2 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -3945,4 +3945,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      */
+     @ApiStatus.Experimental
+     PlayerGameConnection getConnection();
++
++    /**
++     * @return Whether this player is AFK.
++     */
++    // Slice start
++    boolean isAfk();
++
++    /**
++     * @param afk whether the player is AFK.
++     */
++    void setAfk(boolean afk);
++    // Slice end
+ }

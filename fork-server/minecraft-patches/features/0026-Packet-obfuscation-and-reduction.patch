@@ -1,0 +1,375 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 3 Apr 2025 09:14:59 -0500
+Subject: [PATCH] Packet obfuscation and reduction
+
+
+diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
+index 1cb8fb87265dcd648f3cee0d177b3ca7573666dd..fb3f6d40fea375804549e1f6fb9e78bd6c667ccc 100644
+--- a/net/minecraft/network/syncher/SynchedEntityData.java
++++ b/net/minecraft/network/syncher/SynchedEntityData.java
+@@ -95,59 +95,66 @@ public class SynchedEntityData {
+     }
+ 
+     @Nullable
+-    public List<SynchedEntityData.DataValue<?>> packDirty() {
++    public org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> packDirty() {
+         if (!this.isDirty) {
+             return null;
+         } else {
+             this.isDirty = false;
+-            List<SynchedEntityData.DataValue<?>> list = new ArrayList<>();
++            List<SynchedEntityData.DataValue<?>> list = new ArrayList<>(this.itemsById.length); // Slice
++            List<SynchedEntityData.DataValue<?>> foreignList = null;
+ 
+             for (SynchedEntityData.DataItem<?> dataItem : this.itemsById) {
+-                if (dataItem.isDirty()) {
+-                    dataItem.setDirty(false);
+-                    list.add(dataItem.value());
++                boolean dirty = dataItem.isDirty();
++                boolean foreignDirty = dataItem.isForeignDirty();
++                if (dirty || foreignDirty) {
++                    if (dirty) {
++                        DataValue<?> value = dataItem.value();
++                        dataItem.setDirty(false);
++                        list.add(value);
++                    }
++
++                    if (foreignDirty || dataItem.foreignValue == null) {
++                        if (foreignList == null) {
++                            foreignList = new ArrayList<>(this.itemsById.length);
++                        }
++
++                        if (foreignDirty) {
++                            dataItem.setForeignDirty(false);
++                            foreignList.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
++                        } else {
++                            foreignList.add(dataItem.value());
++                        }
++                    }
+                 }
+             }
+ 
+-            return list;
++            return org.apache.commons.lang3.tuple.Pair.of(list, foreignList);
+         }
+     }
+ 
+-    // Slice start
+     @Nullable
+-    public List<SynchedEntityData.DataValue<?>> packForeignDirty() {
+-        List<SynchedEntityData.DataValue<?>> list = null;
+-
+-        for (DataItem<?> dataItem : this.itemsById) {
+-            if (dataItem.isDirty(true)) {
+-                dataItem.setForeignDirty(false);
+-                if (list == null) {
+-                    list = new ArrayList();
+-                }
+-
+-                list.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
+-            }
+-        }
+-
+-        return list;
+-    }
+-    // Slice end
+-
+-    @Nullable
+-    public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
++    public org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> getNonDefaultValues() {
+         List<SynchedEntityData.DataValue<?>> list = null;
++        List<SynchedEntityData.DataValue<?>> foreignList = null;
+ 
+         for (SynchedEntityData.DataItem<?> dataItem : this.itemsById) {
+             if (!dataItem.isSetToDefault()) {
+                 if (list == null) {
+-                    list = new ArrayList<>();
++                    list = new ArrayList<>(this.itemsById.length);
+                 }
+ 
+                 list.add(dataItem.value());
++                if (dataItem.foreignValue == null || !dataItem.foreignValue.equals(dataItem.initialValue)) {
++                    if (foreignList == null) {
++                        foreignList = new ArrayList<>(this.itemsById.length);
++                    }
++
++                    foreignList.add(dataItem.foreignValue != null ? dataItem.foreignValue() : dataItem.value());
++                }
+             }
+         }
+ 
+-        return list;
++        return org.apache.commons.lang3.tuple.Pair.of(list, foreignList);
+     }
+ 
+     public void assignValues(List<SynchedEntityData.DataValue<?>> entries) {
+@@ -284,14 +291,10 @@ public class SynchedEntityData {
+             return foreignValue;
+         }
+ 
+-        public boolean isDirty(boolean foreign) {
+-            if (foreign) {
+-                //There must be a foreign value in order for this to be dirty, otherwise we consider this a normal
+-                //value and check the normal dirty flag.
+-                return foreignValue == null || this.foreignDirty;
+-            }
+-
+-            return this.dirty;
++        public boolean isForeignDirty() {
++            //There must be a foreign value in order for this to be dirty, otherwise we consider this a normal
++            //value and check the normal dirty flag.
++            return foreignValue == null || this.foreignDirty;
+         }
+ 
+         public void setForeignDirty(boolean dirty) {
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 8ddb629ee9f4bcaa796302acf07794d11d58839f..1d65972145f0c8ce0de38726c94bd62959a3b18d 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -70,6 +70,7 @@ public class ServerEntity {
+     private boolean wasOnGround;
+     @Nullable
+     private List<SynchedEntityData.DataValue<?>> trackedDataValues;
++    private List<SynchedEntityData.DataValue<?>> trackedForeignDataValues;
+ 
+     // CraftBukkit start
+     private final Set<net.minecraft.server.network.ServerPlayerConnection> trackedPlayers;
+@@ -87,7 +88,9 @@ public class ServerEntity {
+         this.lastSentXRot = Mth.packDegrees(entity.getXRot());
+         this.lastSentYHeadRot = Mth.packDegrees(entity.getYHeadRot());
+         this.wasOnGround = entity.onGround();
+-        this.trackedDataValues = entity.getEntityData().getNonDefaultValues();
++        org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> nonDefaultValues = entity.getEntityData().getNonDefaultValues();
++        this.trackedDataValues = nonDefaultValues.getLeft();
++        this.trackedForeignDataValues = nonDefaultValues.getRight();
+     }
+ 
+     // Paper start - fix desync when a player is added to the tracker
+@@ -324,21 +327,24 @@ public class ServerEntity {
+ 
+         Packet<ClientGamePacketListener> addEntityPacket = this.entity.getAddEntityPacket(this);
+         consumer.accept(addEntityPacket);
+-        if (this.trackedDataValues != null) {
+-            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedDataValues));
++        List<SynchedEntityData.DataValue<?>> dataValues = this.entity instanceof ServerPlayer ? this.trackedForeignDataValues : this.trackedDataValues;
++        if (dataValues != null) {
++            consumer.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), dataValues));
+         }
+ 
+         boolean flag = this.trackDelta;
+-        if (this.entity instanceof LivingEntity) {
+-            Collection<AttributeInstance> syncableAttributes = ((LivingEntity)this.entity).getAttributes().getSyncableAttributes();
++        if (this.entity instanceof LivingEntity livingEntity) { // Slice start - only do this if this entity broadcasts attributes to others
++            if (livingEntity.broadcastsAttributes) {
++                Collection<AttributeInstance> syncableAttributes = ((LivingEntity)this.entity).getAttributes().getSyncableAttributes();
+ 
+-            // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
+-            if (this.entity.getId() == player.getId()) {
+-                ((ServerPlayer) this.entity).getBukkitEntity().injectScaledMaxHealth(syncableAttributes, false);
+-            }
+-            // CraftBukkit end
+-            if (!syncableAttributes.isEmpty()) {
+-                consumer.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), syncableAttributes));
++                // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
++                if (this.entity.getId() == player.getId()) {
++                    ((ServerPlayer) this.entity).getBukkitEntity().injectScaledMaxHealth(syncableAttributes, false);
++                }
++                // CraftBukkit end
++                if (!syncableAttributes.isEmpty()) {
++                    consumer.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), syncableAttributes));
++                } // Slice end
+             }
+ 
+             if (((LivingEntity)this.entity).isFallFlying()) {
+@@ -389,34 +395,45 @@ public class ServerEntity {
+ 
+     private void sendDirtyEntityData() {
+         SynchedEntityData entityData = this.entity.getEntityData();
+-        List<SynchedEntityData.DataValue<?>> list = entityData.packDirty();
++        org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> list = entityData.packDirty();
+         if (list != null) {
+-            this.trackedDataValues = entityData.getNonDefaultValues();
++            org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> nonDefaultValues = entityData.getNonDefaultValues();
++            this.trackedDataValues = nonDefaultValues.getLeft();
++            this.trackedForeignDataValues = nonDefaultValues.getRight();
+             //this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), list));
++
+             // Slice start
+-            ClientboundSetEntityDataPacket dataPacket = new ClientboundSetEntityDataPacket(this.entity.getId(), list);
++            //We always send any dirty values to ourself.
++            List<SynchedEntityData.DataValue<?>> dirtyValues = list.getLeft();
+             if (this.entity instanceof ServerPlayer serverPlayer) {
+-                serverPlayer.connection.send(dataPacket);
++                serverPlayer.connection.send(new ClientboundSetEntityDataPacket(this.entity.getId(), dirtyValues));
+             }
+ 
+-            //Get the packedData that the original packet has, and then determine if any of those are changed in
+-            //the foreign version. If null, nothing to notify foreign trackers about.
+-            List<SynchedEntityData.DataValue<?>> dirtyItems = entityData.packForeignDirty();
+-            if (dirtyItems != null) {
+-                this.broadcast.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), dirtyItems));
++            //But only send dirty foreign values to other clients.
++            List<SynchedEntityData.DataValue<?>> foreignDirtyValues = list.getRight();
++            if (foreignDirtyValues != null) {
++                this.broadcast.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), foreignDirtyValues));
+             }
+             // Slice end
+         }
+ 
+-        if (this.entity instanceof LivingEntity) {
++        if (this.entity instanceof LivingEntity livingEntity) {
+             Set<AttributeInstance> attributesToSync = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
+             if (!attributesToSync.isEmpty()) {
++                boolean broadcastAttributes = livingEntity.broadcastsAttributes;
+                 // CraftBukkit start - Send scaled max health
+                 if (this.entity instanceof ServerPlayer serverPlayer) {
+                     serverPlayer.getBukkitEntity().injectScaledMaxHealth(attributesToSync, false);
++
++                    //If not broadcasting, we still need to send it to ourself.
++                    if (!broadcastAttributes) {
++                        serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                    }
+                 }
+                 // CraftBukkit end
+-                this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                if (broadcastAttributes) {
++                    this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                }
+             }
+ 
+             attributesToSync.clear();
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 731975398869ba59bc3fb67006d26b8b13311d00..0545e29d52d0ee470614deb470cc41628b72293c 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -305,6 +305,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     // Slice start
+     private static final java.util.Map<String, com.google.common.cache.Cache<Integer, ItemStack>> equipmentPacketCache = new java.util.HashMap<>();
+     protected final java.util.Map<String, net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket> cachedEquipmentPacket = new java.util.HashMap<>();
++    public boolean broadcastsPotionEffects = true;
++    public boolean broadcastsAttributes = true;
+     // Slice end
+ 
+     @Override
+@@ -327,6 +329,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+         this.yHeadRot = this.getYRot();
+         NbtOps nbtOps = NbtOps.INSTANCE;
+         this.brain = this.makeBrain(new Dynamic<>(nbtOps, nbtOps.createMap(ImmutableMap.of(nbtOps.createString("memories"), nbtOps.emptyMap()))));
++        if (this instanceof ServerPlayer) broadcastsAttributes = false; // Slice
+     }
+ 
+     public Brain<?> getBrain() {
+@@ -957,6 +960,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
+             this.effectsDirty = false;
+         }
+ 
++        if (!broadcastsPotionEffects) return; // Slice - Simply don't emit ambient particle fx if this is off
++
+         List<ParticleOptions> list = this.entityData.get(DATA_EFFECT_PARTICLES);
+         if (!list.isEmpty()) {
+             boolean flag = this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
+@@ -979,6 +984,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
+     }
+ 
+     private void updateSynchronizedMobEffectParticles() {
++        // Slice start
++        if (!broadcastsPotionEffects) {
++            updateSynchronizedMobEffectParticlesNoBroadcast();
++            return;
++        }
++        // Slice end
++
+         List<ParticleOptions> list = this.activeEffects
+             .values()
+             .stream()
+@@ -989,6 +1001,38 @@ public abstract class LivingEntity extends Entity implements Attackable {
+         this.entityData.set(DATA_EFFECT_AMBIENCE_ID, areAllEffectsAmbient(this.activeEffects.values()));
+     }
+ 
++    // Slice Start - When an entity broadcasts no particles, we want to still broadcast Invis ambient particles
++    // so players can still see those and track invis players at least.
++    private void updateSynchronizedMobEffectParticlesNoBroadcast() {
++        boolean allEffectsAmbient = true;
++        List<ParticleOptions> particleOptionsLocal = new ArrayList<>(this.activeEffects.size());
++        List<ParticleOptions> particleOptionsForeign = null;
++        for (Entry<Holder<MobEffect>, MobEffectInstance> entry : this.activeEffects.entrySet()) {
++            MobEffectInstance effect = entry.getValue();
++            boolean visible = effect.isVisible();
++            if (visible && !effect.isAmbient() && allEffectsAmbient) {
++                allEffectsAmbient = false;
++            }
++
++            if (visible) {
++                ParticleOptions options = effect.getParticleOptions();
++                particleOptionsLocal.add(options);
++
++                if (entry.getKey().equals(org.bukkit.craftbukkit.potion.CraftPotionEffectType.bukkitToMinecraftHolder(org.bukkit.potion.PotionEffectType.INVISIBILITY))) {
++                    if (particleOptionsForeign == null) {
++                        particleOptionsForeign = new ArrayList<>(this.activeEffects.size());
++                    }
++
++                    particleOptionsForeign.add(options);
++                }
++            }
++        }
++
++        this.entityData.set(DATA_EFFECT_PARTICLES, particleOptionsLocal, particleOptionsForeign != null ? particleOptionsForeign : java.util.Collections.emptyList());
++        this.entityData.set(DATA_EFFECT_AMBIENCE_ID, allEffectsAmbient, false, false);
++    }
++    // Slice end
++
+     private void updateGlowingStatus() {
+         boolean isCurrentlyGlowing = this.isCurrentlyGlowing();
+         if (this.getSharedFlag(6) != isCurrentlyGlowing) {
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 1ed07fd23985a6bf8cf8300f74c92b7531a79fc6..bc9834c87814377543fa65732e3404db95f63772 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -1603,6 +1603,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+         boolean flag = source.hurtServer(level, damageSource, f);
+         if (flag) {
+             float knockback = this.getKnockback(source, damageSource);
++            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), knockback).callEvent()) {
++                knockback = 0;
++            }
++
+             if (knockback > 0.0F && source instanceof LivingEntity livingEntity) {
+                 livingEntity.knockback(
+                     knockback * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)), this, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.ENTITY_ATTACK // CraftBukkit // Paper - knockback events
+diff --git a/net/minecraft/world/entity/ai/attributes/AttributeMap.java b/net/minecraft/world/entity/ai/attributes/AttributeMap.java
+index 4c808c7ef336de74048f40bd1cc8b14131a9325d..3cdd37e8f60b03d1ec5443f678558bc5a3216577 100644
+--- a/net/minecraft/world/entity/ai/attributes/AttributeMap.java
++++ b/net/minecraft/world/entity/ai/attributes/AttributeMap.java
+@@ -44,7 +44,15 @@ public class AttributeMap {
+     }
+ 
+     public Collection<AttributeInstance> getSyncableAttributes() {
+-        return this.attributes.values().stream().filter(instance -> instance.getAttribute().value().isClientSyncable()).collect(Collectors.toList());
++        // Slice start - Undo stream here, this is fairly hot.
++        java.util.List<AttributeInstance> list = new java.util.ArrayList<>(this.attributes.size());
++        for (AttributeInstance instance : this.attributes.values()) {
++            if (instance.getAttribute().value().isClientSyncable()) {
++                list.add(instance);
++            }
++        }
++        return list;
++        // Slice end
+     }
+ 
+     @Nullable
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index ee546b950dca502670fb9b01e659b143272945fe..f1dfeb461cf2d206371cd1e774edfbf43819cae7 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1293,6 +1293,10 @@ public abstract class Player extends LivingEntity {
+                         boolean flag4 = target.hurtOrSimulate(damageSource, f2);
+                         if (flag4) {
+                             float f4 = this.getKnockback(target, damageSource) + (flag1 ? 1.0F : 0.0F);
++                            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), f4).callEvent()) {
++                                f4 = 0;
++                            }
++
+                             if (f4 > 0.0F) {
+                                 if (target instanceof LivingEntity livingEntity1) {
+                                     livingEntity1.knockback(

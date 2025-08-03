@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 12 Jan 2025 09:04:30 -0600
+Subject: [PATCH] Smooth Teleports
+
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index f347ff8d863f4bcef46604c757de112cb3fe445c..de7ea68fb4b588de0d1bec08e87e502945676046 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -393,6 +393,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     public com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper - PlayerNaturallySpawnCreaturesEvent
+     public @Nullable String clientBrandName = null; // Paper - Brand support
+     public org.bukkit.event.player.PlayerQuitEvent.QuitReason quitReason = null; // Paper - Add API for quit reason; there are a lot of changes to do if we change all methods leading to the event
++    public boolean smoothWorldTeleport = false; // Slice
+ 
+     // Paper start - rewrite chunk system
+     private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 03feaf0adb8ee87e33744a4615dc2507a02f92d7..36979c4f4ffd88a81dd05806a582dc40efa6f1a6 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -777,7 +777,7 @@ public abstract class PlayerList {
+         byte b = (byte)(keepInventory ? 1 : 0);
+         ServerLevel serverLevel = serverPlayer.serverLevel();
+         LevelData levelData = serverLevel.getLevelData();
+-        serverPlayer.connection.send(new ClientboundRespawnPacket(serverPlayer.createCommonSpawnInfo(serverLevel), b));
++        if (!serverPlayer.smoothWorldTeleport) serverPlayer.connection.send(new ClientboundRespawnPacket(serverPlayer.createCommonSpawnInfo(serverLevel), b));
+         // serverPlayer.connection.teleport(serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), serverPlayer.getYRot(), serverPlayer.getXRot());
+         serverPlayer.connection.send(new ClientboundSetChunkCacheRadiusPacket(serverLevel.spigotConfig.viewDistance)); // Spigot
+         serverPlayer.connection.send(new ClientboundSetSimulationDistancePacket(serverLevel.spigotConfig.simulationDistance)); // Spigot
+@@ -1120,7 +1120,7 @@ public abstract class PlayerList {
+             // CraftBukkit end
+         }
+ 
+-        player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START, 0.0F));
++        if (!player.smoothWorldTeleport) player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START, 0.0F));
+         this.server.tickRateManager().updateJoiningPlayer(player);
+     }
+ 

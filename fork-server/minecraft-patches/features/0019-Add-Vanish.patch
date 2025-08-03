@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 21 Jan 2025 15:00:18 -0600
+Subject: [PATCH] Add Vanish
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index c64ceba819c8a27c4ec1de177a82757e11c06458..132111c83122de297d7790b5a2027cc0c5118a45 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -354,6 +354,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     public boolean isTemporarilyActive;
+     public long activatedImmunityTick = Integer.MIN_VALUE;
+     public boolean saveable = true; // Slice
++    public boolean vanished; // Slice
+ 
+     public void inactiveTick() {
+     }
+@@ -1310,7 +1311,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     private boolean vibrationAndSoundEffectsFromBlock(BlockPos pos, BlockState state, boolean playStepSound, boolean broadcastGameEvent, Vec3 entityPos) {
+-        if (state.isAir()) {
++        if (vanished || state.isAir()) { // Slice
+             return false;
+         } else {
+             boolean isStateClimbable = this.isStateClimbable(state);
