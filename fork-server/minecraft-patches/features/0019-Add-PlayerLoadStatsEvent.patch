@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:30:06 -0500
+Subject: [PATCH] Add PlayerLoadStatsEvent
+
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 8e0617d1f55d692de07094e019546bc64a32e407..fdd89d5684c155514c5859ef3d67bba945be4477 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -1314,7 +1314,7 @@ public abstract class PlayerList {
+                 }
+             }
+ 
+-            serverStatsCounter = new ServerStatsCounter(this.server, file1);
++            serverStatsCounter = new ServerStatsCounter(this.server, file1, uuid); // Slice
+             // this.stats.put(uuid, serverStatsCounter); // CraftBukkit
+         }
+ 
+diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
+index e0a9882aaefc950bbaacebf90793a24c039d55e9..666840bb5f0c355da4ca634bb1ca336263f635a9 100644
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -56,12 +56,23 @@ public class ServerStatsCounter extends StatsCounter {
+         return Codec.unboundedMap(codec1, Codec.INT);
+     }
+ 
+-    public ServerStatsCounter(MinecraftServer server, File file) {
++    public ServerStatsCounter(MinecraftServer server, File file, java.util.UUID uuid) { // Slice
+         this.server = server;
+         this.file = file;
+-        if (file.isFile()) {
++        // Slice start - If event supplies stats, use it. Otherwise just load from disk as usual
++        com.destroystokyo.paper.event.player.PlayerLoadStatsEvent event = new com.destroystokyo.paper.event.player.PlayerLoadStatsEvent(uuid);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        JsonObject providedJson = event.getStatistics();
++        if (providedJson != null) {
++            parseLocal(server.getFixerUpper(), providedJson);
++        } else if (file.isFile()) { // Slice end
+             try {
+-                this.parseLocal(server.getFixerUpper(), FileUtils.readFileToString(file));
++                JsonElement jsonElement = StrictJsonParser.parse(FileUtils.readFileToString(file));
++                if (jsonElement.isJsonNull()) {
++                    LOGGER.error("Unable to parse Stat data from {}", this.file);
++                    return;
++                }
++                this.parseLocal(server.getFixerUpper(), jsonElement);
+             } catch (IOException var4) {
+                 LOGGER.error("Couldn't read statistics file {}", file, var4);
+             } catch (JsonParseException var5) {
+@@ -104,14 +115,8 @@ public class ServerStatsCounter extends StatsCounter {
+         return set;
+     }
+ 
+-    public void parseLocal(DataFixer fixerUpper, String json) {
++    public void parseLocal(DataFixer fixerUpper, JsonElement jsonElement) {
+         try {
+-            JsonElement jsonElement = StrictJsonParser.parse(json);
+-            if (jsonElement.isJsonNull()) {
+-                LOGGER.error("Unable to parse Stat data from {}", this.file);
+-                return;
+-            }
+-
+             Dynamic<JsonElement> dynamic = new Dynamic<>(JsonOps.INSTANCE, jsonElement);
+             dynamic = DataFixTypes.STATS.updateToCurrentVersion(fixerUpper, dynamic, NbtUtils.getDataVersion(dynamic, 1343));
+             this.stats

@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:30:28 -0500
+Subject: [PATCH] Add reason to PlayerConnectionCloseEvent
+
+
+diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+index c032d5beb28a2181697cc43bd295d839464d34ed..a3130bcc337ee1894db9f99eb50b3bd9dcf68dad 100644
+--- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+@@ -192,6 +192,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+             // Paper end - Debugging
+             this.connection.send(new ClientboundDisconnectPacket(DISCONNECT_REASON_INVALID_DATA));
+             this.connection.disconnect(DISCONNECT_REASON_INVALID_DATA);
++            new com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent(this.gameProfile.getId(), this.gameProfile.getName(), ((java.net.InetSocketAddress)this.connection.address).getAddress(), com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent.ConnectionCloseReason.INVALID_PLAYER_DATA, false).callEvent(); // Slice
+         }
+     }
+ 

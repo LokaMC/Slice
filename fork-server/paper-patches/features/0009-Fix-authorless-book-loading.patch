@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:22:13 -0500
+Subject: [PATCH] Fix authorless book loading
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index c1aad9203af20102e560571435dfa75150b37c1b..2f58e7f6b84c250ee165784b127302bb7a0c3cff 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -512,6 +512,17 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         if (compound.getStringOr("id", "minecraft:air").equals("minecraft:air")) {
+             return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.EMPTY);
+         }
++
++        // Slice start
++        CompoundTag components = compound.getCompoundOrEmpty("components");
++        if (!components.isEmpty()) {
++            CompoundTag bookContent = components.getCompoundOrEmpty("minecraft:written_book_content");
++            if (!bookContent.isEmpty() && !bookContent.keySet().contains("author")) {
++                bookContent.putString("author", "");
++            }
++        }
++        // Slice end
++
+         return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.CODEC.parse(
+             CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), compound
+         ).getOrThrow());

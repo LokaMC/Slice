@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:10:55 -0500
+Subject: [PATCH] Non-saveable-entities
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index a141dbcd5812627e3659eaf346ee6879faf21956..1f3ae8874ed1bac04e007110fb5fff621cb8103f 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -381,6 +381,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     public long activatedTick = Integer.MIN_VALUE;
+     public boolean isTemporarilyActive;
+     public long activatedImmunityTick = Integer.MIN_VALUE;
++    public boolean saveable = true; // Slice
+ 
+     public void inactiveTick() {
+     }
+@@ -5187,6 +5188,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+ 
+     @Override
+     public boolean shouldBeSaved() {
++        if (!this.saveable) return false; // Slice
+         return (this.removalReason == null || this.removalReason.shouldSave())
+             && !this.isPassenger()
+             && (!this.isVehicle() || !((ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity)this).moonrise$hasAnyPlayerPassengers()); // Paper - rewrite chunk system

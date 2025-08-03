@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:22:40 -0500
+Subject: [PATCH] Add PlayerPreRespawnEvent
+
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 221244c29b010a4f29a0733d71727bc03851a805..8e0617d1f55d692de07094e019546bc64a32e407 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -704,13 +704,24 @@ public abstract class PlayerList {
+         // Paper end - Add PlayerPostRespawnEvent
+ 
+         // CraftBukkit start - fire PlayerRespawnEvent
+-        TeleportTransition teleportTransition;
++        TeleportTransition teleportTransition = null;
+         if (location == null) {
+-            teleportTransition = player.findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
++            // Slice start
++            io.papermc.paper.event.player.PlayerPreRespawnEvent preRespawnEvent = new io.papermc.paper.event.player.PlayerPreRespawnEvent(serverPlayer.getBukkitEntity(), eventReason);
++            if (!preRespawnEvent.callEvent()) return serverPlayer;
++
++            org.bukkit.Location respawnLocation = preRespawnEvent.getRespawnLocation();
++            if (respawnLocation != null) {
++                location = respawnLocation;
++                teleportTransition = new TeleportTransition(((org.bukkit.craftbukkit.CraftWorld) respawnLocation.getWorld()).getHandle(), org.bukkit.craftbukkit.util.CraftLocation.toVec3D(respawnLocation), Vec3.ZERO, respawnLocation.getYaw(), respawnLocation.getPitch(), TeleportTransition.DO_NOTHING);
++            } else {
++                teleportTransition = serverPlayer.findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
++            }
++            // Slice end
+ 
+             if (!keepInventory) player.reset(); // SPIGOT-4785
+            // Paper start - Add PlayerPostRespawnEvent
+-           if (teleportTransition == null) return player; // Early exit, mirrors belows early return for disconnected players in respawn event
++           if (teleportTransition == null || serverPlayer.connection.isDisconnected()) return player; // Early exit, mirrors belows early return for disconnected players in respawn event
+            isRespawn = true;
+            location = org.bukkit.craftbukkit.util.CraftLocation.toBukkit(teleportTransition.position(), teleportTransition.newLevel().getWorld(), teleportTransition.yRot(), teleportTransition.xRot());
+            // Paper end - Add PlayerPostRespawnEvent

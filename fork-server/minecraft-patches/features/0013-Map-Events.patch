@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:16:52 -0500
+Subject: [PATCH] Map Events
+
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index d1d88409667a1a13f2d82cfa1081eec035e90188..a5c53968e664803f69e0125c331c76ef3d938902 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -2176,6 +2176,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     }
+ 
+     public MapId getFreeMapId() {
++        // Slice start
++        io.papermc.paper.event.server.MapGetFreeIndexEvent event = new io.papermc.paper.event.server.MapGetFreeIndexEvent();
++        event.callEvent();
++        int newIndex = event.getIndex();
++        if (newIndex != -1) {
++            return new MapId(newIndex);
++        }
++        // Slice end
+         return this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.TYPE).getNextMapId();
+     }
+ 
+diff --git a/net/minecraft/world/level/storage/DimensionDataStorage.java b/net/minecraft/world/level/storage/DimensionDataStorage.java
+index a473b24caabf968b71fce716826d2db389292824..204f065b40d70fc857e2ab5146b1b9e8ea7def38 100644
+--- a/net/minecraft/world/level/storage/DimensionDataStorage.java
++++ b/net/minecraft/world/level/storage/DimensionDataStorage.java
+@@ -81,9 +81,30 @@ public class DimensionDataStorage implements AutoCloseable {
+     @Nullable
+     private <T extends SavedData> T readSavedData(SavedDataType<T> type) {
+         try {
+-            Path dataFile = this.getDataFile(type.id());
+-            if (Files.exists(dataFile)) {
+-                CompoundTag tagFromDisk = this.readTagFromDisk(type.id(), type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
++            String filename = type.id();
++            CompoundTag tagFromDisk = null;
++            // Slice start
++            if (filename.startsWith("map_")) {
++                int mapId = Integer.parseInt(filename.split("map_")[1]);
++                io.papermc.paper.event.server.MapLoadEvent event = new io.papermc.paper.event.server.MapLoadEvent(mapId);
++                event.callEvent();
++                java.io.ByteArrayInputStream buf = event.getBuf();
++                if (buf != null) {
++                    try {
++                        tagFromDisk = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
++                    } catch (IOException e) {
++                        LOGGER.error("Error loading saved data: {}", filename, e);
++                    }
++                }
++            }
++            // Slice end
++
++            Path dataFile = this.getDataFile(filename);
++            if (tagFromDisk != null || Files.exists(dataFile)) {
++                if (tagFromDisk == null) {
++                    tagFromDisk = this.readTagFromDisk(type.id(), type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
++                }
++
+                 RegistryOps<Tag> registryOps = this.registries.createSerializationContext(NbtOps.INSTANCE);
+                 return type.codec()
+                     .apply(this.context)

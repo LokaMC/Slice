@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:25:53 -0500
+Subject: [PATCH] Add Vanish
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index c7126142e0bd53e191caddb95fabc36fedeb2f76..aa1fa2299cafeff79ad1ff18fb96febf68da5055 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1352,4 +1352,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         this.entity.saveable = saveable;
+     }
+     // Slice end
++
++    // Slice start
++    @Override
++    public boolean isVanished() {
++        return this.entity.vanished;
++    }
++
++    @Override
++    public void setVanished(boolean vanished) {
++        this.entity.vanished = vanished;
++    }
++    // Slice end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
+index 727c9c53a3c2d3087fbe817fbb8147d5549b882c..01f63d94aa39e89fb95a63aa83d3d49a806064ea 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
+@@ -64,6 +64,14 @@ public class CraftInventoryCustom extends CraftInventory {
+         }
+     }
+ 
++    // Slice start
++    public void setLocation(Location location) {
++        if (this.inventory instanceof MinecraftInventory minecraftInventory) {
++            minecraftInventory.location = location;
++        }
++    }
++    // Slice end
++
+     static class MinecraftInventory implements Container {
+         private final NonNullList<ItemStack> items;
+         private int maxStack = MAX_STACK;
+@@ -72,6 +80,7 @@ public class CraftInventoryCustom extends CraftInventory {
+         private final net.kyori.adventure.text.Component adventure$title; // Paper
+         private InventoryType type;
+         private final InventoryHolder owner;
++        private Location location; // Slice
+ 
+         public MinecraftInventory(InventoryHolder owner, InventoryType type, net.kyori.adventure.text.Component title) {
+             this(owner, type.getDefaultSize(), title);
+@@ -228,7 +237,7 @@ public class CraftInventoryCustom extends CraftInventory {
+ 
+         @Override
+         public Location getLocation() {
+-            return null;
++            return location;
+         }
+ 
+         public net.kyori.adventure.text.Component title() {

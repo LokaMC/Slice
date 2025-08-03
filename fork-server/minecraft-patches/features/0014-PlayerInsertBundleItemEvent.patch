@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:17:51 -0500
+Subject: [PATCH] PlayerInsertBundleItemEvent
+
+
+diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
+index 2882cd829d4d8e1f8615f085f6908efcdf68ac62..db6b838da5373f4f02288437b19de4ac64a28bfd 100644
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -571,6 +571,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         if (_boolean && (this.spawnEnemies || this.spawnFriendlies)) {
+             // Paper start - PlayerNaturallySpawnCreaturesEvent
+             for (ServerPlayer entityPlayer : this.level.players()) {
++                if (entityPlayer.spawnsOwnMobs) continue; // Slice
+                 int chunkRange = Math.min(level.spigotConfig.mobSpawnRange, entityPlayer.getBukkitEntity().getViewDistance());
+                 chunkRange = Math.min(chunkRange, 8);
+                 entityPlayer.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(entityPlayer.getBukkitEntity(), (byte) chunkRange);
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index e0f91e16a0cb32473ed4d3b598ca8d77f465a426..dde798405d995d5bb3a2e927386fc817c2e60efd 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -220,6 +220,8 @@ public abstract class Player extends LivingEntity {
+     public boolean affectsSpawning = true; // Paper - Affects Spawning API
+     public net.kyori.adventure.util.TriState flyingFallDamage = net.kyori.adventure.util.TriState.NOT_SET; // Paper - flying fall damage
+ 
++    public boolean spawnsOwnMobs = false; // Slice
++
+     // CraftBukkit start
+     public boolean fauxSleeping;
+     public int oldLevel = -1;
+diff --git a/net/minecraft/world/item/BundleItem.java b/net/minecraft/world/item/BundleItem.java
+index 79f3955cbf3a19b013d86180d8dda576ab4c25cd..2ecb045ebf0cc64b0bb9c63c826e0866f2fcb8aa 100644
+--- a/net/minecraft/world/item/BundleItem.java
++++ b/net/minecraft/world/item/BundleItem.java
+@@ -55,6 +55,7 @@ public class BundleItem extends Item {
+             ItemStack item = slot.getItem();
+             BundleContents.Mutable mutable = new BundleContents.Mutable(bundleContents);
+             if (action == ClickAction.PRIMARY && !item.isEmpty()) {
++                if (!new io.papermc.paper.event.player.PlayerInsertBundleItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), stack.getBukkitStack(), item.getBukkitStack()).callEvent()) return false; // Slice
+                 if (mutable.tryTransfer(slot, player) > 0) {
+                     playInsertSound(player);
+                 } else {
+@@ -96,6 +97,7 @@ public class BundleItem extends Item {
+             } else {
+                 BundleContents.Mutable mutable = new BundleContents.Mutable(bundleContents);
+                 if (action == ClickAction.PRIMARY && !other.isEmpty()) {
++                    if (!new io.papermc.paper.event.player.PlayerInsertBundleItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), stack.getBukkitStack(), other.getBukkitStack()).callEvent()) return false; // Slice
+                     if (slot.allowModification(player) && mutable.tryInsert(other) > 0) {
+                         playInsertSound(player);
+                     } else {

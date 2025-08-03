@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:25:27 -0500
+Subject: [PATCH] Equipment Packet Caching
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 6b4e74b808b4fb6ac0143d5c82571657b2c49683..1cc7b9f52d07200eb1b152cf231664f2f5f96909 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -1167,4 +1167,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+     public CombatTracker getCombatTracker() {
+         return this.getHandle().getCombatTracker().paperCombatTracker;
+     }
++
++    // Slice start
++    @Override
++    public void sendEquipment(Player p) {
++        if (entity instanceof net.minecraft.world.entity.LivingEntity livingEntity) {
++            net.minecraft.server.level.ServerPlayer serverPlayer = ((CraftPlayer) p).getHandle();
++            livingEntity.sendEquipment(packet -> serverPlayer.connection.send(packet), serverPlayer);
++        }
++    }
++    // Slice end
++
+ }

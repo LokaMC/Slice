@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:10:55 -0500
+Subject: [PATCH] Non-saveable-entities
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index f802eaaf0296e7f6833c816cd0169013851ba14d..c7126142e0bd53e191caddb95fabc36fedeb2f76 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1340,4 +1340,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         return this.entity.level().getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+     }
+     // Slice end
++
++    // Slice start
++    @Override
++    public boolean isSaveable() {
++        return this.entity.saveable;
++    }
++
++    @Override
++    public void setSaveable(boolean saveable) {
++        this.entity.saveable = saveable;
++    }
++    // Slice end
+ }

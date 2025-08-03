@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 10:14:28 -0500
+Subject: [PATCH] Allow opening covered chests
+
+
+diff --git a/net/minecraft/world/level/block/ChestBlock.java b/net/minecraft/world/level/block/ChestBlock.java
+index c4937d1b482e2ec60961bda62ad6cc155f0ce8f7..fe2780f7bae8e548ab5c6042b29a9e5aa5f37539 100644
+--- a/net/minecraft/world/level/block/ChestBlock.java
++++ b/net/minecraft/world/level/block/ChestBlock.java
+@@ -337,8 +337,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements
+     }
+ 
+     public static boolean isBlockedChestByBlock(BlockGetter level, BlockPos pos) {
+-        BlockPos blockPos = pos.above();
+-        return level.getBlockState(blockPos).isRedstoneConductor(level, blockPos);
++        return false;
+     }
+ 
+     private static boolean isCatSittingOnChest(LevelAccessor level, BlockPos pos) {
+diff --git a/net/minecraft/world/level/block/EnderChestBlock.java b/net/minecraft/world/level/block/EnderChestBlock.java
+index 5077a9ff7b78801bdc53536a37aee07b8d86ee4d..6bddfe7a293f895ef0edd76b3126898971cf8ac3 100644
+--- a/net/minecraft/world/level/block/EnderChestBlock.java
++++ b/net/minecraft/world/level/block/EnderChestBlock.java
+@@ -78,7 +78,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
+         PlayerEnderChestContainer enderChestInventory = player.getEnderChestInventory();
+         if (enderChestInventory != null && level.getBlockEntity(pos) instanceof EnderChestBlockEntity enderChestBlockEntity) {
+             BlockPos blockPos = pos.above();
+-            if (level.getBlockState(blockPos).isRedstoneConductor(level, blockPos)) { // Paper - diff on change; make sure that EnderChest#isBlocked uses the same logic
++            if (false) { // level.getBlockState(blockPos).isRedstoneConductor(level, blockPos)) { // Paper - diff on change; make sure that EnderChest#isBlocked uses the same logic
+                 return InteractionResult.SUCCESS;
+             } else {
+                 // Paper start - Fix InventoryOpenEvent cancellation - moved up;

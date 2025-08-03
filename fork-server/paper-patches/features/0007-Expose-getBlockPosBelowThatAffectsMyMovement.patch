@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:09:47 -0500
+Subject: [PATCH] Expose getBlockPosBelowThatAffectsMyMovement
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index b38073628d3b1381ccc4e5c6c44b2b7ec8ba1273..f802eaaf0296e7f6833c816cd0169013851ba14d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1333,4 +1333,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         return this.entity.get(io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type)) != null;
+     }
+ 
++    // Slice start
++    @Override
++    public org.bukkit.block.Block getBlockStandingOn() {
++        net.minecraft.core.BlockPos pos = this.entity.getBlockPosBelowThatAffectsMyMovement();
++        return this.entity.level().getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
++    }
++    // Slice end
+ }
