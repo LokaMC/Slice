@@ -289,7 +289,7 @@ index 22aff6229872cfcfe6af2f83439e42c39ae4b4e1..1da31553e690515e1d6092569851e057
 +    // so players can still see those and track invis players at least.
 +    private void updateSynchronizedMobEffectParticlesNoBroadcast() {
 +        boolean allEffectsAmbient = true;
-+        List<ParticleOptions> particleOptionsLocal = new ArrayList<>(this.activeEffects.size());
++        List<ParticleOptions> particleOptionsLocal = new java.util.ArrayList<>(this.activeEffects.size());
 +        List<ParticleOptions> particleOptionsForeign = null;
 +        for (Entry<Holder<MobEffect>, MobEffectInstance> entry : this.activeEffects.entrySet()) {
 +            MobEffectInstance effect = entry.getValue();
@@ -304,7 +304,7 @@ index 22aff6229872cfcfe6af2f83439e42c39ae4b4e1..1da31553e690515e1d6092569851e057
 +
 +                if (entry.getKey().equals(org.bukkit.craftbukkit.potion.CraftPotionEffectType.bukkitToMinecraftHolder(org.bukkit.potion.PotionEffectType.INVISIBILITY))) {
 +                    if (particleOptionsForeign == null) {
-+                        particleOptionsForeign = new ArrayList<>(this.activeEffects.size());
++                        particleOptionsForeign = new java.util.ArrayList<>(this.activeEffects.size());
 +                    }
 +
 +                    particleOptionsForeign.add(options);
