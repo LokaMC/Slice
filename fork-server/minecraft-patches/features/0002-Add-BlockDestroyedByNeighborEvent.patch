@@ -62,7 +62,7 @@ index be16627136f7b3979e62308f58b96a2b16ee9f62..9caeafaab4252db536142fa9fc812c24
 +        }
 +
 +    }
-+    public final Map<BlockPos, PendingBlockEvent> pendingPlayerBlockEvents = new HashMap<>();
++    public final Map<BlockPos, PendingBlockEvent> pendingPlayerBlockEvents = new java.util.HashMap<>();
 +    // Paper end
 +
 +
