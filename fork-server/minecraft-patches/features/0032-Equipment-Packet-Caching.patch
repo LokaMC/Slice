@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Cryptite <cryptite@gmail.com>
 Date: Sun, 3 Aug 2025 13:13:32 -0500
-Subject: [PATCH] World.isShardedFightWorld
+Subject: [PATCH] Equipment Packet Caching
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
@@ -16,3 +16,16 @@ index a5c53968e664803f69e0125c331c76ef3d938902..bdb0dc667fc2747558090097e11ebfb4
  
      @Override
      public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index c5ab2c8b2014e903cd8a02d609aba4dd11fc37ca..12a51c5a9113889bddbac838b33974191646179a 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -4800,7 +4800,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+                 consumer.accept(equipmentPacket);
+             }
+ 
+-            detectEquipmentUpdatesPublic(); // CraftBukkit - SPIGOT-3789: sync again immediately after sending
++            detectEquipmentUpdates(); // CraftBukkit - SPIGOT-3789: sync again immediately after sending
+         }
+     }
+     // Slice end

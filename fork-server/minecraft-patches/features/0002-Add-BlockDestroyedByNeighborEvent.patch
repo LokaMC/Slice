@@ -37,7 +37,7 @@ index da16f4831c875e07c25d7ed041bed493db614658..32d4a19b36c6e03f4b99af2af32c525b
              if (!(item instanceof BucketItem/* || item instanceof SolidBucketItem*/)) { // if not bucket // Paper - Fix cancelled powdered snow bucket placement
                  serverLevel.captureBlockStates = true;
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index be16627136f7b3979e62308f58b96a2b16ee9f62..9caeafaab4252db536142fa9fc812c243be1af7a 100644
+index be16627136f7b3979e62308f58b96a2b16ee9f62..1944a7101c4f66726fd9db55b7022de2f98916e0 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -165,6 +165,28 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
