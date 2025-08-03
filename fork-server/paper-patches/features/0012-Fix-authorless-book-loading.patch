@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 19 Jan 2025 09:31:16 -0600
+Subject: [PATCH] Fix authorless book loading
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 59c0e8dbe2d0d1155487de33c680e41c0b61acac..5332509e45557861be37444609391963da4d1b96 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -527,6 +527,17 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         CompoundTag compound = deserializeNbtFromBytes(data);
+         final int dataVersion = compound.getInt("DataVersion");
+         compound = PlatformHooks.get().convertNBT(References.ITEM_STACK, MinecraftServer.getServer().fixerUpper, compound, dataVersion, this.getDataVersion()); // Paper - possibly use dataconverter
++
++        // Slice start
++        CompoundTag components = compound.getCompound("components");
++        if (!components.isEmpty()) {
++            CompoundTag bookContent = components.getCompound("minecraft:written_book_content");
++            if (!bookContent.isEmpty() && !bookContent.getAllKeys().contains("author")) {
++                bookContent.putString("author", "");
++            }
++        }
++        // Slice end
++
+         return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.parse(MinecraftServer.getServer().registryAccess(), compound).orElseThrow());
+     }
+ 

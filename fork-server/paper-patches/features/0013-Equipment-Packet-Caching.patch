@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 21 Jan 2025 14:56:02 -0600
+Subject: [PATCH] Equipment Packet Caching
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 4f98d138a275a6c34528b7a5148ef265bc38d6b5..66392b3dbf1d92501c25c58fe9cd68e5512ba67e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -1205,6 +1205,16 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+     }
+     // Paper end - body yaw API
+ 
++    // Slice start
++    @Override
++    public void sendEquipment(Player p) {
++        if (entity instanceof net.minecraft.world.entity.LivingEntity livingEntity) {
++            net.minecraft.server.level.ServerPlayer serverPlayer = ((CraftPlayer) p).getHandle();
++            livingEntity.sendEquipment(packet -> serverPlayer.connection.send(packet), serverPlayer);
++        }
++    }
++    // Slice end
++
+     // Paper start - Expose canUseSlot
+     @Override
+     public boolean canUseEquipmentSlot(org.bukkit.inventory.EquipmentSlot slot) {
