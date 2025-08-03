@@ -23,7 +23,7 @@ index 221244c29b010a4f29a0733d71727bc03851a805..8e0617d1f55d692de07094e019546bc6
 +            org.bukkit.Location respawnLocation = preRespawnEvent.getRespawnLocation();
 +            if (respawnLocation != null) {
 +                location = respawnLocation;
-+                teleportTransition = new TeleportTransition(((org.bukkit.craftbukkit.CraftWorld) respawnLocation.getWorld()).getHandle(), org.bukkit.craftbukkit.util.CraftLocation.toVec3D(respawnLocation), Vec3.ZERO, respawnLocation.getYaw(), respawnLocation.getPitch(), TeleportTransition.DO_NOTHING);
++                teleportTransition = new TeleportTransition(((org.bukkit.craftbukkit.CraftWorld) respawnLocation.getWorld()).getHandle(), org.bukkit.craftbukkit.util.CraftLocation.toVec3(respawnLocation), Vec3.ZERO, respawnLocation.getYaw(), respawnLocation.getPitch(), TeleportTransition.DO_NOTHING);
 +            } else {
 +                teleportTransition = serverPlayer.findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
 +            }
