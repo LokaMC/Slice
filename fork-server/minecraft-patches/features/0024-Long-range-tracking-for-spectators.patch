@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:32:38 -0500
+Subject: [PATCH] Long-range tracking for spectators
+
+
+diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
+index eb352aa4296abc3ed4cf31c590bc0be66daf4de3..f63cdb1aba86c43c8ac4d3fd8e2f12a7cc297364 100644
+--- a/net/minecraft/server/level/ChunkMap.java
++++ b/net/minecraft/server/level/ChunkMap.java
+@@ -1287,7 +1287,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+                 double vec3_dz = player.getZ() - this.entity.getZ();
+                 // Paper end - remove allocation of Vec3D here
+                 int playerViewDistance = ChunkMap.this.getPlayerViewDistance(player);
+-                double d = Math.min(this.getEffectiveRange(), playerViewDistance * 16);
++                double d = player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SPECTATOR ? 128 : Math.min(this.getEffectiveRange(), playerViewDistance * 16);
+                 double d1 = vec3_dx * vec3_dx + vec3_dz * vec3_dz; // Paper
+                 double d2 = d * d;
+                 // Paper start - Configurable entity tracking range by Y

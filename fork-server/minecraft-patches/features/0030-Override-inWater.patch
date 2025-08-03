@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 13:13:00 -0500
+Subject: [PATCH] Override inWater
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 8224845f426f81e57798e50772593ae9d499750e..df7863b6629721f2226062c7afb8af406b26f108 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -384,6 +384,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     public boolean saveable = true; // Slice
+     public boolean vanished; // Slice
+     public int trackingRange; // Slice
++    public boolean inWaterOverride; // Slice
+ 
+     public void inactiveTick() {
+     }
+@@ -1928,7 +1929,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     public boolean isInWater() {
+-        return this.wasTouchingWater;
++        return this.wasTouchingWater || this.inWaterOverride; // Slice
+     }
+ 
+     public boolean isInRain() {
+@@ -2092,7 +2093,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+     }
+ 
+     public boolean isEyeInFluid(TagKey<Fluid> fluidTag) {
+-        return this.fluidOnEyes.contains(fluidTag);
++        return inWaterOverride || this.fluidOnEyes.contains(fluidTag);
+     }
+ 
+     public boolean isInLava() {

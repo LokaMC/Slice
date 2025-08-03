@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 13:13:32 -0500
+Subject: [PATCH] World.isShardedFightWorld
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index ad562a4887aed1063af3f1e9e38a451da09806d5..ba31ea55e5f1493e0892fad6b975dcc935956f75 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1321,6 +1321,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+     }
+     // Slice end
+ 
++    // Slice start
++    @Override
++    public boolean isShardedFight() {
++        return world.shardedFight;
++    }
++
++    @Override
++    public void setShardedFight(boolean value) {
++        world.shardedFight = value;
++    }
++    // Slice end
++
+     @Override
+     public void setDifficulty(Difficulty difficulty) {
+         this.getHandle().getServer().setDifficulty(this.getHandle(), CraftDifficulty.toMinecraft(difficulty), null, true);

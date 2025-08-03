@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 12:31:51 -0500
+Subject: [PATCH] Custom Tracking Ranges
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index aa1fa2299cafeff79ad1ff18fb96febf68da5055..77058d9090fb76812896c730f441847a176bfabb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1364,4 +1364,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         this.entity.vanished = vanished;
+     }
+     // Slice end
++
++    // Slice start
++    @Override
++    public int getTrackingRange() {
++        return this.entity.trackingRange;
++    }
++
++    @Override
++    public void setTrackingRange(int range) {
++        this.entity.trackingRange = range;
++    }
++    // Slice end
+ }
+diff --git a/src/main/java/org/spigotmc/TrackingRange.java b/src/main/java/org/spigotmc/TrackingRange.java
+index 05db2aab74fbf34d77761184d40eb66b879f20ec..dcc4b0fd340617618b41c580c2b61e55533dfbc3 100644
+--- a/src/main/java/org/spigotmc/TrackingRange.java
++++ b/src/main/java/org/spigotmc/TrackingRange.java
+@@ -25,6 +25,10 @@ public final class TrackingRange {
+             return defaultRange;
+         }
+ 
++        if (entity.trackingRange > 0) {
++            return entity.trackingRange;
++        }
++
+         final SpigotWorldConfig config = entity.level().spigotConfig;
+         if (entity instanceof ServerPlayer) {
+             return config.playerTrackingRange;

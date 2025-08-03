@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 3 Aug 2025 13:10:13 -0500
+Subject: [PATCH] Expose Entity.despawnTime
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 77058d9090fb76812896c730f441847a176bfabb..038dc4e794cd656f30faab0f7a931f8f4dc00940 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1376,4 +1376,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         this.entity.trackingRange = range;
+     }
+     // Slice end
++
++    // Slice start
++    @Override
++    public int getDespawnTime() {
++        return this.entity.despawnTime;
++    }
++
++    @Override
++    public void setDespawnTime(int ticks) {
++        this.entity.despawnTime = ticks;
++    }
++    // Slice end
+ }
