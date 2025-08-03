@@ -91,7 +91,7 @@ index be16627136f7b3979e62308f58b96a2b16ee9f62..9caeafaab4252db536142fa9fc812c24
                  this.capturedTileEntities.put(blockPos.immutable(), blockEntity);
                  return;
              }
-+            pendingPlayerBlockEvents.remove(blockposition); // Paper
++            pendingPlayerBlockEvents.remove(blockPos); // Paper
              // CraftBukkit end
              this.getChunkAt(blockPos).addAndRegisterBlockEntity(blockEntity);
          }
