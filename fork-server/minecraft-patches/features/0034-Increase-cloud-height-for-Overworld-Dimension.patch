@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 7 Aug 2025 08:22:41 -0500
+Subject: [PATCH] Increase cloud height for Overworld Dimension
+
+
+diff --git a/net/minecraft/data/worldgen/DimensionTypes.java b/net/minecraft/data/worldgen/DimensionTypes.java
+index 7ede85c9fff844ea99986f8ac5075babb173af19..0283a8fd4f43c4f4c48a7b672f0f9e045bb369dc 100644
+--- a/net/minecraft/data/worldgen/DimensionTypes.java
++++ b/net/minecraft/data/worldgen/DimensionTypes.java
+@@ -27,7 +27,7 @@ public class DimensionTypes {
+                 BlockTags.INFINIBURN_OVERWORLD,
+                 BuiltinDimensionTypes.OVERWORLD_EFFECTS,
+                 0.0F,
+-                Optional.of(192),
++                Optional.of(256),
+                 new DimensionType.MonsterSettings(false, true, UniformInt.of(0, 7), 0)
+             )
+         );
