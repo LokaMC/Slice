@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sat, 9 Aug 2025 17:12:03 -0500
+Subject: [PATCH] Add LeafBlockTickEvent
+
+
+diff --git a/net/minecraft/world/level/block/LeavesBlock.java b/net/minecraft/world/level/block/LeavesBlock.java
+index 010e9814490ffaa153df5b7865da17e2a84c7e82..9dfb843dc5a5d94ac52e2ee3249182087ded40f1 100644
+--- a/net/minecraft/world/level/block/LeavesBlock.java
++++ b/net/minecraft/world/level/block/LeavesBlock.java
+@@ -2,6 +2,8 @@ package net.minecraft.world.level.block;
+ 
+ import com.mojang.serialization.MapCodec;
+ import java.util.OptionalInt;
++
++import io.papermc.paper.event.block.LeafBlockTickEvent;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
+ import net.minecraft.core.particles.ParticleTypes;
+@@ -25,6 +27,7 @@ import net.minecraft.world.level.material.FluidState;
+ import net.minecraft.world.level.material.Fluids;
+ import net.minecraft.world.phys.shapes.Shapes;
+ import net.minecraft.world.phys.shapes.VoxelShape;
++import org.bukkit.craftbukkit.block.CraftBlock;
+ 
+ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBlock {
+     public static final int DECAY_DISTANCE = 7;
+@@ -55,9 +58,11 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
+ 
+     @Override
+     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
++        CraftBlock block = CraftBlock.at(level, pos);
++        new LeafBlockTickEvent(block).callEvent();
+         if (this.decaying(state)) {
+             // CraftBukkit start
+-            org.bukkit.event.block.LeavesDecayEvent event = new org.bukkit.event.block.LeavesDecayEvent(org.bukkit.craftbukkit.block.CraftBlock.at(level, pos));
++            org.bukkit.event.block.LeavesDecayEvent event = new org.bukkit.event.block.LeavesDecayEvent(block);
+             level.getCraftServer().getPluginManager().callEvent(event);
+ 
+             if (event.isCancelled() || !level.getBlockState(pos).is(this)) {

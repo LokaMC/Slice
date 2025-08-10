@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sat, 9 Aug 2025 17:12:03 -0500
+Subject: [PATCH] Add LeafBlockTickEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/block/LeafBlockTickEvent.java b/src/main/java/io/papermc/paper/event/block/LeafBlockTickEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f26246a49bb0c54744c9c81513832fb5acda2c91
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/block/LeafBlockTickEvent.java
+@@ -0,0 +1,28 @@
++package io.papermc.paper.event.block;
++
++import org.bukkit.block.Block;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.block.BlockEvent;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called when a leaf block attempts decay, even if it is persistent.
++ */
++public class LeafBlockTickEvent extends BlockEvent {
++    private static final HandlerList handlers = new HandlerList();
++
++    public LeafBlockTickEvent(@NotNull final Block block) {
++        super(block);
++    }
++
++    @Override
++    @NotNull
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
