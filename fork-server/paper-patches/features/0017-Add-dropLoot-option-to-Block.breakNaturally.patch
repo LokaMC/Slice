@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 10 Aug 2025 08:08:06 -0500
+Subject: [PATCH] Add dropLoot option to Block.breakNaturally
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index 6809f9dcf8510c714145d99d250eb69f98d9bf27..5c149123a3c2b0df58facc1f768b44e1c8f0a300 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -498,12 +498,24 @@ public class CraftBlock implements Block {
+     }
+ 
+     @Override
++    // Slice start
++    public boolean breakNaturally(boolean triggerEffect, boolean dropLoot, boolean dropExperience) {
++        return this.breakNaturally(null, triggerEffect, dropExperience, triggerEffect, dropLoot);
++    }
++
++    @Override
++    // Slice end
+     public boolean breakNaturally(ItemStack item, boolean triggerEffect, boolean dropExperience) {
+         return this.breakNaturally(item, triggerEffect, dropExperience, false);
+     }
+ 
+     @Override
+     public boolean breakNaturally(ItemStack item, boolean triggerEffect, boolean dropExperience, boolean forceEffect) {
++        // Slice start
++        return this.breakNaturally(item, triggerEffect, dropExperience, forceEffect, true);
++    }
++
++    public boolean breakNaturally(ItemStack item, boolean triggerEffect, boolean dropExperience, boolean forceEffect, boolean dropLoot) { // Slice end
+         // Paper end
+         // Order matters here, need to drop before setting to air so skulls can get their data
+         net.minecraft.world.level.block.state.BlockState state = this.getNMS();
+@@ -512,7 +524,7 @@ public class CraftBlock implements Block {
+         boolean result = false;
+ 
+         // Modelled off Player#hasCorrectToolForDrops
+-        if (block != Blocks.AIR && (item == null || !state.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(state))) {
++        if (block != Blocks.AIR && dropLoot && (item == null || !state.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(state))) { // Slice - add dropLoot
+             net.minecraft.world.level.block.Block.dropResources(state, this.world.getMinecraftWorld(), this.position, this.world.getBlockEntity(this.position), null, nmsItem, false); // Paper - Properly handle xp dropping
+             // Paper start - improve Block#breakNaturally
+             if (dropExperience) block.popExperience(this.world.getMinecraftWorld(), this.position, block.getExpDrop(state, this.world.getMinecraftWorld(), this.position, nmsItem, true));

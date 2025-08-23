@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sun, 10 Aug 2025 08:08:06 -0500
+Subject: [PATCH] Add dropLoot option to Block.breakNaturally
+
+
+diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
+index 318bb02fe2921e5c41e7473500d1cf4dacf0c781..cb047a992977448281fb9b5c005fe6628d4cca86 100644
+--- a/src/main/java/org/bukkit/block/Block.java
++++ b/src/main/java/org/bukkit/block/Block.java
+@@ -567,6 +567,18 @@ public interface Block extends Metadatable, Translatable, net.kyori.adventure.tr
+      */
+     boolean breakNaturally(boolean triggerEffect, boolean dropExperience);
+ 
++    // Slice
++    /**
++     * Breaks the block and spawns item drops as if a player had broken it
++     *
++     * @param triggerEffect Play the block break particle effect and sound
++     * @param dropLoot drop loot if the block normally does so
++     * @param dropExperience drop exp if the block normally does so
++     * @return true if the block was destroyed
++     */
++    boolean breakNaturally(boolean triggerEffect, boolean dropLoot, boolean dropExperience);
++    // End Slice
++
+     /**
+      * Breaks the block and spawns item drops as if a player had broken it
+      * with a specific tool
