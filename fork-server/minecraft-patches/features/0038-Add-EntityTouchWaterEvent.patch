@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sat, 23 Aug 2025 13:14:22 -0500
+Subject: [PATCH] Add EntityTouchWaterEvent
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index df7863b6629721f2226062c7afb8af406b26f108..a0dbf85b7db7827de54a2b7eeb9242e5d7e55062 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -1989,11 +1989,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+         } else if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
+             if (!this.wasTouchingWater && !this.firstTick) {
+                 this.doWaterSplashEffect();
++                new io.papermc.paper.event.entity.EntityTouchWaterEvent(getBukkitEntity(), true).callEvent();
+             }
+ 
+             this.resetFallDistance();
+             this.wasTouchingWater = true;
+         } else {
++            if (this.wasTouchingWater) new io.papermc.paper.event.entity.EntityTouchWaterEvent(getBukkitEntity(), false).callEvent();
+             this.wasTouchingWater = false;
+         }
+     }

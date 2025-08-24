@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sat, 23 Aug 2025 13:14:22 -0500
+Subject: [PATCH] Add EntityTouchWaterEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/entity/EntityTouchWaterEvent.java b/src/main/java/io/papermc/paper/event/entity/EntityTouchWaterEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b83e7f39ba37c36a9800a8d61dd09632dd334653
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/entity/EntityTouchWaterEvent.java
+@@ -0,0 +1,40 @@
++package io.papermc.paper.event.entity;
++
++import org.bukkit.entity.Entity;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.entity.EntityEvent;
++import org.jetbrains.annotations.ApiStatus;
++import org.jspecify.annotations.NullMarked;
++
++/**
++ * Event when an Entity starts touching water or not. This includes even small amounts of flowing water.
++ */
++@NullMarked
++public class EntityTouchWaterEvent extends EntityEvent{
++
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++
++    private boolean inWater;
++
++    @ApiStatus.Internal
++    public EntityTouchWaterEvent(final Entity entity, final boolean inWater) {
++        super(entity);
++        this.inWater = inWater;
++    }
++
++    /**
++     * @return If the entity is now touching water.
++     */
++    public boolean isInWater() {
++        return inWater;
++    }
++
++    @Override
++    public HandlerList getHandlers() {
++        return HANDLER_LIST;
++    }
++
++    public static HandlerList getHandlerList() {
++        return HANDLER_LIST;
++    }
++}

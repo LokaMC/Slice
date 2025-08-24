@@ -5,10 +5,10 @@ Subject: [PATCH] Add World Instance flag
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index aa0a61d7f3128543b698647663fa4a9af2a8255a..ad562a4887aed1063af3f1e9e38a451da09806d5 100644
+index ee7a4169003b23766b5d2e6edf9221375d80d83c..393c08e2cb526addcc36a87dda4092dc03ea9a80 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1309,6 +1309,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1310,6 +1310,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
          this.world.noSave = !value;
      }
  

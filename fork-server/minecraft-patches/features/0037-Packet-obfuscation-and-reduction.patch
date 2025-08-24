@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 13 Aug 2025 15:59:59 -0500
+Subject: [PATCH] Packet obfuscation and reduction
+
+
+diff --git a/net/minecraft/world/entity/EntityType.java b/net/minecraft/world/entity/EntityType.java
+index cdf71340278e05e58bbb4ed51a432336de46e549..cccdcbd9a0096f2deab9af518d0e4cf220453b68 100644
+--- a/net/minecraft/world/entity/EntityType.java
++++ b/net/minecraft/world/entity/EntityType.java
+@@ -1394,7 +1394,9 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
+                 entity.load(input);
+             },
+             // Paper end - Don't fire sync event during generation
+-            () -> LOGGER.warn("Skipping Entity with id {}", input.getStringOr("id", "[invalid]"))
++            () -> {
++//                LOGGER.warn("Skipping Entity with id {}", input.getStringOr("id", "[invalid]"));
++            }
+         );
+     }
+ 
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 2bd0ecae8701396ea320e72ad0e039620859b2d6..6ac1a0d2bd21993307233057b748ef53301d8b6e 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -1522,7 +1522,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+         boolean flag = source.hurtServer(level, damageSource, f);
+         if (flag) {
+             float knockback = this.getKnockback(source, damageSource);
+-            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), target.getBukkitEntity(), knockback).callEvent()) {
++            if (!new io.papermc.paper.event.entity.EntityPreKnockbackByEntityEvent(this.getBukkitEntity(), source.getBukkitEntity(), knockback).callEvent()) {
+                 knockback = 0;
+             }
+ 

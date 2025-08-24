@@ -5,10 +5,10 @@ Subject: [PATCH] World.isShardedFightWorld
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 946f4f4a90447ba1ecaacee2e61ae0aad8c4f92e..da6143afc4c12855de124917f30e6e2bad264cb4 100644
+index 178386708819d194f4eb2964fc6d5e4865297dcf..8ffcb797fbc55eaa5869c85f96a9251181d86e96 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -26,7 +26,6 @@ import org.bukkit.entity.SpawnCategory;
+@@ -27,7 +27,6 @@ import org.bukkit.entity.SpawnCategory;
  import org.bukkit.event.entity.CreatureSpawnEvent;
  import org.bukkit.generator.BiomeProvider;
  import org.bukkit.generator.BlockPopulator;
@@ -16,7 +16,7 @@ index 946f4f4a90447ba1ecaacee2e61ae0aad8c4f92e..da6143afc4c12855de124917f30e6e2b
  import org.bukkit.generator.WorldInfo;
  import org.bukkit.generator.structure.GeneratedStructure;
  import org.bukkit.generator.structure.Structure;
-@@ -2837,6 +2836,11 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -2838,6 +2837,11 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      public void setInstance(boolean value);
      // Slice end
  

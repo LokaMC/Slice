@@ -5,10 +5,10 @@ Subject: [PATCH] A forgotten import?
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index da6143afc4c12855de124917f30e6e2bad264cb4..c9c7d294069c87b8eda1ceeb2a69420d4de912ef 100644
+index 8ffcb797fbc55eaa5869c85f96a9251181d86e96..5a6c66a3301599cd7f84f35f0db86586db8c65ed 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -26,6 +26,7 @@ import org.bukkit.entity.SpawnCategory;
+@@ -27,6 +27,7 @@ import org.bukkit.entity.SpawnCategory;
  import org.bukkit.event.entity.CreatureSpawnEvent;
  import org.bukkit.generator.BiomeProvider;
  import org.bukkit.generator.BlockPopulator;
