@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 2 Sep 2025 16:37:52 -0500
+Subject: [PATCH] Add Player.getLastPing
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 43bbfe7528167621b98b5b8c96d0e0de706697c2..83a2a0cc5c292f4ee81897e20d410d0bfd29ca18 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -3305,6 +3305,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      */
+     public int getPing();
+ 
++    /**
++     * Gets the player's most recent measured ping.
++     *
++     * This differs from {@link #getPing()} as it represents an average of ping over time,
++     * whereas this represents simply the most recent ping.
++     *
++     * @return player's most recent ping
++     */
++    public int getLastPing();
++
+     /**
+      * Gets the player's current locale.
+      *

@@ -17,10 +17,10 @@ index a5c53968e664803f69e0125c331c76ef3d938902..bdb0dc667fc2747558090097e11ebfb4
      @Override
      public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index c5ab2c8b2014e903cd8a02d609aba4dd11fc37ca..12a51c5a9113889bddbac838b33974191646179a 100644
+index a0e92371ccda3f8474798d6439923e04cc4fec81..05678a467ea5202be91c8700fa8597aba6f0ee89 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -4800,7 +4800,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4816,7 +4816,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  consumer.accept(equipmentPacket);
              }
  

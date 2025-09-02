@@ -51,7 +51,7 @@ index d41cc707c3f292a76a8d654d6497bdbf16aec707..21b603822ab28f5b71251182642b8555
  
          if (!this.entity.getPassengers().isEmpty()) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 0c52e315557e1dae6a852694786e72241fff1e29..22aff6229872cfcfe6af2f83439e42c39ae4b4e1 100644
+index 0268e02d2ef2cb3d699644a804e23a6da4521f4c..0dc39253c78648cdc948c9c779be76485c93afc4 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -321,6 +321,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -101,7 +101,7 @@ index 0c52e315557e1dae6a852694786e72241fff1e29..22aff6229872cfcfe6af2f83439e42c3
      }
  
      protected void tickHeadTurn(float yBodyRot) {
-@@ -4655,4 +4679,85 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4671,4 +4695,85 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      public record Fallsounds(SoundEvent small, SoundEvent big) {
      }

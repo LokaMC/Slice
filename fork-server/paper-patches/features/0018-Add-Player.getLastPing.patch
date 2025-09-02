@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 2 Sep 2025 16:37:51 -0500
+Subject: [PATCH] Add Player.getLastPing
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index d54353fdfb33780d2ad3be58bd52a3542d03b979..edb9dea9084e45a60a6b6c215abf71780af9fd5e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -2954,6 +2954,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         return this.getHandle().connection.latency();
+     }
+ 
++    // Paper start
++    @Override
++    public int getLastPing() {
++        if (this.getHandle().connection == null) throw new UnsupportedOperationException("Too early to call this method at this stage");
++        return this.getHandle().connection.lastLatency();
++    }
++    // Paper end
++
+     @Override
+     public String getLocale() {
+         // Paper start - Locale change event
