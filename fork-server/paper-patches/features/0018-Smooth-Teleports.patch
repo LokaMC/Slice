@@ -1,13 +1,22 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Cryptite <cryptite@gmail.com>
 Date: Tue, 2 Sep 2025 16:37:51 -0500
-Subject: [PATCH] Add Player.getLastPing
+Subject: [PATCH] Smooth Teleports
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index d54353fdfb33780d2ad3be58bd52a3542d03b979..edb9dea9084e45a60a6b6c215abf71780af9fd5e 100644
+index d54353fdfb33780d2ad3be58bd52a3542d03b979..ea7bfd05e68a91b28fc52122f835715acbed4db5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1457,7 +1457,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+             for (final io.papermc.paper.entity.TeleportFlag.Relative bukkit : relativeArguments) {
+                 nms.add(deltaRelativeToNMS(bukkit));
+             }
+-            entity.connection.internalTeleport(new net.minecraft.world.entity.PositionMoveRotation(
++            if (!entity.smoothWorldTeleport) entity.connection.internalTeleport(new net.minecraft.world.entity.PositionMoveRotation(
+                 io.papermc.paper.util.MCUtil.toVec3(to), net.minecraft.world.phys.Vec3.ZERO, to.getYaw(), to.getPitch()
+             ), nms);
+             // Paper end - Teleport API
 @@ -2954,6 +2954,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          return this.getHandle().connection.latency();
      }

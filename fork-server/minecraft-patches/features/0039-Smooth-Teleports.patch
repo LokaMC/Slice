@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Tue, 2 Sep 2025 16:37:51 -0500
+Subject: [PATCH] Smooth Teleports
+
+
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+index bdc1200ef5317fdaf58973bf580b0a672aee800f..30b0d6f7638d7fa3c92a96df757af2e01c37f53d 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+@@ -440,7 +440,7 @@ public final class RegionizedPlayerChunkLoader {
+             // Note: drop isAlive() check so that chunks properly unload client-side when the player dies
+             ((ChunkSystemChunkHolder)((ChunkSystemServerLevel)this.world).moonrise$getChunkTaskScheduler().chunkHolderManager
+                 .getChunkHolder(chunkX, chunkZ).vanillaChunkHolder).moonrise$removeReceivedChunk(this.player);
+-            this.player.connection.send(new ClientboundForgetLevelChunkPacket(new ChunkPos(chunkX, chunkZ)));
++            if (!this.player.smoothWorldTeleport) this.player.connection.send(new ClientboundForgetLevelChunkPacket(new ChunkPos(chunkX, chunkZ)));
+             // Paper start - PlayerChunkUnloadEvent
+             if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
+                 new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey), player.getBukkitEntity()).callEvent();
+diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+index f02800e4e941b05bde6f0d5fac76e2b6ec5b9832..523b19293fa16e2381cffc750d2209022f74013a 100644
+--- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+@@ -44,6 +44,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+     private long closedListenerTime;
+     private boolean closed = false;
+     private volatile int latency; // Paper - improve keepalives - make volatile
++    private volatile int lastLatency; // Paper
+     private final io.papermc.paper.util.KeepAlive keepAlive; // Paper - improve keepalives
+     private volatile boolean suspendFlushingOnServerThread = false;
+     // CraftBukkit start
+@@ -63,6 +64,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+         this.connection = connection;
+         //this.keepAliveTime = Util.getMillis(); // Paper - improve keepalives
+         this.latency = cookie.latency();
++        this.lastLatency = this.latency; // Paper
+         this.transferred = cookie.transferred();
+         // Paper start
+         this.playerBrand = cookie.brandName();
+@@ -113,6 +115,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+             this.keepAlive.pingCalculator5s.update(response);
+ 
+             this.latency = this.keepAlive.pingCalculator5s.getAvgLatencyMS();
++            this.lastLatency = (int) java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(response.latencyNS()); // Paper
+             return;
+         }
+ 
+@@ -458,6 +461,8 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+         return this.latency;
+     }
+ 
++    public int lastLatency() { return this.lastLatency; } // Paper
++
+     protected CommonListenerCookie createCookie(ClientInformation clientInformation) {
+         return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred, this.playerBrand, this.pluginMessagerChannels, this.keepAlive); // Paper
+     }
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 1490f673285840c7c844f4b7d80341e41f99af8e..8b0cbc4d160a6dcd6a1137f56b45389ab4991a67 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -753,7 +753,7 @@ public abstract class PlayerList {
+         // serverPlayer.connection.teleport(serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), serverPlayer.getYRot(), serverPlayer.getXRot());
+         serverPlayer.connection.send(new ClientboundSetChunkCacheRadiusPacket(serverLevel.spigotConfig.viewDistance)); // Spigot
+         serverPlayer.connection.send(new ClientboundSetSimulationDistancePacket(serverLevel.spigotConfig.simulationDistance)); // Spigot
+-        serverPlayer.connection.teleport(org.bukkit.craftbukkit.util.CraftLocation.toBukkit(serverPlayer.position(), serverLevel.getWorld(), serverPlayer.getYRot(), serverPlayer.getXRot())); // CraftBukkit
++        if (!serverPlayer.smoothWorldTeleport) serverPlayer.connection.teleport(org.bukkit.craftbukkit.util.CraftLocation.toBukkit(serverPlayer.position(), serverLevel.getWorld(), serverPlayer.getYRot(), serverPlayer.getXRot())); // CraftBukkit
+         serverPlayer.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getSharedSpawnPos(), level.getSharedSpawnAngle()));
+         serverPlayer.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
+         serverPlayer.connection
+@@ -1112,8 +1112,8 @@ public abstract class PlayerList {
+     public void sendLevelInfo(ServerPlayer player, ServerLevel level) {
+         WorldBorder worldBorder = player.level().getWorldBorder(); // CraftBukkit
+         player.connection.send(new ClientboundInitializeBorderPacket(worldBorder));
+-        player.connection.send(new ClientboundSetTimePacket(level.getGameTime(), level.getDayTime(), level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
+-        player.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getSharedSpawnPos(), level.getSharedSpawnAngle()));
++        if (!player.smoothWorldTeleport) player.connection.send(new ClientboundSetTimePacket(level.getGameTime(), level.getDayTime(), level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
++        if (!player.smoothWorldTeleport) player.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getSharedSpawnPos(), level.getSharedSpawnAngle()));
+         if (level.isRaining()) {
+             // CraftBukkit start - handle player weather
+             // player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.START_RAINING, 0.0F));
