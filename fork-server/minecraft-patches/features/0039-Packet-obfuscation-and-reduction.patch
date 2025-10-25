@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Cryptite <cryptite@gmail.com>
 Date: Tue, 2 Sep 2025 16:37:51 -0500
-Subject: [PATCH] Smooth Teleports
+Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
@@ -17,6 +17,33 @@ index bdc1200ef5317fdaf58973bf580b0a672aee800f..30b0d6f7638d7fa3c92a96df757af2e0
              // Paper start - PlayerChunkUnloadEvent
              if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
                  new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey), player.getBukkitEntity()).callEvent();
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index c15b0c861da689840c27c97f1dad991bdae49679..1d812e55866a30e46d0bec2db82349c6e2123146 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -400,6 +400,7 @@ public class ServerEntity {
+         return Mth.unpackDegrees(this.lastSentYHeadRot);
+     }
+ 
++    private static final net.minecraft.resources.ResourceLocation SCALE_ATTRIBUTE_KEY = org.bukkit.craftbukkit.util.CraftNamespacedKey.toMinecraft(org.bukkit.attribute.Attribute.SCALE.getKey());
+     private void sendDirtyEntityData() {
+         SynchedEntityData entityData = this.entity.getEntityData();
+         org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> list = entityData.packDirty();
+@@ -440,6 +441,14 @@ public class ServerEntity {
+                 // CraftBukkit end
+                 if (broadcastAttributes) {
+                     this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
++                } else {
++                    //Always send the scale key if it's one of them.
++                    for (AttributeInstance instance : attributesToSync) {
++                        if (instance.getAttribute().is(SCALE_ATTRIBUTE_KEY)) {
++                            this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), List.of(instance)));
++                            break;
++                        }
++                    }
+                 }
+             }
+ 
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 index f02800e4e941b05bde6f0d5fac76e2b6ec5b9832..523b19293fa16e2381cffc750d2209022f74013a 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
@@ -78,3 +105,15 @@ index 1490f673285840c7c844f4b7d80341e41f99af8e..8b0cbc4d160a6dcd6a1137f56b45389a
          if (level.isRaining()) {
              // CraftBukkit start - handle player weather
              // player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.START_RAINING, 0.0F));
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index 25bd4244ec9cf9945216579968f1e063f833465f..e0b9a7248eb8aff4e8e07ce8fbd3285b65e77c9b 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1843,6 +1843,7 @@ public abstract class Player extends LivingEntity {
+ 
+     @Override
+     protected Entity.MovementEmission getMovementEmission() {
++        if (vanished) return MovementEmission.NONE; // Slice
+         return this.abilities.flying || this.onGround() && this.isDiscrete() ? Entity.MovementEmission.NONE : Entity.MovementEmission.ALL;
+     }
+ 
