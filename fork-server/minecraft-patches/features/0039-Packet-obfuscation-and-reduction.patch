@@ -18,10 +18,35 @@ index bdc1200ef5317fdaf58973bf580b0a672aee800f..30b0d6f7638d7fa3c92a96df757af2e0
              if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
                  new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey), player.getBukkitEntity()).callEvent();
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index c15b0c861da689840c27c97f1dad991bdae49679..1d812e55866a30e46d0bec2db82349c6e2123146 100644
+index c15b0c861da689840c27c97f1dad991bdae49679..7cc0414364fcda4ae551be88f48aa7c3cafa622b 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
-@@ -400,6 +400,7 @@ public class ServerEntity {
+@@ -350,8 +350,8 @@ public class ServerEntity {
+         }
+ 
+         if (this.entity instanceof LivingEntity livingEntity) { // Slice start - only do this if this entity broadcasts attributes to others
++            Collection<AttributeInstance> syncableAttributes = livingEntity.getAttributes().getSyncableAttributes();
+             if (livingEntity.broadcastsAttributes) {
+-                Collection<AttributeInstance> syncableAttributes = livingEntity.getAttributes().getSyncableAttributes();
+                 // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
+                 if (this.entity.getId() == player.getId()) {
+                     ((ServerPlayer) this.entity).getBukkitEntity().injectScaledMaxHealth(syncableAttributes, false);
+@@ -360,6 +360,14 @@ public class ServerEntity {
+                 if (!syncableAttributes.isEmpty()) {
+                     consumer.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), syncableAttributes));
+                 } // Slice end
++            } else {
++                //Always send the scale key if it's one of them.
++                for (AttributeInstance instance : syncableAttributes) {
++                    if (instance.getAttribute().is(SCALE_ATTRIBUTE_KEY)) {
++                        consumer.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), List.of(instance)));
++                        break;
++                    }
++                }
+             }
+         }
+ 
+@@ -400,6 +408,7 @@ public class ServerEntity {
          return Mth.unpackDegrees(this.lastSentYHeadRot);
      }
  
@@ -29,7 +54,7 @@ index c15b0c861da689840c27c97f1dad991bdae49679..1d812e55866a30e46d0bec2db82349c6
      private void sendDirtyEntityData() {
          SynchedEntityData entityData = this.entity.getEntityData();
          org.apache.commons.lang3.tuple.Pair<List<SynchedEntityData.DataValue<?>>, List<SynchedEntityData.DataValue<?>>> list = entityData.packDirty();
-@@ -440,6 +441,14 @@ public class ServerEntity {
+@@ -440,6 +449,14 @@ public class ServerEntity {
                  // CraftBukkit end
                  if (broadcastAttributes) {
                      this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), attributesToSync));
