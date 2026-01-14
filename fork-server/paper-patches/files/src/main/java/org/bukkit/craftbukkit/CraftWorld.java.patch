@@ -1,0 +1,21 @@
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1152,6 +_,18 @@
+         this.world.noSave = !value;
+     }
+ 
++    // Slice start
++    @Override
++    public boolean isInstance() {
++        return world.instance;
++    }
++
++    @Override
++    public void setInstance(boolean value) {
++        world.instance = value;
++    }
++    // Slice end
++
+     @Override
+     public void setDifficulty(Difficulty difficulty) {
+         this.getHandle().getServer().setDifficulty(this.getHandle(), CraftDifficulty.toMinecraft(difficulty), null, true);

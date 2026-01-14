@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 10:02:44 -0600
+Subject: [PATCH] Add World Instance flag
+
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index dc65503a2d785d64d37b76b0303f51cf66d9769a..e29001263dc6f182bcda0b60f018d446cda9c1b7 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -228,6 +228,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     public boolean hasPhysicsEvent = true; // Paper - BlockPhysicsEvent
+     public boolean hasEntityMoveEvent; // Paper - Add EntityMoveEvent
+     private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current)
++    public boolean instance; // Slice
+ 
+     @Override
+     public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
