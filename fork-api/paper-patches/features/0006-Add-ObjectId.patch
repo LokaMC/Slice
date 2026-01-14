@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 11:58:50 -0600
+Subject: [PATCH] Add ObjectId
+
+
+diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
+index f2a1693a1ef03dafa33442d61f73f91bd6202370..ffcb4ac132ca5e86fe08528eedb97eba01f021b0 100644
+--- a/src/main/java/org/bukkit/entity/HumanEntity.java
++++ b/src/main/java/org/bukkit/entity/HumanEntity.java
+@@ -31,6 +31,11 @@ import org.jspecify.annotations.Nullable;
+ @NullMarked
+ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder {
+ 
++    // Slice start
++    org.bson.types.@Nullable ObjectId getObjectId();
++    void setObjectId(org.bson.types.@Nullable ObjectId objectId);
++    // Slice end
++
+     // Paper start
+     @Override
+     EntityEquipment getEquipment();

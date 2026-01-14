@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 11:58:50 -0600
+Subject: [PATCH] Add ObjectId
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+index 5a4e9853103153b31456190e3f95dc98642f3ec5..24829a796b62e3e599a904c9c72a207f3f93d01e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+@@ -82,6 +82,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+     protected final PermissibleBase perm = new PermissibleBase(this);
+     private boolean op;
+     private GameMode mode;
++    private org.bson.types.ObjectId objectId;
+ 
+     public CraftHumanEntity(final CraftServer server, final Player entity) {
+         super(server, entity);
+@@ -105,6 +106,18 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+         return this.getClass().getSimpleName() + "{name=" + this.getName() + ", uuid=" + this.getUniqueId() + '}';
+     }
+ 
++    // Slice start
++    @Override
++    public org.bson.types.ObjectId getObjectId() {
++        return objectId;
++    }
++
++    @Override
++    public void setObjectId(org.bson.types.ObjectId objectId) {
++        this.objectId = objectId;
++    }
++    // Slice end
++
+     @Override
+     public PlayerInventory getInventory() {
+         return this.inventory;

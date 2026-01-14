@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 11:58:50 -0600
+Subject: [PATCH] Add ObjectId
+
+
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 3bf618f1d756bad7755a87803132bd731e7c41be..d1c5b0c89cb9fdd2b824269a8dfd995d64d90c5e 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -196,7 +196,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+             // Paper start - Folia schedulers
+             synchronized (this) {
+                 if (this.bukkitEntity == null) {
+-                    return this.bukkitEntity = org.bukkit.craftbukkit.entity.CraftEntity.getEntity(this.level.getCraftServer(), this);
++                    this.bukkitEntity = org.bukkit.craftbukkit.entity.CraftEntity.getEntity(this.level.getCraftServer(), this);
++
++                    // Slice start - resolve ObjectId
++                    if (this.bukkitEntity instanceof org.bukkit.craftbukkit.entity.CraftHumanEntity craftHumanEntity) {
++                        io.papermc.paper.event.player.PlayerResolveObjectIdEvent event = new io.papermc.paper.event.player.PlayerResolveObjectIdEvent((org.bukkit.entity.Player) bukkitEntity);
++                        event.callEvent();
++                        craftHumanEntity.setObjectId(event.getObjectId());
++                    }
++                    // Slice end
++
++                    return this.bukkitEntity;
+                 }
+             }
+             // Paper end - Folia schedulers

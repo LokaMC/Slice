@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 12:02:28 -0600
+Subject: [PATCH] Unsaveable entities
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index 073cff2ff325d3a05963acc7c3212e2e4ac38fcc..3ce25da05adc3d7380a099e059e695a9fc8c732f 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -1330,4 +1330,19 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     org.bukkit.block.Block getBlockStandingOn();
+     // Slice end
++
++    // Slice start
++    /**
++     * Returns true if the entity can be saved. If false, the entity will never be serialized or saved.
++     */
++    boolean isSaveable();
++
++    /**
++     * Sets whether the entity can be serialized and saved to disk.
++     *
++     * @param saveable the saveable status
++     * @see #isSaveable()
++     */
++    void setSaveable(boolean saveable);
++    // Slice end
+ }
