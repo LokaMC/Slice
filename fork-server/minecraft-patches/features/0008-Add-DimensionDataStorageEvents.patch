@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 11:42:15 -0600
+Subject: [PATCH] Add DimensionDataStorageEvents
+
+
+diff --git a/net/minecraft/world/level/storage/DimensionDataStorage.java b/net/minecraft/world/level/storage/DimensionDataStorage.java
+index b932e6236975fd4a755bdbf4b7a958599383f3f8..34c57ba5d670fdc146161d5cf8d9c4e92b58560f 100644
+--- a/net/minecraft/world/level/storage/DimensionDataStorage.java
++++ b/net/minecraft/world/level/storage/DimensionDataStorage.java
+@@ -198,6 +198,11 @@ public class DimensionDataStorage implements AutoCloseable {
+         Path dataFile = this.getDataFile(type.id());
+ 
+         try {
++            java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
++            NbtIo.writeCompressed(tag, buf);
++            io.papermc.paper.event.server.DimensionDataStorageSaveEvent event = new io.papermc.paper.event.server.DimensionDataStorageSaveEvent(type.id(), buf);
++            if (!event.callEvent()) return;
++
+             NbtIo.writeCompressed(tag, dataFile);
+         } catch (IOException var5) {
+             LOGGER.error("Could not save data to {}", dataFile.getFileName(), var5);

@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 11:54:32 -0600
+Subject: [PATCH] Add PlayerData Events
+
+
+diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
+index 6b254d2d91c19e81edac13a00ad646092f958382..91d90ba6ce9121d09a456e576649a29e4e75b66b 100644
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -94,7 +94,7 @@ public class ServerStatsCounter extends StatsCounter {
+             FileUtil.createDirectoriesSafe(this.file.getParent());
+ 
+             try (Writer bufferedWriter = Files.newBufferedWriter(this.file, StandardCharsets.UTF_8)) {
+-                GSON.toJson(this.toJson(), GSON.newJsonWriter(bufferedWriter));
++                GSON.toJson(this.serialize(), GSON.newJsonWriter(bufferedWriter));
+             }
+         } catch (JsonIOException | IOException var6) {
+             LOGGER.error("Couldn't save stats to {}", this.file, var6);
+@@ -126,11 +126,16 @@ public class ServerStatsCounter extends StatsCounter {
+             );
+     }
+ 
+-    protected JsonElement toJson() {
++    // Slice start
++    public String toJson() {
++        return serialize().toString();
++    }
++
++    public JsonObject serialize() { // Slice end
+         JsonObject jsonObject = new JsonObject();
+         jsonObject.add("stats", STATS_CODEC.encodeStart(JsonOps.INSTANCE, this.stats).getOrThrow());
+         jsonObject.addProperty("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
+-        return jsonObject;
++        return jsonObject; // Slice
+     }
+ 
+     public void markAllDirty() {
+diff --git a/net/minecraft/world/level/storage/PlayerDataStorage.java b/net/minecraft/world/level/storage/PlayerDataStorage.java
+index b8ef50bc3d07890c9da2c98d5f009a3adc52f4b0..3654e3123df9629ea8a322ed9fe80773b47bc6ce 100644
+--- a/net/minecraft/world/level/storage/PlayerDataStorage.java
++++ b/net/minecraft/world/level/storage/PlayerDataStorage.java
+@@ -32,6 +32,7 @@ public class PlayerDataStorage {
+ 
+     public void save(Player player) {
+         if (org.spigotmc.SpigotConfig.disablePlayerDataSaving) return; // Spigot
++        if (!new com.destroystokyo.paper.event.player.PlayerSaveDataEvent((org.bukkit.entity.Player) player.getBukkitEntity()).callEvent()) return; // Slice
+         try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(player.problemPath(), LOGGER)) {
+             TagValueOutput tagValueOutput = TagValueOutput.createWithContext(scopedCollector, player.registryAccess());
+             player.saveWithoutId(tagValueOutput);
+@@ -91,6 +92,19 @@ public class PlayerDataStorage {
+     }
+ 
+     public Optional<CompoundTag> load(NameAndId nameAndId) {
++        // Slice start - If event supplies playerdata, use it. Otherwise just load from disk as usual
++        com.destroystokyo.paper.event.player.PlayerLoadDataEvent event = new com.destroystokyo.paper.event.player.PlayerLoadDataEvent(nameAndId.id());
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++
++        Object playerData = event.getPlayerData();
++        if (playerData instanceof CompoundTag tag) {
++            return Optional.of(ca.spottedleaf.dataconverter.minecraft.MCDataConverter.convertTag(ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry.PLAYER,
++                    tag,
++                    NbtUtils.getDataVersion(tag),
++                    ca.spottedleaf.dataconverter.minecraft.util.Version.getCurrentVersion()));
++        }
++        // Slice end
++
+         Optional<CompoundTag> optional = this.load(nameAndId, ".dat");
+         if (optional.isEmpty()) {
+             this.backup(nameAndId, ".dat");
