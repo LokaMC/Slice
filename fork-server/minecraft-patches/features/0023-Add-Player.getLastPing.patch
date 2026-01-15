@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 09:03:42 -0600
+Subject: [PATCH] Add Player.getLastPing
+
+
+diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+index b8a4b4cc02a2fc6b70f4b840796eed501aad6239..eaa9d2bdb1c9fc3b739c7999dec617c54d8be19c 100644
+--- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+@@ -45,6 +45,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+     private long closedListenerTime;
+     private boolean closed = false;
+     private volatile int latency; // Paper - improve keepalives - make volatile
++    private volatile int lastLatency; // Paper
+     private final io.papermc.paper.util.KeepAlive keepAlive; // Paper - improve keepalives
+     private volatile boolean suspendFlushingOnServerThread = false;
+     // CraftBukkit start
+@@ -64,6 +65,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+         this.connection = connection;
+         //this.keepAliveTime = Util.getMillis(); // Paper - improve keepalives
+         this.latency = cookie.latency();
++        this.lastLatency = this.latency; // Paper
+         this.transferred = cookie.transferred();
+         // Paper start
+         this.playerBrand = cookie.brandName();
+@@ -114,6 +116,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+             this.keepAlive.pingCalculator5s.update(response);
+ 
+             this.latency = this.keepAlive.pingCalculator5s.getAvgLatencyMS();
++            this.lastLatency = (int) java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(response.latencyNS()); // Paper
+             return;
+         }
+ 
+@@ -459,6 +462,8 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+         return this.latency;
+     }
+ 
++    public int lastLatency() { return this.lastLatency; } // Paper
++
+     protected CommonListenerCookie createCookie(ClientInformation clientInformation) {
+         return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred, this.playerBrand, this.pluginMessagerChannels, this.keepAlive); // Paper
+     }
