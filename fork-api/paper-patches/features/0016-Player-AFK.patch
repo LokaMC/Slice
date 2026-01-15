@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 09:39:44 -0600
+Subject: [PATCH] Player AFK
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 2092c7ee392d175218554d7d95e0b207d39fc149..4a47e2a88b4e25da373602b40efa87513548d48b 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -4027,4 +4027,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      */
+     @ApiStatus.Experimental
+     PlayerGameConnection getConnection();
++
++    /**
++     * @return Whether this player is AFK.
++     */
++    // Slice start
++    boolean isAfk();
++
++    /**
++     * @param afk whether the player is AFK.
++     */
++    void setAfk(boolean afk);
++    // Slice end
+ }

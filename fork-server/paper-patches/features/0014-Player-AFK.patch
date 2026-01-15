@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 09:39:40 -0600
+Subject: [PATCH] Player AFK
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 3d08277d10b401be45f0caf8566c65ce4c5492ec..0c776f08a5828fce72bb83c67c870a01ba04cbc9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -3303,6 +3303,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         return this.getHandle().connection.playerGameConnection;
+     }
+ 
++    @Override
++    public boolean isAfk() {
++        return getHandle().afk;
++    }
++
++    @Override
++    public void setAfk(boolean afk) {
++        getHandle().afk = afk;
++    }
++
+     @Override
+     public org.bukkit.entity.Entity releaseLeftShoulderEntity() {
+         if (!getHandle().getShoulderEntityLeft().isEmpty()) {

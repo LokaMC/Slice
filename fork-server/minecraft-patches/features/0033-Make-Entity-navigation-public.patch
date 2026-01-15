@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 09:42:05 -0600
+Subject: [PATCH] Make Entity navigation public
+
+
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 92175cc019750e829fcad7691a937024c2649882..a3492521c5560bec221d3514bb536ab2f8473833 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -133,7 +133,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+     protected MoveControl moveControl;
+     protected JumpControl jumpControl;
+     private final BodyRotationControl bodyRotationControl;
+-    protected PathNavigation navigation;
++    public PathNavigation navigation; // Slice
+     public GoalSelector goalSelector;
+     public net.minecraft.world.entity.ai.goal.@Nullable FloatGoal goalFloat; // Paper - Allow nerfed mobs to jump and float
+     public GoalSelector targetSelector;

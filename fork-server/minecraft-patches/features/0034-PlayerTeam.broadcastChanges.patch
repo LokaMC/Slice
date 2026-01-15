@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 09:42:49 -0600
+Subject: [PATCH] PlayerTeam.broadcastChanges
+
+
+diff --git a/net/minecraft/server/ServerScoreboard.java b/net/minecraft/server/ServerScoreboard.java
+index 04a62e5ab9c0d0b9b7959280b0e0ea3ff388c017..fa616b275b9f04a69d2c7a7ff1ab32ff691ede4b 100644
+--- a/net/minecraft/server/ServerScoreboard.java
++++ b/net/minecraft/server/ServerScoreboard.java
+@@ -196,6 +196,7 @@ public class ServerScoreboard extends Scoreboard {
+ 
+     @Override
+     public void onTeamChanged(PlayerTeam team) {
++        if (!team.broadcastsChanges()) return;
+         super.onTeamChanged(team);
+         this.broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false)); // CraftBukkit
+         this.updateTeamWaypoints(team);
+diff --git a/net/minecraft/world/scores/PlayerTeam.java b/net/minecraft/world/scores/PlayerTeam.java
+index 3feafbe8a953ea7fba8bc6f2351c61d9c865b83d..f5418b20d3a5074241231d66a8c44667497d19db 100644
+--- a/net/minecraft/world/scores/PlayerTeam.java
++++ b/net/minecraft/world/scores/PlayerTeam.java
+@@ -33,6 +33,7 @@ public class PlayerTeam extends Team {
+     private ChatFormatting color = ChatFormatting.RESET;
+     private Team.CollisionRule collisionRule = Team.CollisionRule.ALWAYS;
+     private final Style displayNameStyle;
++    private boolean broadcastChanges = true; // Slice
+ 
+     public PlayerTeam(Scoreboard scoreboard, String name) {
+         this.scoreboard = scoreboard;
+@@ -57,6 +58,16 @@ public class PlayerTeam extends Team {
+         );
+     }
+ 
++    // Slice start
++    public boolean broadcastsChanges() {
++        return broadcastChanges;
++    }
++
++    public void setBroadcastChanges(boolean broadcastChanges) {
++        this.broadcastChanges = broadcastChanges;
++    }
++    // Slice end
++
+     public Scoreboard getScoreboard() {
+         return this.scoreboard;
+     }
