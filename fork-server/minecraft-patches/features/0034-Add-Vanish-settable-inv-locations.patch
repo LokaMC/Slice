@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Cryptite <cryptite@gmail.com>
 Date: Thu, 15 Jan 2026 09:42:49 -0600
-Subject: [PATCH] PlayerTeam.broadcastChanges
+Subject: [PATCH] Add Vanish, settable inv locations
 
 
 diff --git a/net/minecraft/server/ServerScoreboard.java b/net/minecraft/server/ServerScoreboard.java
@@ -16,6 +16,18 @@ index 04a62e5ab9c0d0b9b7959280b0e0ea3ff388c017..fa616b275b9f04a69d2c7a7ff1ab32ff
          super.onTeamChanged(team);
          this.broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false)); // CraftBukkit
          this.updateTeamWaypoints(team);
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index 11efd5d2ce1b2056fcf12bdfc2bd6e85d7f9a8ce..b017a081d99c98abcd9dfdf5a6cac9f2355c858e 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -1779,6 +1779,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+ 
+     @Override
+     protected Entity.MovementEmission getMovementEmission() {
++        if (vanished) return MovementEmission.NONE; // Slice
+         return this.abilities.flying || this.onGround() && this.isDiscrete() ? Entity.MovementEmission.NONE : Entity.MovementEmission.ALL;
+     }
+ 
 diff --git a/net/minecraft/world/scores/PlayerTeam.java b/net/minecraft/world/scores/PlayerTeam.java
 index 3feafbe8a953ea7fba8bc6f2351c61d9c865b83d..f5418b20d3a5074241231d66a8c44667497d19db 100644
 --- a/net/minecraft/world/scores/PlayerTeam.java
