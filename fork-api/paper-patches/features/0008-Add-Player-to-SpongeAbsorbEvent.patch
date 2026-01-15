@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:13:07 -0600
+Subject: [PATCH] Add Player to SpongeAbsorbEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/SpongeAbsorbEvent.java b/src/main/java/org/bukkit/event/block/SpongeAbsorbEvent.java
+index 07495ed6b8c084db503ac3f6a9b70601575fb883..77137e3e20837346073a7066b5f12083855cd1b3 100644
+--- a/src/main/java/org/bukkit/event/block/SpongeAbsorbEvent.java
++++ b/src/main/java/org/bukkit/event/block/SpongeAbsorbEvent.java
+@@ -8,6 +8,7 @@ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable; // Paper
+ 
+ /**
+  * Called when a sponge absorbs water from the world.
+@@ -21,14 +22,15 @@ import org.jetbrains.annotations.NotNull;
+ public class SpongeAbsorbEvent extends BlockEvent implements Cancellable {
+ 
+     private static final HandlerList HANDLER_LIST = new HandlerList();
+-
++    private final org.bukkit.entity.Player player; // Paper
+     private final List<BlockState> blocks;
+     private boolean cancelled;
+ 
+     @ApiStatus.Internal
+-    public SpongeAbsorbEvent(@NotNull Block block, @NotNull List<BlockState> waterblocks) {
++    public SpongeAbsorbEvent(@NotNull Block block, @Nullable org.bukkit.entity.Player player, @NotNull List<BlockState> waterblocks) { // Paper
+         super(block);
+         this.blocks = waterblocks;
++        this.player = player; // Paper
+     }
+ 
+     /**
+@@ -44,6 +46,18 @@ public class SpongeAbsorbEvent extends BlockEvent implements Cancellable {
+         return this.blocks;
+     }
+ 
++    // Paper start
++    /**
++     * Gets the Player that placed the Sponge Block
++     *
++     * @return The Player that placed the sponge block causing the absorb event, or null if no Player was involved
++     */
++    @Nullable
++    public org.bukkit.entity.Player getPlayer() {
++        return player;
++    }
++    // Paper end
++
+     @Override
+     public boolean isCancelled() {
+         return this.cancelled;

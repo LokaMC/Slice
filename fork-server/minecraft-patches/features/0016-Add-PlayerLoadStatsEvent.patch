@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:28:49 -0600
+Subject: [PATCH] Add PlayerLoadStatsEvent
+
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 82bd70c7bf2926b585b80e5582377ed45cbf0077..5361787f95446860ad62571ca9cd38ba377dea92 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -1168,7 +1168,7 @@ public abstract class PlayerList {
+     }
+     public ServerStatsCounter getPlayerStats(GameProfile gameProfile) {
+             Path path = this.locateStatsFile(gameProfile);
+-            return new ServerStatsCounter(this.server, path);
++            return new ServerStatsCounter(this.server, path, gameProfile.id()); // Slice
+     }
+     // CraftBukkit end
+ 
+diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
+index 91d90ba6ce9121d09a456e576649a29e4e75b66b..91b10d7792cb8f0d11a8445b3fa14407d91e6b57 100644
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -63,9 +63,15 @@ public class ServerStatsCounter extends StatsCounter {
+         return Codec.unboundedMap(codec1, Codec.INT);
+     }
+ 
+-    public ServerStatsCounter(MinecraftServer server, Path file) {
++    public ServerStatsCounter(MinecraftServer server, Path file, java.util.UUID uuid) { // Slice
+         this.file = file;
+-        if (Files.isRegularFile(file)) {
++        // Slice start - If event supplies stats, use it. Otherwise just load from disk as usual
++        com.destroystokyo.paper.event.player.PlayerLoadStatsEvent event = new com.destroystokyo.paper.event.player.PlayerLoadStatsEvent(uuid);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        JsonObject providedJson = event.getStatistics();
++        if (providedJson != null) {
++            parse(server.getFixerUpper(), providedJson);
++        } else if (Files.isRegularFile(file)) {
+             try (Reader bufferedReader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                 JsonElement jsonElement = StrictJsonParser.parse(bufferedReader);
+                 this.parse(server.getFixerUpper(), jsonElement);

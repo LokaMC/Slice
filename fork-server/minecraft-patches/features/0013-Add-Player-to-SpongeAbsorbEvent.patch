@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:13:04 -0600
+Subject: [PATCH] Add Player to SpongeAbsorbEvent
+
+
+diff --git a/net/minecraft/world/level/block/SpongeBlock.java b/net/minecraft/world/level/block/SpongeBlock.java
+index 298e51da2da64fdaa860108cc34e59d214b5f9a7..eec6a3fb09f4f022cc2a52e6b4177cd40190d36d 100644
+--- a/net/minecraft/world/level/block/SpongeBlock.java
++++ b/net/minecraft/world/level/block/SpongeBlock.java
+@@ -101,7 +101,8 @@ public class SpongeBlock extends Block {
+         if (!snapshots.isEmpty()) {
+             final org.bukkit.block.Block sponge = org.bukkit.craftbukkit.block.CraftBlock.at(level, pos);
+ 
+-            org.bukkit.event.block.SpongeAbsorbEvent event = new org.bukkit.event.block.SpongeAbsorbEvent(sponge, (java.util.List<org.bukkit.block.BlockState>) (java.util.List) snapshots);
++            Level.PendingBlockEvent blockEvent = level.pendingPlayerBlockEvents.remove(pos); // Paper
++            org.bukkit.event.block.SpongeAbsorbEvent event = new org.bukkit.event.block.SpongeAbsorbEvent(sponge, blockEvent != null ? (org.bukkit.entity.Player) blockEvent.player.getBukkitEntity() : null, (java.util.List<org.bukkit.block.BlockState>) (java.util.List) snapshots);
+             if (!event.callEvent()) {
+                 return false;
+             }
