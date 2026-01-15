@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:54:25 -0600
+Subject: [PATCH] World.isShardedFightWorld
+
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index b8b60398ab141b895f1ab36b0310668e2bf87520..fd7e817206937d8bdcbd619042c9e9c5f8208c8d 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -229,6 +229,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     public boolean hasEntityMoveEvent; // Paper - Add EntityMoveEvent
+     private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current)
+     public boolean instance; // Slice
++    public boolean shardedFight; // Slice
+ 
+     @Override
+     public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {

@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:40:26 -0600
+Subject: [PATCH] Custom Tracking Ranges
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index bbd76cbba495872612340f5c31f774d7333d0d77..b3c3d27ef006a059485905a6e06b8051749b414a 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -1361,4 +1361,17 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     void setVanished(boolean vanished);
+     // Slice end
++
++    // Slice start
++    /**
++     * Returns the custom tracking range of this Entity
++     */
++    int getTrackingRange();
++
++    /**
++     * Sets the custom tracking range of this Entity. If this is set above 0, it will override any tracking ranges
++     * specified via config.
++     */
++    void setTrackingRange(int range);
++    // Slice end
+ }

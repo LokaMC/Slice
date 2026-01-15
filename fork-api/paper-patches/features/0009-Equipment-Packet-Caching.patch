@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:36:11 -0600
+Subject: [PATCH] Equipment Packet Caching
+
+
+diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
+index 19a48dce7c2fa7cdfd9947aaff8f3a13ecb65932..2db0230b7a45bf928b080cc21435d49b34e0757d 100644
+--- a/src/main/java/org/bukkit/entity/LivingEntity.java
++++ b/src/main/java/org/bukkit/entity/LivingEntity.java
+@@ -1480,6 +1480,14 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+     void setBodyYaw(float bodyYaw);
+     // Paper end - body yaw API
+ 
++
++    // Slice start
++    /**
++     * @param p The player to send this entity's equipment packet to
++     */
++    void sendEquipment(@NotNull Player p);
++    // Slice end
++
+     // Paper start - Expose canUseSlot
+     /**
+      * Checks whether this entity can use the equipment slot.

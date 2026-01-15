@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 15 Jan 2026 08:50:51 -0600
+Subject: [PATCH] Expose Entity.despawnTime
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index b3c3d27ef006a059485905a6e06b8051749b414a..6215e2773ec41782db8a66e49661462dd01ff145 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -1374,4 +1374,16 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     void setTrackingRange(int range);
+     // Slice end
++
++    /**
++     * @return Returns the amount of time in ticks that the entity will live before being discarded.
++     */
++    // Slice start
++    int getDespawnTime();
++
++    /**
++     * @param ticks Set the amount of time in ticks that the entity will live before being discarded.
++     */
++    void setDespawnTime(int ticks);
++    // Slice end
+ }
