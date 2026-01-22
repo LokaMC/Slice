@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 21 Jan 2026 08:54:18 -0600
+Subject: [PATCH] Add direct remover to HangingBreakByEntityEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/hanging/HangingBreakByEntityEvent.java b/src/main/java/org/bukkit/event/hanging/HangingBreakByEntityEvent.java
+index d9e935274e31f601c25e6054bf62673c01267618..3eb54ab381854cd27822d84d31c546f89b339e1c 100644
+--- a/src/main/java/org/bukkit/event/hanging/HangingBreakByEntityEvent.java
++++ b/src/main/java/org/bukkit/event/hanging/HangingBreakByEntityEvent.java
+@@ -12,16 +12,18 @@ import org.jetbrains.annotations.Nullable;
+ public class HangingBreakByEntityEvent extends HangingBreakEvent {
+ 
+     private final Entity remover;
++    private final Entity directRemover; // Slice
+ 
+     @ApiStatus.Internal
+     public HangingBreakByEntityEvent(@NotNull final Hanging hanging, @NotNull final Entity remover) {
+-        this(hanging, remover, HangingBreakEvent.RemoveCause.ENTITY);
++        this(hanging, remover, null, HangingBreakEvent.RemoveCause.ENTITY);
+     }
+ 
+     @ApiStatus.Internal
+-    public HangingBreakByEntityEvent(@NotNull final Hanging hanging, @NotNull final Entity remover, @NotNull final HangingBreakEvent.RemoveCause cause) {
++    public HangingBreakByEntityEvent(@NotNull final Hanging hanging, @NotNull final Entity remover, @Nullable Entity directRemover, @NotNull final HangingBreakEvent.RemoveCause cause) { // Slice
+         super(hanging, cause);
+         this.remover = remover;
++        this.directRemover = directRemover; // Slice
+     }
+ 
+     /**
+@@ -33,4 +35,16 @@ public class HangingBreakByEntityEvent extends HangingBreakEvent {
+     public Entity getRemover() {
+         return this.remover;
+     }
++
++    // Slice start
++    /**
++     * Gets the direct entity that removed the hanging entity. For example, a thrown ender pearl.
++     *
++     * @return the entity that removed the hanging entity
++     */
++    @Nullable
++    public Entity getDirectRemover() {
++        return this.directRemover;
++    }
++    // Slice end
+ }
