@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Mon, 26 Jan 2026 15:47:13 -0600
+Subject: [PATCH] Loka-specific spear changes
+
+
+diff --git a/net/minecraft/world/item/Items.java b/net/minecraft/world/item/Items.java
+index 3e0ae17bf7129aa62765be453edba1bdd50324ab..55004f078a0130787c4b983fe5024402cebda3ec 100644
+--- a/net/minecraft/world/item/Items.java
++++ b/net/minecraft/world/item/Items.java
+@@ -1970,22 +1970,22 @@ public class Items {
+             .component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
+     );
+     public static final Item WOODEN_SPEAR = registerItem(
+-        "wooden_spear", new Item.Properties().spear(ToolMaterial.WOOD, 0.65F, 0.7F, 0.75F, 5.0F, 14.0F, 10.0F, 5.1F, 15.0F, 4.6F)
++        "wooden_spear", new Item.Properties().spear(ToolMaterial.WOOD, 1.15F, 0.7F, 0.75F, 5.0F, 14.0F, 10.0F, 5.1F, 15.0F, 4.6F) // Slice - make all spears diamond and below share swingDurationSeconds
+     );
+     public static final Item STONE_SPEAR = registerItem(
+-        "stone_spear", new Item.Properties().spear(ToolMaterial.STONE, 0.75F, 0.82F, 0.7F, 4.5F, 10.0F, 9.0F, 5.1F, 13.75F, 4.6F)
++        "stone_spear", new Item.Properties().spear(ToolMaterial.STONE, 1.15F, 0.82F, 0.7F, 4.5F, 10.0F, 9.0F, 5.1F, 13.75F, 4.6F) // Slice - make all spears diamond and below share swingDurationSeconds
+     );
+     public static final Item COPPER_SPEAR = registerItem(
+-        "copper_spear", new Item.Properties().spear(ToolMaterial.COPPER, 0.85F, 0.82F, 0.65F, 4.0F, 9.0F, 8.25F, 5.1F, 12.5F, 4.6F)
++        "copper_spear", new Item.Properties().spear(ToolMaterial.COPPER, 1.15F, 0.82F, 0.65F, 4.0F, 9.0F, 8.25F, 5.1F, 12.5F, 4.6F) // Slice - make all spears diamond and below share swingDurationSeconds
+     );
+     public static final Item IRON_SPEAR = registerItem(
+-        "iron_spear", new Item.Properties().spear(ToolMaterial.IRON, 0.95F, 0.95F, 0.6F, 2.5F, 8.0F, 6.75F, 5.1F, 11.25F, 4.6F)
++        "iron_spear", new Item.Properties().spear(ToolMaterial.IRON, 1.15F, 0.95F, 0.6F, 2.5F, 8.0F, 6.75F, 5.1F, 11.25F, 4.6F) // Slice - make all spears diamond and below share swingDurationSeconds
+     );
+     public static final Item GOLDEN_SPEAR = registerItem(
+-        "golden_spear", new Item.Properties().spear(ToolMaterial.GOLD, 0.95F, 0.7F, 0.7F, 3.5F, 10.0F, 8.5F, 5.1F, 13.75F, 4.6F)
++        "golden_spear", new Item.Properties().spear(ToolMaterial.GOLD, 1.15F, 0.7F, 0.7F, 3.5F, 10.0F, 8.5F, 5.1F, 13.75F, 4.6F) // Slice - make all spears diamond and below share swingDurationSeconds
+     );
+     public static final Item DIAMOND_SPEAR = registerItem(
+-        "diamond_spear", new Item.Properties().spear(ToolMaterial.DIAMOND, 1.05F, 1.075F, 0.5F, 3.0F, 7.5F, 6.5F, 5.1F, 10.0F, 4.6F)
++        "diamond_spear", new Item.Properties().spear(ToolMaterial.DIAMOND, 1.15F, 1.075F, 0.5F, 3.0F, 7.5F, 6.5F, 5.1F, 10.0F, 4.6F)
+     );
+     public static final Item NETHERITE_SPEAR = registerItem(
+         "netherite_spear", new Item.Properties().spear(ToolMaterial.NETHERITE, 1.15F, 1.2F, 0.4F, 2.5F, 7.0F, 5.5F, 5.1F, 8.75F, 4.6F).fireResistant()
