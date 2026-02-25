@@ -5,10 +5,10 @@ Subject: [PATCH] Add Player.getLastPing
 
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 83edecc910b14d56704256073e04c0f409388e2e..2092c7ee392d175218554d7d95e0b207d39fc149 100644
+index 91e59c154d0013952059700edf7e2840aef1b724..ecd74fc252b62f87d9ab92c5fb70761ef3ca34ad 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -3374,6 +3374,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3376,6 +3376,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public int getPing();
  

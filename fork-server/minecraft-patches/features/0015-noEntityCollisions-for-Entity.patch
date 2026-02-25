@@ -5,10 +5,10 @@ Subject: [PATCH] noEntityCollisions for Entity
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-index 817e4ffd597938697f0c4dca16068f8d20c088b3..91f28e41ab3d5916bf44b7ea2b6b7e41593a382b 100644
+index de764da80793d272ff597b4a0742ce785838799a..51cfffe9b42d55ca159f031b02e392920e045ee4 100644
 --- a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-@@ -2069,6 +2069,7 @@ public final class CollisionUtil {
+@@ -2078,6 +2078,7 @@ public final class CollisionUtil {
  
      public static boolean getEntityHardCollisions(final Level world, final Entity entity, AABB aabb,
                                                    final List<AABB> into, final int collisionFlags, final Predicate<Entity> predicate) {
