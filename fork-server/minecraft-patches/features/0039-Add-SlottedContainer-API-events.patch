@@ -41,14 +41,14 @@ index cea0f015290137a5284f4a3021c954272b3db543..5e799b74930040af9efa31e27cd2c20a
              SoundEvent soundEvent = itemStack.is(Items.ENCHANTED_BOOK)
                  ? SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED
 diff --git a/net/minecraft/world/level/block/ShelfBlock.java b/net/minecraft/world/level/block/ShelfBlock.java
-index 235a01fd28999cae9dd5ba7aa8f18096c89d32f5..ec1558932d1b8dd33539d73ebf2af36475494724 100644
+index 235a01fd28999cae9dd5ba7aa8f18096c89d32f5..f204c701bb629ddb36a735fb054b0850f700577b 100644
 --- a/net/minecraft/world/level/block/ShelfBlock.java
 +++ b/net/minecraft/world/level/block/ShelfBlock.java
-@@ -168,6 +168,19 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -168,6 +168,27 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                  if (level.isClientSide()) {
                      return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
                  } else if (!state.getValue(POWERED)) {
-+                    // Slice start - PlayerSwapItemWithSlottedContainer
++                    // Slice start - Slotted Container events
 +                    if (!stack.isEmpty()) {
 +                        io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer swapEvent = new io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer(
 +                            (org.bukkit.entity.Player) player.getBukkitEntity(),
@@ -58,13 +58,21 @@ index 235a01fd28999cae9dd5ba7aa8f18096c89d32f5..ec1558932d1b8dd33539d73ebf2af364
 +                            org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(shelfBlockEntity.getItem(hitSlot.getAsInt()))
 +                        );
 +                        if (!swapEvent.callEvent()) return InteractionResult.FAIL;
++                    } else if (!shelfBlockEntity.getItem(hitSlot.getAsInt()).isEmpty()) {
++                        io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer takeEvent = new io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer(
++                            (org.bukkit.entity.Player) player.getBukkitEntity(),
++                            org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
++                            hitSlot.getAsInt(),
++                            org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(shelfBlockEntity.getItem(hitSlot.getAsInt()))
++                        );
++                        if (!takeEvent.callEvent()) return InteractionResult.FAIL;
 +                    }
 +                    // Slice end - PlayerSwapItemWithSlottedContainer
 +
                      boolean flag = swapSingleItem(stack, player, shelfBlockEntity, hitSlot.getAsInt(), inventory);
                      if (flag) {
                          this.playSound(level, pos, stack.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
-@@ -182,7 +195,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -182,7 +203,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                      return InteractionResult.SUCCESS.heldItemTransformedTo(stack);
                  } else {
                      ItemStack selectedItem = inventory.getSelectedItem();
@@ -73,7 +81,7 @@ index 235a01fd28999cae9dd5ba7aa8f18096c89d32f5..ec1558932d1b8dd33539d73ebf2af364
                      if (!flag1) {
                          return InteractionResult.CONSUME;
                      } else {
-@@ -211,7 +224,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -211,7 +232,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
          return !itemStack.isEmpty();
      }
  
@@ -82,7 +90,7 @@ index 235a01fd28999cae9dd5ba7aa8f18096c89d32f5..ec1558932d1b8dd33539d73ebf2af364
          List<BlockPos> allBlocksConnectedTo = this.getAllBlocksConnectedTo(level, pos);
          if (allBlocksConnectedTo.isEmpty()) {
              return false;
-@@ -224,10 +237,22 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -224,10 +245,22 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                      for (int i1 = 0; i1 < shelfBlockEntity.getContainerSize(); i1++) {
                          int i2 = 9 - (allBlocksConnectedTo.size() - i) * shelfBlockEntity.getContainerSize() + i1;
                          if (i2 >= 0 && i2 <= inventory.getContainerSize()) {
