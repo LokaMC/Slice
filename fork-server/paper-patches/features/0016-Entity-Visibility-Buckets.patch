@@ -90,16 +90,10 @@ index 592c4e24827f457fd14ff0fddb4be73b75b30c29..39fa3886cf2003c0497ce59980470817
      // Slice end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..ca04060bb0e3af19d03c37f87b1f6bed16f1292b 100644
+index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..04bd3279cd4fd420b19852a4e0104115adc33472 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2064,18 +2064,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
-         return this.canSee((org.bukkit.entity.Entity) player);
-     }
- 
-+    private static final long PUBLIC_VISIBILITY_BUCKET_MASK = 1L;
-+
-     @Override
+@@ -2068,14 +2068,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
      public boolean canSee(org.bukkit.entity.Entity entity) {
          if (this == entity) return true; // SPIGOT-7312
  
@@ -108,22 +102,21 @@ index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..ca04060bb0e3af19d03c37f87b1f6bed
 -        final int otherBucket = entity.getVisibilityBucket();
 -        if ((myBucket | otherBucket) != 0) {
 -            if (myBucket != otherBucket) {
-+        // Slice start - bucket fast path (subset test on bitmasks)
++        // Slice start - bucket fast path (overlap test on bitmasks)
++        // Rule: targets with no buckets (mask == 0L) are public and visible to anyone.
++        // Once a target is in any bucket, the viewer must share at least one bucket bit
++        // with the target. The 0-vs-anything case is folded into the overlap test by
++        // skipping the gate entirely when targetBuckets == 0L.
 +        if (entity instanceof CraftEntity other) {
-+            final long viewerBuckets = this.getVisibilityBuckets();
 +            final long targetBuckets = other.getVisibilityBuckets();
-+
-+            // Bucket 0 on the target means publicly visible.
-+            // Otherwise, visibility requires at least one overlapping bucket.
-+            if ((targetBuckets & PUBLIC_VISIBILITY_BUCKET_MASK) == 0L
-+                    && (viewerBuckets & targetBuckets) == 0L) {
++            if (targetBuckets != 0L && (this.getVisibilityBuckets() & targetBuckets) == 0L) {
                  return false;
              }
 -            // Same non-zero bucket → fall through to the default-visibility + legacy-map check.
          }
          // Slice end
  
-@@ -3404,4 +3409,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -3404,4 +3406,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
              entity.remove();
          }
      }

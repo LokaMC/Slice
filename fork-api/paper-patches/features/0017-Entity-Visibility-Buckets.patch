@@ -5,28 +5,31 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 6215e2773ec41782db8a66e49661462dd01ff145..43bc66f45dd8918edbed2817b3a7c7095bf70483 100644
+index 6215e2773ec41782db8a66e49661462dd01ff145..e3538bc5434650c449fa9e980216722bfd1f0d30 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1386,4 +1386,50 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1386,4 +1386,53 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setDespawnTime(int ticks);
      // Slice end
 +
 +    // Slice start - visibility buckets (bitmask of group memberships)
 +    // Each bit position represents one visibility bucket. An entity in bucket N has bit N set.
-+    // 0L means "not in any bucket" — visible to everyone (the default).
++    // 0L means "not in any bucket" — the entity is public and visible to everyone (the default).
 +    //
-+    // Visibility rule: a viewer can see a target iff (target.buckets & ~viewer.buckets) == 0,
-+    // i.e. the target is a subset of the viewer. This means:
-+    //   - default entities (0L) are visible to anyone.
-+    //   - a viewer in bucket A can see entities in bucket A (and bucket 0).
-+    //   - an admin in buckets {A, B, C} can see entities in any subset of those buckets.
-+    //   - an entity in bucket A cannot see an entity in bucket B (or in {A, B}).
++    // Visibility rule: a viewer can see a target iff the target has no buckets, or the
++    // viewer shares at least one bucket bit with the target. In set terms:
++    //   visible == (target.buckets == 0) || (viewer.buckets & target.buckets) != 0
++    // Examples:
++    //   - default entities (0L) are visible to anyone, regardless of viewer buckets.
++    //   - a target in bucket A is visible only to viewers also in bucket A.
++    //   - a target in {A,B} is visible to any viewer in A, B, or both.
++    //   - a default viewer (0L) sees only default entities; once an entity is bucketed,
++    //     the viewer must opt in to one of those buckets to see it.
 +    /**
 +     * Gets the visibility buckets bitmask for this entity. Each set bit represents
 +     * membership in one visibility bucket (0–63). 0 means the entity is in no bucket
-+     * and is visible by default.
++     * and is visible to all viewers regardless of their buckets.
 +     *
 +     * @return bitmask of bucket memberships
 +     */
@@ -35,11 +38,11 @@ index 6215e2773ec41782db8a66e49661462dd01ff145..43bc66f45dd8918edbed2817b3a7c709
 +    /**
 +     * Replaces this entity's visibility bucket membership with the given bitmask.
 +     *
-+     * <p>Visibility rule: a viewer can see this entity iff every bucket this entity
-+     * is in is also a bucket the viewer is in. In set terms, the entity's buckets
-+     * must be a subset of the viewer's buckets.</p>
++     * <p>Visibility rule: a viewer can see this entity iff this entity has no buckets
++     * set, or the viewer shares at least one bucket bit with this entity.</p>
 +     *
 +     * @param buckets bitmask of bucket memberships; 0 to clear all bucket scoping
++     *                (entity becomes public and visible to all)
 +     */
 +    void setVisibilityBuckets(long buckets);
 +
