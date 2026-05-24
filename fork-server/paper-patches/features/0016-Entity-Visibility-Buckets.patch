@@ -1,0 +1,142 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Thu, 14 May 2026 13:14:37 -0500
+Subject: [PATCH] Entity Visibility Buckets
+
+
+diff --git a/src/main/java/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap.java b/src/main/java/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap.java
+index 7e85bb58b8a5de17fdab9ad3c574f2f80952e1ca..4deb435b04219972b6d6091b730d128c12b7adfd 100644
+--- a/src/main/java/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap.java
++++ b/src/main/java/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap.java
+@@ -87,6 +87,12 @@ public abstract class SingleUserAreaMap<T> {
+             return false;
+         }
+ 
++        // Slice start - Early out if we haven't changed chunks or view distance settings.
++        if (fromX == toX && fromZ == toZ && oldViewDistance == newViewDistance) {
++            return true;
++        }
++        // Slice end
++
+         this.lastChunkX = toX;
+         this.lastChunkZ = toZ;
+         this.distance = newViewDistance;
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 592c4e24827f457fd14ff0fddb4be73b75b30c29..7d401aedffcea9c5d50da891c34c83261312781c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1388,12 +1388,59 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+     // Slice end
+ 
+     // Slice start - visibility bucket (fast path for instance buckets)
+-    public int getVisibilityBucket() {
+-        return this.entity.visibilityBucket;
++    @Override
++    public long getVisibilityBuckets() {
++        return this.entity.visibilityBuckets;
++    }
++
++    @Override
++    public void setVisibilityBuckets(long buckets) {
++        final long old = this.entity.visibilityBuckets;
++        if (old == buckets) return;
++
++        this.entity.visibilityBuckets = buckets;
++        this.refreshTrackingForBucketChange();
++    }
++
++    @Override
++    public void addVisibilityBucket(int bucket) {
++        if (bucket < 0 || bucket >= 64) throw new IllegalArgumentException("Bucket must be in [0, 64), got " + bucket);
++        final long old = this.entity.visibilityBuckets;
++        final long updated = old | (1L << bucket);
++        if (old == updated) return;
++
++        this.entity.visibilityBuckets = updated;
++        this.refreshTrackingForBucketChange();
++    }
++
++    @Override
++    public void removeVisibilityBucket(int bucket) {
++        if (bucket < 0 || bucket >= 64) throw new IllegalArgumentException("Bucket must be in [0, 64), got " + bucket);
++        final long old = this.entity.visibilityBuckets;
++        final long updated = old & ~(1L << bucket);
++        if (old == updated) return;
++
++        this.entity.visibilityBuckets = updated;
++        this.refreshTrackingForBucketChange();
++    }
++
++    @Override
++    public boolean isInVisibilityBucket(int bucket) {
++        if (bucket < 0 || bucket >= 64) return false;
++        return (this.entity.visibilityBuckets & (1L << bucket)) != 0L;
+     }
+ 
+-    public void setVisibilityBucket(int bucket) {
+-        this.entity.visibilityBucket = bucket;
++    // Re-evaluate this entity against every viewer in its level after a bucket-mask change.
++    // ChunkMap.TrackedEntity#updatePlayer already runs canSee() (which honors the bucket
++    // subset rule) and falls through to removePlayer() on failure, so a single pass handles
++    // both add and remove. CraftPlayer overrides this to also refresh the viewer side.
++    // Must be called on the main thread (updatePlayer asserts via AsyncCatcher).
++    protected void refreshTrackingForBucketChange() {
++        ServerLevel world = ((CraftWorld) this.getWorld()).getHandle();
++        ChunkMap.TrackedEntity entityTracker = world.getChunkSource().chunkMap.entityMap.get(this.getEntityId());
++        if (entityTracker != null) {
++            world.players().forEach(entityTracker::updatePlayer);
++        }
+     }
+     // Slice end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..ed2402e30577978943bc8c3c097c556f800f16d8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -2068,14 +2068,19 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+     public boolean canSee(org.bukkit.entity.Entity entity) {
+         if (this == entity) return true; // SPIGOT-7312
+ 
+-        // Slice start - bucket fast path (works for any entity type)
+-        final int myBucket = this.getVisibilityBucket();
+-        final int otherBucket = entity.getVisibilityBucket();
+-        if ((myBucket | otherBucket) != 0) {
+-            if (myBucket != otherBucket) {
++        // Slice start - bucket fast path (subset test on bitmasks)
++        if (entity instanceof CraftEntity other) {
++            final long viewerBuckets = this.getVisibilityBuckets();
++            final long targetBuckets = other.getVisibilityBuckets();
++            // Visible only if every bucket the target is in is also a bucket the viewer is in.
++            // Equivalent to: target.buckets is a subset of viewer.buckets.
++            // (targetBuckets & ~viewerBuckets) == 0 handles both:
++            //   - target has no buckets (always passes, falls through)
++            //   - target's buckets are all also in viewer (passes, falls through)
++            // and rejects any target with buckets the viewer lacks.
++            if ((targetBuckets & ~viewerBuckets) != 0L) {
+                 return false;
+             }
+-            // Same non-zero bucket → fall through to the default-visibility + legacy-map check.
+         }
+         // Slice end
+ 
+@@ -3404,4 +3409,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+             entity.remove();
+         }
+     }
++
++    // Slice start - visibility buckets viewer-side refresh
++    // A player's bucket mask change affects both directions:
++    //   - target-side: handled by super (this player as a tracked entity).
++    //   - viewer-side: this player now sees a different subset of every other tracked
++    //     entity in the level, so re-evaluate each one against this player.
++    @Override
++    protected void refreshTrackingForBucketChange() {
++        super.refreshTrackingForBucketChange();
++        ServerLevel serverLevel = this.getHandle().level();
++        final ServerPlayer p = this.getHandle();
++        for (ChunkMap.TrackedEntity te : serverLevel.getChunkSource().chunkMap.entityMap.values()) {
++            te.updatePlayer(p);
++        }
++    }
++    // Slice end
+ }

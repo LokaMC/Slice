@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Sat, 18 Apr 2026 18:28:10 -0500
+Subject: [PATCH] Entity Visibility Buckets
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index 6215e2773ec41782db8a66e49661462dd01ff145..43bc66f45dd8918edbed2817b3a7c7095bf70483 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -1386,4 +1386,50 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     void setDespawnTime(int ticks);
+     // Slice end
++
++    // Slice start - visibility buckets (bitmask of group memberships)
++    // Each bit position represents one visibility bucket. An entity in bucket N has bit N set.
++    // 0L means "not in any bucket" — visible to everyone (the default).
++    //
++    // Visibility rule: a viewer can see a target iff (target.buckets & ~viewer.buckets) == 0,
++    // i.e. the target is a subset of the viewer. This means:
++    //   - default entities (0L) are visible to anyone.
++    //   - a viewer in bucket A can see entities in bucket A (and bucket 0).
++    //   - an admin in buckets {A, B, C} can see entities in any subset of those buckets.
++    //   - an entity in bucket A cannot see an entity in bucket B (or in {A, B}).
++    /**
++     * Gets the visibility buckets bitmask for this entity. Each set bit represents
++     * membership in one visibility bucket (0–63). 0 means the entity is in no bucket
++     * and is visible by default.
++     *
++     * @return bitmask of bucket memberships
++     */
++    long getVisibilityBuckets();
++
++    /**
++     * Replaces this entity's visibility bucket membership with the given bitmask.
++     *
++     * <p>Visibility rule: a viewer can see this entity iff every bucket this entity
++     * is in is also a bucket the viewer is in. In set terms, the entity's buckets
++     * must be a subset of the viewer's buckets.</p>
++     *
++     * @param buckets bitmask of bucket memberships; 0 to clear all bucket scoping
++     */
++    void setVisibilityBuckets(long buckets);
++
++    /**
++     * Adds this entity to the given bucket (0–63).
++     */
++    void addVisibilityBucket(int bucket);
++
++    /**
++     * Removes this entity from the given bucket (0–63).
++     */
++    void removeVisibilityBucket(int bucket);
++
++    /**
++     * @return whether this entity is in the given bucket (0–63)
++     */
++    boolean isInVisibilityBucket(int bucket);
++    // Slice end
+ }
