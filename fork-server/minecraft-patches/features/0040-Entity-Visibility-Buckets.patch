@@ -5,14 +5,14 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f445de3ac547779a2b9efa1c2f41da9aff800d53..0feabf4b2a98b5ec1f08e66c47c52e93d8a0225e 100644
+index f445de3ac547779a2b9efa1c2f41da9aff800d53..2caf6128ea5f5cb4915a279eccf9d592e0c9c139 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -388,6 +388,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      public int trackingRange; // Slice
      public boolean inWaterOverride; // Slice
      public float extraHitboxAmount; // Slice
-+    public long visibilityBuckets = 0L; // Slice
++    public long visibilityBuckets = 0; // Slice
  
      public void inactiveTick() {
      }

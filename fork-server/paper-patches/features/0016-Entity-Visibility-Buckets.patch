@@ -90,10 +90,16 @@ index 592c4e24827f457fd14ff0fddb4be73b75b30c29..39fa3886cf2003c0497ce59980470817
      // Slice end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..19720c298d4d1e101e8a757dcd0a74b7348fbebc 100644
+index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..ca04060bb0e3af19d03c37f87b1f6bed16f1292b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2068,14 +2068,19 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2064,18 +2064,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         return this.canSee((org.bukkit.entity.Entity) player);
+     }
+ 
++    private static final long PUBLIC_VISIBILITY_BUCKET_MASK = 1L;
++
+     @Override
      public boolean canSee(org.bukkit.entity.Entity entity) {
          if (this == entity) return true; // SPIGOT-7312
  
@@ -106,13 +112,11 @@ index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..19720c298d4d1e101e8a757dcd0a74b7
 +        if (entity instanceof CraftEntity other) {
 +            final long viewerBuckets = this.getVisibilityBuckets();
 +            final long targetBuckets = other.getVisibilityBuckets();
-+            // Visible only if every bucket the target is in is also a bucket the viewer is in.
-+            // Equivalent to: target.buckets is a subset of viewer.buckets.
-+            // (targetBuckets & ~viewerBuckets) == 0 handles both:
-+            //   - target has no buckets (always passes, falls through)
-+            //   - target's buckets are all also in viewer (passes, falls through)
-+            // and rejects any target with buckets the viewer lacks.
-+            if ((viewerBuckets | targetBuckets) != 0L && (viewerBuckets & targetBuckets) == 0L) {
++
++            // Bucket 0 on the target means publicly visible.
++            // Otherwise, visibility requires at least one overlapping bucket.
++            if ((targetBuckets & PUBLIC_VISIBILITY_BUCKET_MASK) == 0L
++                    && (viewerBuckets & targetBuckets) == 0L) {
                  return false;
              }
 -            // Same non-zero bucket → fall through to the default-visibility + legacy-map check.
