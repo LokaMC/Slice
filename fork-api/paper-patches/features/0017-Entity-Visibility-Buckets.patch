@@ -5,60 +5,138 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 6215e2773ec41782db8a66e49661462dd01ff145..e3538bc5434650c449fa9e980216722bfd1f0d30 100644
+index 6215e2773ec41782db8a66e49661462dd01ff145..0b3f832f08ea61945b3c496fcf65220bd1c2fc74 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1386,4 +1386,53 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1386,4 +1386,131 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setDespawnTime(int ticks);
      // Slice end
 +
-+    // Slice start - visibility buckets (bitmask of group memberships)
-+    // Each bit position represents one visibility bucket. An entity in bucket N has bit N set.
-+    // 0L means "not in any bucket" — the entity is public and visible to everyone (the default).
++    // Slice start - asymmetric visibility buckets (two bitmasks per entity)
++    // Each bit position (0-63) names one bucket. An entity carries two masks:
++    //   - canSeeBuckets    : the set of buckets this entity is authorized to view ("keys").
++    //   - visibleToBuckets : the set of buckets this entity belongs to ("locks").
 +    //
-+    // Visibility rule: a viewer can see a target iff the target has no buckets, or the
-+    // viewer shares at least one bucket bit with the target. In set terms:
-+    //   visible == (target.buckets == 0) || (viewer.buckets & target.buckets) != 0
++    // Visibility rule (per direction; viewer A looking at target B):
++    //   visible == (B.visibleToBuckets == 0) || (A.canSeeBuckets & B.visibleToBuckets) != 0
++    //
++    // i.e. targets with no membership are public; otherwise the viewer must hold at least
++    // one bit the target advertises. Asymmetric scenarios are expressed by an entity
++    // putting a bucket bit in canSee but not in visibleTo (or vice versa).
++    //
 +    // Examples:
-+    //   - default entities (0L) are visible to anyone, regardless of viewer buckets.
-+    //   - a target in bucket A is visible only to viewers also in bucket A.
-+    //   - a target in {A,B} is visible to any viewer in A, B, or both.
-+    //   - a default viewer (0L) sees only default entities; once an entity is bucketed,
-+    //     the viewer must opt in to one of those buckets to see it.
++    //   - default entity (canSee=0, visibleTo=0): public, sees nothing bucketed.
++    //   - regular player: canSee=REGULAR, visibleTo=REGULAR. Sees and is seen by regulars.
++    //   - vanished admin: canSee=VANISH|REGULAR, visibleTo=VANISH. Sees everyone; only
++    //     other VANISH-aware viewers see them.
++    //   - hidden group member who is also in a party: canSee=GROUP|REGULAR|PARTY,
++    //     visibleTo=GROUP|PARTY. Group-mates and party-mates see them; strangers don't.
++
 +    /**
-+     * Gets the visibility buckets bitmask for this entity. Each set bit represents
-+     * membership in one visibility bucket (0–63). 0 means the entity is in no bucket
-+     * and is visible to all viewers regardless of their buckets.
++     * @return bitmask of buckets this entity can see ("keys"). 0 means it sees only
++     *         entities whose {@code visibleToBuckets} is also 0 (i.e. only public entities).
++     */
++    long getCanSeeBuckets();
++
++    /**
++     * Sets the bitmask of buckets this entity is authorized to view. Each set bit
++     * grants this entity the ability to see any target whose {@code visibleToBuckets}
++     * includes that bit.
 +     *
-+     * @return bitmask of bucket memberships
++     * @param mask new can-see bitmask
 +     */
-+    long getVisibilityBuckets();
++    void setCanSeeBuckets(long mask);
 +
 +    /**
-+     * Replaces this entity's visibility bucket membership with the given bitmask.
++     * Replaces this entity's can-see mask from a list of bucket indices (each in {@code [0, 64)}).
++     * Equivalent to {@code setCanSeeBuckets((1L << b0) | (1L << b1) | ...)}.
 +     *
-+     * <p>Visibility rule: a viewer can see this entity iff this entity has no buckets
-+     * set, or the viewer shares at least one bucket bit with this entity.</p>
++     * <p>Note: due to Java overload resolution, a single-argument call like
++     * {@code setCanSeeBuckets(5)} routes to {@link #setCanSeeBuckets(long)} treating
++     * {@code 5} as a raw mask (bits 0 and 2), not bucket index 5. To use this varargs
++     * overload with a single index, call {@code setCanSeeBuckets(new long[]{5})} or
++     * use {@link #addCanSeeBucket(int)} instead.</p>
 +     *
-+     * @param buckets bitmask of bucket memberships; 0 to clear all bucket scoping
-+     *                (entity becomes public and visible to all)
++     * @param buckets bucket indices to combine into the new can-see mask
 +     */
-+    void setVisibilityBuckets(long buckets);
++    void setCanSeeBuckets(long... buckets);
 +
 +    /**
-+     * Adds this entity to the given bucket (0–63).
++     * @return bitmask of buckets this entity belongs to ("locks"). 0 means the entity
++     *         is public and visible to every viewer.
 +     */
-+    void addVisibilityBucket(int bucket);
++    long getVisibleToBuckets();
 +
 +    /**
-+     * Removes this entity from the given bucket (0–63).
++     * Sets the bitmask of buckets this entity belongs to. A viewer sees this entity
++     * iff their {@code canSeeBuckets} shares at least one bit with this mask, or this
++     * mask is 0 (public).
++     *
++     * @param mask new visible-to bitmask; 0 makes this entity public
 +     */
-+    void removeVisibilityBucket(int bucket);
++    void setVisibleToBuckets(long mask);
 +
 +    /**
-+     * @return whether this entity is in the given bucket (0–63)
++     * Replaces this entity's visible-to mask from a list of bucket indices (each in {@code [0, 64)}).
++     * Equivalent to {@code setVisibleToBuckets((1L << b0) | (1L << b1) | ...)}.
++     *
++     * <p>Note: see overload-resolution caveat on {@link #setCanSeeBuckets(long...)}.</p>
++     *
++     * @param buckets bucket indices to combine into the new visible-to mask
 +     */
-+    boolean isInVisibilityBucket(int bucket);
++    void setVisibleToBuckets(long... buckets);
++
++    /**
++     * Adds the given bucket (0-63) to this entity's can-see mask.
++     */
++    void addCanSeeBucket(int bucket);
++
++    /**
++     * Adds the given bucket (0-63) to this entity's visible-to mask.
++     */
++    void addVisibleToBucket(int bucket);
++
++    /**
++     * Removes the given bucket (0-63) from this entity's can-see mask.
++     */
++    void removeCanSeeBucket(int bucket);
++
++    /**
++     * Removes the given bucket (0-63) from this entity's visible-to mask.
++     */
++    void removeVisibleToBucket(int bucket);
++
++    /**
++     * @return whether this entity holds the given bucket (0-63) in its can-see mask
++     */
++    boolean isInCanSeeBucket(int bucket);
++
++    /**
++     * @return whether this entity holds the given bucket (0-63) in its visible-to mask
++     */
++    boolean isInVisibleToBucket(int bucket);
++
++    /**
++     * Adds the given bucket (0-63) to <strong>both</strong> the can-see and visible-to masks.
++     * Use this for symmetric membership: this entity can see, and is seen by, every entity
++     * with the same bucket set on both masks.
++     *
++     * @param bucket bucket index (0-63)
++     */
++    default void addVisibilityBucket(int bucket) {
++        this.addCanSeeBucket(bucket);
++        this.addVisibleToBucket(bucket);
++    }
++
++    /**
++     * Removes the given bucket (0-63) from <strong>both</strong> the can-see and visible-to masks.
++     *
++     * @param bucket bucket index (0-63)
++     */
++    default void removeVisibilityBucket(int bucket) {
++        this.removeCanSeeBucket(bucket);
++        this.removeVisibleToBucket(bucket);
++    }
 +    // Slice end
  }

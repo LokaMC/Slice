@@ -4,15 +4,101 @@ Date: Sat, 18 Apr 2026 18:28:10 -0500
 Subject: [PATCH] Entity Visibility Buckets
 
 
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..b15daed8f0f271dec8af91014afafca75a9a963c 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -306,6 +306,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
+     private final Set<String> pluginsBlockingSleep = new java.util.HashSet<>(); // Paper - API to allow/disallow tick sleeping
+     public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
++    public final Set<net.minecraft.world.entity.Entity> pendingVisibilityRefresh = new it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet<>(); // Slice - pending visibility bucket refreshes (drained at start of each tickChildren)
+     // Paper start - improve tick loop
+     public final ca.spottedleaf.moonrise.common.time.TickData tickTimes1s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
+     public final ca.spottedleaf.moonrise.common.time.TickData tickTimes5s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
+@@ -1798,6 +1799,34 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             }
+         }
+ 
++        // Slice start - drain pending visibility bucket refreshes from prior tick
++        // Coalesces all bucket mutations made during the previous tick into one refresh
++        // per affected entity. updatePlayer falls through to removePlayer on visibility
++        // failure, so a single pass handles both add and remove.
++        if (!this.pendingVisibilityRefresh.isEmpty()) {
++            final net.minecraft.world.entity.Entity[] dirty = this.pendingVisibilityRefresh.toArray(new net.minecraft.world.entity.Entity[0]);
++            this.pendingVisibilityRefresh.clear();
++            for (net.minecraft.world.entity.Entity dirtyEntity : dirty) {
++                dirtyEntity.clearVisibilityBucketsDirty();
++                if (dirtyEntity.isRemoved() || !(dirtyEntity.level() instanceof ServerLevel dirtyLevel)) continue;
++
++                final ChunkMap dirtyChunkMap = dirtyLevel.getChunkSource().chunkMap;
++                final ChunkMap.TrackedEntity self = dirtyChunkMap.entityMap.get(dirtyEntity.getId());
++                if (self != null) {
++                    for (ServerPlayer p : dirtyLevel.players()) {
++                        self.updatePlayer(p);
++                    }
++                }
++
++                if (dirtyEntity instanceof ServerPlayer dirtyPlayer) {
++                    for (ChunkMap.TrackedEntity entity : dirtyChunkMap.entityMap.values()) {
++                        entity.updatePlayer(dirtyPlayer);
++                    }
++                }
++            }
++        }
++        // Slice end
++
+         this.isIteratingOverLevels = true; // Paper - Throw exception on world create while being ticked
+         for (ServerLevel serverLevel : this.getAllLevels()) {
+             serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f445de3ac547779a2b9efa1c2f41da9aff800d53..2caf6128ea5f5cb4915a279eccf9d592e0c9c139 100644
+index f445de3ac547779a2b9efa1c2f41da9aff800d53..0506234c8b26cffa2f3db5c674ba5d84390d4c09 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -388,6 +388,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -388,6 +388,46 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      public int trackingRange; // Slice
      public boolean inWaterOverride; // Slice
      public float extraHitboxAmount; // Slice
-+    public long visibilityBuckets = 0; // Slice
++    // Slice start - visibility buckets (asymmetric: canSee = "what I see", visibleTo = "who sees me")
++    // Visibility rule: A sees B iff B.visibleToBuckets == 0 || (A.canSeeBuckets & B.visibleToBuckets) != 0.
++    // Two masks let visibility be asymmetric: an entity can choose to see groups it does not advertise into.
++    private long canSeeBuckets = 0L;
++    private long visibleToBuckets = 0L;
++    private boolean visibilityBucketsDirty = false;
++
++    public long getCanSeeBuckets() {
++        return this.canSeeBuckets;
++    }
++
++    public void setCanSeeBuckets(long mask) {
++        if (this.canSeeBuckets == mask) return;
++        this.canSeeBuckets = mask;
++        this.markVisibilityBucketsDirty();
++    }
++
++    public long getVisibleToBuckets() {
++        return this.visibleToBuckets;
++    }
++
++    public void setVisibleToBuckets(long mask) {
++        if (this.visibleToBuckets == mask) return;
++        this.visibleToBuckets = mask;
++        this.markVisibilityBucketsDirty();
++    }
++
++    private void markVisibilityBucketsDirty() {
++        if (this.visibilityBucketsDirty) return;
++        this.visibilityBucketsDirty = true;
++        final net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
++        if (server != null) {
++            server.pendingVisibilityRefresh.add(this);
++        }
++    }
++
++    public void clearVisibilityBucketsDirty() {
++        this.visibilityBucketsDirty = false;
++    }
++    // Slice end
  
      public void inactiveTick() {
      }
