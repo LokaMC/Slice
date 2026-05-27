@@ -5,7 +5,7 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
-index 5d74c3e9938e5c6cc96f42b6df255e21aa925ed9..f7d48935acfe391dd18c469a87142df5891c6aa2 100644
+index 5d74c3e9938e5c6cc96f42b6df255e21aa925ed9..bc15cf9872d3d0e5708c1e9ac956915171420572 100644
 --- a/net/minecraft/network/syncher/SynchedEntityData.java
 +++ b/net/minecraft/network/syncher/SynchedEntityData.java
 @@ -54,11 +54,27 @@ public class SynchedEntityData {
@@ -37,7 +37,7 @@ index 5d74c3e9938e5c6cc96f42b6df255e21aa925ed9..f7d48935acfe391dd18c469a87142df5
          if (force || ObjectUtils.notEqual(value, item.getValue())) {
              item.setValue(value);
              this.entity.onSyncedDataUpdated(key);
-@@ -78,38 +94,65 @@ public class SynchedEntityData {
+@@ -78,38 +94,62 @@ public class SynchedEntityData {
          return this.isDirty;
      }
  
@@ -52,18 +52,13 @@ index 5d74c3e9938e5c6cc96f42b6df255e21aa925ed9..f7d48935acfe391dd18c469a87142df5
 +            List<SynchedEntityData.DataValue<?>> foreignList = null;
  
              for (SynchedEntityData.DataItem<?> dataItem : this.itemsById) {
--                if (dataItem.isDirty()) {
--                    dataItem.setDirty(false);
+                 if (dataItem.isDirty()) {
++                    DataValue<?> value = dataItem.value();
+                     dataItem.setDirty(false);
 -                    list.add(dataItem.value());
-+                boolean dirty = dataItem.isDirty();
-+                boolean foreignDirty = dataItem.isForeignDirty();
-+                if (dirty || foreignDirty) {
-+                    if (dirty) {
-+                        DataValue<?> value = dataItem.value();
-+                        dataItem.setDirty(false);
-+                        list.add(value);
-+                    }
++                    list.add(value);
 +
++                    boolean foreignDirty = dataItem.isForeignDirty();
 +                    if (foreignDirty || dataItem.foreignValue == null) {
 +                        if (foreignList == null) {
 +                            foreignList = new ArrayList<>(this.itemsById.length);
@@ -112,7 +107,7 @@ index 5d74c3e9938e5c6cc96f42b6df255e21aa925ed9..f7d48935acfe391dd18c469a87142df5
      }
  
      public void assignValues(List<SynchedEntityData.DataValue<?>> entries) {
-@@ -193,11 +236,14 @@ public class SynchedEntityData {
+@@ -193,11 +233,14 @@ public class SynchedEntityData {
          T value;
          private final T initialValue;
          private boolean dirty;
@@ -127,7 +122,7 @@ index 5d74c3e9938e5c6cc96f42b6df255e21aa925ed9..f7d48935acfe391dd18c469a87142df5
          }
  
          public EntityDataAccessor<T> getAccessor() {
-@@ -227,6 +273,32 @@ public class SynchedEntityData {
+@@ -227,6 +270,32 @@ public class SynchedEntityData {
          public SynchedEntityData.DataValue<T> value() {
              return SynchedEntityData.DataValue.create(this.accessor, this.value);
          }
@@ -406,7 +401,7 @@ index 92b7f4cbd276dad49cba78514db3552af8cdd80c..646780c50e1fe6c231ce4b9ca10fed26
  
      public @Nullable AttributeInstance getInstance(Holder<Attribute> attribute) {
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index c2c2d0d7e4d4cfc530c4eb98d5b52cea1d97ab1a..11efd5d2ce1b2056fcf12bdfc2bd6e85d7f9a8ce 100644
+index fc4fb3709e0ad01d942212bcadae93cfbd782882..bc3102fd220fa6b1d320e156cbf081978fb3cce4 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -548,7 +548,7 @@ public abstract class Player extends Avatar implements ContainerUser {
