@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 6215e2773ec41782db8a66e49661462dd01ff145..0b3f832f08ea61945b3c496fcf65220bd1c2fc74 100644
+index 6215e2773ec41782db8a66e49661462dd01ff145..bd5e32553b9cc6bcba88000dafcb3bef8fda0c44 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1386,4 +1386,131 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1386,4 +1386,151 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setDespawnTime(int ticks);
      // Slice end
@@ -44,6 +44,23 @@ index 6215e2773ec41782db8a66e49661462dd01ff145..0b3f832f08ea61945b3c496fcf65220b
 +     * grants this entity the ability to see any target whose {@code visibleToBuckets}
 +     * includes that bit.
 +     *
++     * <p><b>Eventually consistent</b>: the write is queued and applied during the server's next
++     * visibility-bucket drain (one to several ticks later, bounded by the server-side write
++     * budget). {@link #getCanSeeBuckets()} returns the previously-committed value until the drain
++     * runs. The throttling is what bounds the per-tick tracker state-transition load when masses
++     * of entities are re-bucketed simultaneously; do not use this method in any code path that
++     * requires the new mask to be readable on the same call stack.</p>
++     *
++     * <p>Coalescing: repeated calls for the same entity before the next drain collapse to the
++     * most recent value. {@link #setCanSeeBuckets(long)} and {@link #setVisibleToBuckets(long)}
++     * called back-to-back in the same tick apply atomically in the same drain step. Bit-level
++     * mutations ({@link #addCanSeeBucket(int)}, {@link #removeCanSeeBucket(int)}) accumulate
++     * correctly against an already-queued write.</p>
++     *
++     * <p><b>Main thread only</b>. Callers off the main thread (e.g. async events, RabbitMQ
++     * consumers) must hop to main via {@code Bukkit.getScheduler().runTask(...)} before calling.
++     * No internal synchronization is performed.</p>
++     *
 +     * @param mask new can-see bitmask
 +     */
 +    void setCanSeeBuckets(long mask);
@@ -72,6 +89,9 @@ index 6215e2773ec41782db8a66e49661462dd01ff145..0b3f832f08ea61945b3c496fcf65220b
 +     * Sets the bitmask of buckets this entity belongs to. A viewer sees this entity
 +     * iff their {@code canSeeBuckets} shares at least one bit with this mask, or this
 +     * mask is 0 (public).
++     *
++     * <p><b>Eventually consistent</b>: same drain-queued semantics as
++     * {@link #setCanSeeBuckets(long)}. See that method's Javadoc for details.</p>
 +     *
 +     * @param mask new visible-to bitmask; 0 makes this entity public
 +     */

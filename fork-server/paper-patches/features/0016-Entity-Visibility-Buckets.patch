@@ -22,10 +22,10 @@ index 7e85bb58b8a5de17fdab9ad3c574f2f80952e1ca..4deb435b04219972b6d6091b730d128c
          this.lastChunkZ = toZ;
          this.distance = newViewDistance;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 592c4e24827f457fd14ff0fddb4be73b75b30c29..f722db233f16938129abe7594c7114cc154b6d9a 100644
+index 592c4e24827f457fd14ff0fddb4be73b75b30c29..55aecf9563be083b797604e6cb8db73a7da78ba8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1387,13 +1387,82 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1387,13 +1387,88 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
      }
      // Slice end
  
@@ -74,28 +74,34 @@ index 592c4e24827f457fd14ff0fddb4be73b75b30c29..f722db233f16938129abe7594c7114cc
 +        return mask;
 +    }
 +
++    // Bit ops route through modifyCanSeeBuckets / modifyVisibleToBuckets rather than the get/set
++    // pattern. A naive `setCanSeeBuckets(getCanSeeBuckets() | mask)` reads the COMMITTED (lagging)
++    // mask, so a rapid add(1); add(2) sequence would have both calls read the same pre-write
++    // value, each compute current | <bit>, and the second's write would clobber the first's
++    // pending value (losing bit 1) before the drain ever runs. modifyX OR/AND-NOTs against the
++    // effective (pending if pending, else committed) state, so consecutive bit ops accumulate.
 +    @Override
 +    public void addCanSeeBucket(int bucket) {
 +        if (bucket < 0 || bucket >= 64) throw new IllegalArgumentException("Bucket must be in [0, 64), got " + bucket);
-+        this.entity.setCanSeeBuckets(this.entity.getCanSeeBuckets() | (1L << bucket));
++        this.entity.modifyCanSeeBuckets(1L << bucket, 0L);
 +    }
 +
 +    @Override
 +    public void addVisibleToBucket(int bucket) {
 +        if (bucket < 0 || bucket >= 64) throw new IllegalArgumentException("Bucket must be in [0, 64), got " + bucket);
-+        this.entity.setVisibleToBuckets(this.entity.getVisibleToBuckets() | (1L << bucket));
++        this.entity.modifyVisibleToBuckets(1L << bucket, 0L);
 +    }
 +
 +    @Override
 +    public void removeCanSeeBucket(int bucket) {
 +        if (bucket < 0 || bucket >= 64) throw new IllegalArgumentException("Bucket must be in [0, 64), got " + bucket);
-+        this.entity.setCanSeeBuckets(this.entity.getCanSeeBuckets() & ~(1L << bucket));
++        this.entity.modifyCanSeeBuckets(0L, 1L << bucket);
 +    }
 +
 +    @Override
 +    public void removeVisibleToBucket(int bucket) {
 +        if (bucket < 0 || bucket >= 64) throw new IllegalArgumentException("Bucket must be in [0, 64), got " + bucket);
-+        this.entity.setVisibleToBuckets(this.entity.getVisibleToBuckets() & ~(1L << bucket));
++        this.entity.modifyVisibleToBuckets(0L, 1L << bucket);
      }
  
 -    public void setVisibilityBucket(int bucket) {
@@ -114,10 +120,30 @@ index 592c4e24827f457fd14ff0fddb4be73b75b30c29..f722db233f16938129abe7594c7114cc
      // Slice end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..a2a3f5f005e5b6aa639b2383c0650f5ebaf8134c 100644
+index 3cf25989719a2e409e9ea1b5fa2b26d71b62a949..bf98dc8347612d8838ff3d05bde6d7ba89e582f5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2068,14 +2068,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -1876,7 +1876,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         return true;
+     }
+ 
+-    private void untrackAndHideEntity(org.bukkit.entity.Entity entity) {
++    // Slice - public for ChunkMap.TrackedEntity#updatePlayerForBucketTransition (bucket-driven hide)
++    public void untrackAndHideEntity(org.bukkit.entity.Entity entity) {
+         // Remove this entity from the hidden player's EntityTrackerEntry
+         // Paper start
+         Entity other = ((CraftEntity) entity).getHandle();
+@@ -1957,7 +1958,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         return true;
+     }
+ 
+-    private void trackAndShowEntity(org.bukkit.entity.Entity entity) {
++    // Slice - public for ChunkMap.TrackedEntity#updatePlayerForBucketTransition (bucket-driven show)
++    public void trackAndShowEntity(org.bukkit.entity.Entity entity) {
+         this.trackAndShowEntity(entity, null);
+     }
+ 
+@@ -2068,14 +2070,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
      public boolean canSee(org.bukkit.entity.Entity entity) {
          if (this == entity) return true; // SPIGOT-7312
  
