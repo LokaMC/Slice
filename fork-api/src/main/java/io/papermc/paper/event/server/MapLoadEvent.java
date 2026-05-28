@@ -10,7 +10,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 /**
- * Called when we want to load a Map from disk
+ * Called when we want to load a Map from disk.
+ * <p>
+ * <b>This event is asynchronous.</b> Handlers run on a {@code Dimension-Data-IO-Worker-*}
+ * thread (the Paper dimension-data I/O pool), not on the main server thread. Listeners must
+ * not call thread-unsafe Bukkit API directly; hop back to the main thread via
+ * {@link org.bukkit.Bukkit#getScheduler()} (or the server's main executor) if required.
+ * <p>
+ * The {@link ByteArrayInputStream} supplied via {@link #setBuf(ByteArrayInputStream)} is read
+ * synchronously by the dispatcher immediately after {@link #callEvent()} returns, so setting
+ * it from inside the handler is safe.
  */
 @NullMarked
 public class MapLoadEvent extends ServerEvent {
@@ -20,6 +29,7 @@ public class MapLoadEvent extends ServerEvent {
     private ByteArrayInputStream buf;
     @ApiStatus.Internal
     public MapLoadEvent(int id) {
+        super(true);
         this.id = id;
     }
 
