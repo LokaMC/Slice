@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..caaee3c6df15211ea498b8109b27fb85c34f885f 100644
+index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..d6a026f7739d4aa84f921dd2a962234f8e11d7b5 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -306,6 +306,25 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -306,6 +306,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
      private final Set<String> pluginsBlockingSleep = new java.util.HashSet<>(); // Paper - API to allow/disallow tick sleeping
      public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
@@ -30,11 +30,16 @@ index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..caaee3c6df15211ea498b8109b27fb85
 +    // level + tracked entities), so this is roughly "N players' worth of spawn/despawn packets
 +    // per tick". <= 0 drains the whole queue.
 +    public int visibilityBucketUpdateBudgetPerTick = 5;
++    // Runtime toggle for the visibility bucket diagnostic logging (drain / transition / spawn
++    // decisions, player entities only). Mutable and public so plugin code can flip it on demand
++    // (e.g. MinecraftServer.VIS_DEBUG = true) rather than via a JVM flag - the output is very noisy,
++    // so it is meant to be enabled only around a specific repro. Not volatile; main-thread only.
++    public static boolean VIS_DEBUG = false;
 +    // Slice end
      // Paper start - improve tick loop
      public final ca.spottedleaf.moonrise.common.time.TickData tickTimes1s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
      public final ca.spottedleaf.moonrise.common.time.TickData tickTimes5s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
-@@ -1798,6 +1817,47 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1798,6 +1822,57 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
              }
          }
  
@@ -53,14 +58,22 @@ index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..caaee3c6df15211ea498b8109b27fb85
 +        if (!this.pendingVisibilityBucketWrites.isEmpty()) {
 +            final int budget = this.visibilityBucketUpdateBudgetPerTick;
 +            final int cap = (budget <= 0) ? Integer.MAX_VALUE : budget;
++            if (VIS_DEBUG) LOGGER.info("[VisDebug] drain start: queue={} cap={}", this.pendingVisibilityBucketWrites.size(), cap);
 +            final java.util.Iterator<net.minecraft.world.entity.Entity> it = this.pendingVisibilityBucketWrites.iterator();
 +            int drained = 0;
 +            while (it.hasNext() && drained < cap) {
 +                final net.minecraft.world.entity.Entity e = it.next();
 +                it.remove();
 +                drained++;
-+                if (e.isRemoved()) continue;
-+                if (!(e.level() instanceof ServerLevel level)) continue;
++                if (e.isRemoved()) {
++                    if (VIS_DEBUG && e instanceof ServerPlayer) LOGGER.info("[VisDebug] drain skip {} (removed)", e.getName().getString());
++                    continue;
++                }
++                if (!(e.level() instanceof ServerLevel level)) {
++                    if (VIS_DEBUG && e instanceof ServerPlayer) LOGGER.info("[VisDebug] drain skip {} (not in ServerLevel)", e.getName().getString());
++                    continue;
++                }
++                if (VIS_DEBUG && e instanceof ServerPlayer) LOGGER.info("[VisDebug] drain process {} canSee=0x{} visibleTo=0x{}", e.getName().getString(), Long.toHexString(e.getCanSeeBuckets()), Long.toHexString(e.getVisibleToBuckets()));
 +
 +                final ChunkMap chunkMap = level.getChunkSource().chunkMap;
 +                final ChunkMap.TrackedEntity self = chunkMap.entityMap.get(e.getId());
@@ -68,6 +81,8 @@ index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..caaee3c6df15211ea498b8109b27fb85
 +                    for (ServerPlayer p : level.players()) {
 +                        self.updatePlayerForBucketTransition(p);
 +                    }
++                } else if (VIS_DEBUG && e instanceof ServerPlayer) {
++                    LOGGER.info("[VisDebug] drain {}: no TrackedEntity in entityMap (loop 1 skipped)", e.getName().getString());
 +                }
 +
 +                if (e instanceof ServerPlayer player) {
@@ -83,10 +98,31 @@ index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..caaee3c6df15211ea498b8109b27fb85
          for (ServerLevel serverLevel : this.getAllLevels()) {
              serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..b755d8eee6200e8097e81bba72dc2ecab6aae0c7 100644
+index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..5b9e67e78079bb4907c7edc4330745ad7fe159f7 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1432,5 +1432,43 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1386,6 +1386,20 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+                     if (this.seenBy.add(player.connection)) {
+                         // Paper start - entity tracking events
+                         if (io.papermc.paper.event.player.PlayerTrackEntityEvent.getHandlerList().getRegisteredListeners().length == 0 || new io.papermc.paper.event.player.PlayerTrackEntityEvent(player.getBukkitEntity(), this.entity.getBukkitEntity()).callEvent()) {
++                        // Slice start - guarantee PlayerInfoUpdate precedes AddEntity for bucket-managed
++                        // player targets. PlayerList#placeNewPlayer gates the join-time profile on canSee,
++                        // so a peer that was bucket-hidden at this viewer's join has no player-list entry.
++                        // The client drops an AddEntity for a player not in its list, so the unthrottled
++                        // tracker would spawn it invisibly (fixed only by relog). Sending the profile here,
++                        // in the add path, makes ordering correct no matter whether the tracker tick or the
++                        // throttled bucket drain wins the race to establish this pairing. Idempotent; gated
++                        // on the sticky usedVisibilityBuckets flag so non-bucketed entities are unaffected.
++                        if (this.entity instanceof ServerPlayer bucketTarget && bucketTarget.usedVisibilityBuckets) {
++                            if (net.minecraft.server.MinecraftServer.VIS_DEBUG) LOGGER.info("[VisDebug] defensive PlayerInfoUpdate target={} viewer={}", bucketTarget.getName().getString(), player.getName().getString());
++                            player.connection.send(net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(java.util.List.of(bucketTarget), player));
++                        }
++                        if (net.minecraft.server.MinecraftServer.VIS_DEBUG && this.entity instanceof ServerPlayer) LOGGER.info("[VisDebug] addPairing target={} viewer={}", this.entity.getName().getString(), player.getName().getString());
++                        // Slice end
+                         this.serverEntity.addPairing(player);
+                         if (this.seenBy.size() == 1) {
+                             ChunkMap.this.level.debugSynchronizers().registerEntity(this.entity);
+@@ -1432,5 +1446,48 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  this.updatePlayer(serverPlayer);
              }
          }
@@ -121,6 +157,11 @@ index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..b755d8eee6200e8097e81bba72dc2eca
 +            }
 +            final boolean wasSeen = this.seenBy.contains(player.connection);
 +            final boolean canSee = player.getBukkitEntity().canSee(this.entity.getBukkitEntity());
++            if (net.minecraft.server.MinecraftServer.VIS_DEBUG && this.entity instanceof ServerPlayer) {
++                LOGGER.info("[VisDebug] transition target={} viewer={} wasSeen={} canSee={} -> {}",
++                    this.entity.getName().getString(), player.getName().getString(), wasSeen, canSee,
++                    (!wasSeen && canSee) ? "SHOW" : (wasSeen && !canSee) ? "HIDE" : "noop");
++            }
 +            if (!wasSeen && canSee) {
 +                player.getBukkitEntity().trackAndShowEntity(this.entity.getBukkitEntity());
 +            } else if (wasSeen && !canSee) {
@@ -131,10 +172,10 @@ index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..b755d8eee6200e8097e81bba72dc2eca
      }
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f445de3ac547779a2b9efa1c2f41da9aff800d53..a2e4d93cb84b93aa2e0abeb1da64010ef2137362 100644
+index f445de3ac547779a2b9efa1c2f41da9aff800d53..0c0b1cdb77fcd3d1b948c56a7095be2abc2d79bc 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -388,6 +388,68 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -388,6 +388,77 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
      public int trackingRange; // Slice
      public boolean inWaterOverride; // Slice
      public float extraHitboxAmount; // Slice
@@ -155,6 +196,14 @@ index f445de3ac547779a2b9efa1c2f41da9aff800d53..a2e4d93cb84b93aa2e0abeb1da64010e
 +    // is performed here; mis-using these methods off-thread will silently corrupt the queue.
 +    private long canSeeBuckets = 0L;
 +    private long visibleToBuckets = 0L;
++    // Sticky: set true the first time this entity ever takes a visibility-bucket write, never reset.
++    // Gates the defensive PlayerInfoUpdate in ChunkMap.TrackedEntity#updatePlayer. We cannot decide
++    // "is my profile missing from a viewer" from the current mask: a prewarper RELEASED back to public
++    // (visibleToBuckets == 0) is still absent from the list of any viewer who joined while it was
++    // hidden, because PlayerList#placeNewPlayer gated that join-time profile on canSee. Current state
++    // can't see that history, so we gate on "ever bucketed" instead. Entities that never touch buckets
++    // keep the byte-for-byte vanilla spawn path (flag stays false).
++    public boolean usedVisibilityBuckets = false;
 +
 +    public long getCanSeeBuckets() {
 +        return this.canSeeBuckets;
@@ -195,6 +244,7 @@ index f445de3ac547779a2b9efa1c2f41da9aff800d53..a2e4d93cb84b93aa2e0abeb1da64010e
 +    // Queue the entity for tracker refresh next tick. No-op if MinecraftServer has not initialised
 +    // yet (pre-init / unit tests); in that path there are no players to refresh anyway.
 +    private void enqueueVisibilityBucketWrite() {
++        this.usedVisibilityBuckets = true;
 +        final net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
 +        if (server == null) return;
 +        server.pendingVisibilityBucketWrites.add(this);
