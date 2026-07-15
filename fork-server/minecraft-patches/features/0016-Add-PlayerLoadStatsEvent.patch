@@ -5,28 +5,28 @@ Subject: [PATCH] Add PlayerLoadStatsEvent
 
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 82bd70c7bf2926b585b80e5582377ed45cbf0077..5361787f95446860ad62571ca9cd38ba377dea92 100644
+index 3360cdb11fb999d211e532ed5e6096b4d5b07600..e4ba9e0ff0ceaf86d00e90e6affda11ea45929bd 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1168,7 +1168,7 @@ public abstract class PlayerList {
+@@ -1173,7 +1173,7 @@ public abstract class PlayerList {
      }
-     public ServerStatsCounter getPlayerStats(GameProfile gameProfile) {
-             Path path = this.locateStatsFile(gameProfile);
--            return new ServerStatsCounter(this.server, path);
-+            return new ServerStatsCounter(this.server, path, gameProfile.id()); // Slice
+     public ServerStatsCounter getPlayerStats(final GameProfile gameProfile) {
+             Path targetFile = this.locateStatsFile(gameProfile);
+-            return new ServerStatsCounter(this.server, targetFile);
++            return new ServerStatsCounter(this.server, targetFile, gameProfile.id()); // Slice
      }
      // CraftBukkit end
  
 diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
-index 91d90ba6ce9121d09a456e576649a29e4e75b66b..91b10d7792cb8f0d11a8445b3fa14407d91e6b57 100644
+index e9212ccc682241c50dc59e7589147c6579f2719e..6a7b573fa2f2df74c235a5abef57b201d439fc08 100644
 --- a/net/minecraft/stats/ServerStatsCounter.java
 +++ b/net/minecraft/stats/ServerStatsCounter.java
 @@ -63,9 +63,15 @@ public class ServerStatsCounter extends StatsCounter {
-         return Codec.unboundedMap(codec1, Codec.INT);
+         return Codec.unboundedMap(statCodec, Codec.INT);
      }
  
--    public ServerStatsCounter(MinecraftServer server, Path file) {
-+    public ServerStatsCounter(MinecraftServer server, Path file, java.util.UUID uuid) { // Slice
+-    public ServerStatsCounter(final MinecraftServer server, final Path file) {
++    public ServerStatsCounter(final MinecraftServer server, final Path file, java.util.UUID uuid) { // Slice
          this.file = file;
 -        if (Files.isRegularFile(file)) {
 +        // Slice start - If event supplies stats, use it. Otherwise just load from disk as usual
@@ -36,6 +36,6 @@ index 91d90ba6ce9121d09a456e576649a29e4e75b66b..91b10d7792cb8f0d11a8445b3fa14407
 +        if (providedJson != null) {
 +            parse(server.getFixerUpper(), providedJson);
 +        } else if (Files.isRegularFile(file)) {
-             try (Reader bufferedReader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-                 JsonElement jsonElement = StrictJsonParser.parse(bufferedReader);
-                 this.parse(server.getFixerUpper(), jsonElement);
+             try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                 JsonElement element = StrictJsonParser.parse(reader);
+                 this.parse(server.getFixerUpper(), element);

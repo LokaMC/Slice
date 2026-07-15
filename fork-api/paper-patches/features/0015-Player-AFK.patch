@@ -5,13 +5,13 @@ Subject: [PATCH] Player AFK
 
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index ecd74fc252b62f87d9ab92c5fb70761ef3ca34ad..7473f0d45626b122e0681d05c55488cfdd915d93 100644
+index e6977e43c35b68d1e295a0202a9d7af1e98119a7..34932dd9e9a4da3480c1fb3d851eda9adcefc34d 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -4035,4 +4035,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
-      */
-     @ApiStatus.Experimental
-     PlayerGameConnection getConnection();
+@@ -4043,4 +4043,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+     default ObjectContents asObjectContents() {
+         return this.getPlayerProfile().asObjectContents();
+     }
 +
 +    /**
 +     * @return Whether this player is AFK.

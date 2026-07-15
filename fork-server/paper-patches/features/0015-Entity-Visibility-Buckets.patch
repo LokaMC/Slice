@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 6ae9ca3f1248e9121072880336fccd5424add636..592c4e24827f457fd14ff0fddb4be73b75b30c29 100644
+index 9fb31d822ebfd471432e0dbde47b9e3cce96c14e..dc968ae9360b9b22d9d4cf00cc0169d3cc973872 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1386,4 +1386,14 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1394,4 +1394,14 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          this.entity.despawnTime = ticks;
      }
      // Slice end
@@ -24,10 +24,10 @@ index 6ae9ca3f1248e9121072880336fccd5424add636..592c4e24827f457fd14ff0fddb4be73b
 +    // Slice end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 0c776f08a5828fce72bb83c67c870a01ba04cbc9..3cf25989719a2e409e9ea1b5fa2b26d71b62a949 100644
+index 57a47e059628e55726ab2fea14f58e4ceaff2aaf..0277ae82ffc9918351cb5422e84fe11bbaf7dd35 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2066,7 +2066,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2065,7 +2065,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
  
      @Override
      public boolean canSee(org.bukkit.entity.Entity entity) {

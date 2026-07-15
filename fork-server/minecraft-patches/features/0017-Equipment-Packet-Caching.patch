@@ -5,7 +5,7 @@ Subject: [PATCH] Equipment Packet Caching
 
 
 diff --git a/net/minecraft/network/protocol/game/ClientboundSetEquipmentPacket.java b/net/minecraft/network/protocol/game/ClientboundSetEquipmentPacket.java
-index 13f5fc753558a8a3d7e0075a3b8dd8178b5fd3c2..f5ffabcd4aa7682db92a8f1dad374a1a2f78f077 100644
+index 05baba9103362ce3bd840867695a76c323785180..d20b079ea60f5e803ff5bd2c450b35f3f9feeb3e 100644
 --- a/net/minecraft/network/protocol/game/ClientboundSetEquipmentPacket.java
 +++ b/net/minecraft/network/protocol/game/ClientboundSetEquipmentPacket.java
 @@ -30,6 +30,16 @@ public class ClientboundSetEquipmentPacket implements Packet<ClientGamePacketLis
@@ -22,40 +22,40 @@ index 13f5fc753558a8a3d7e0075a3b8dd8178b5fd3c2..f5ffabcd4aa7682db92a8f1dad374a1a
 +        }
 +    }
 +
-     private ClientboundSetEquipmentPacket(RegistryFriendlyByteBuf buffer) {
-         this.entity = buffer.readVarInt();
+     private ClientboundSetEquipmentPacket(final RegistryFriendlyByteBuf input) {
+         this.entity = input.readVarInt();
          this.slots = Lists.newArrayList();
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 3a817c92147bb78c60238f3ddc1644b721aed7a2..d9a49fea2833cd9933dd48d8852b315ae51762a1 100644
+index 60af82925d2f7e605bf7340cf01f1a5668f4d725..e9f54ee0d58205b8116dd63bfc18d38325650b04 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
-@@ -340,19 +340,7 @@ public class ServerEntity {
+@@ -345,19 +345,7 @@ public class ServerEntity {
          }
  
-         if (this.entity instanceof LivingEntity livingEntityx) {
--            List<Pair<EquipmentSlot, ItemStack>> list = Lists.newArrayList();
+         if (this.entity instanceof LivingEntity livingEntity) {
+-            List<Pair<EquipmentSlot, ItemStack>> slots = Lists.newArrayList();
 -
--            for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES) {
--                ItemStack itemBySlot = livingEntityx.getItemBySlot(equipmentSlot);
--                if (!itemBySlot.isEmpty()) {
--                    list.add(Pair.of(equipmentSlot, itemBySlot.copy()));
+-            for (EquipmentSlot slot : EquipmentSlot.VALUES) {
+-                ItemStack itemStack = livingEntity.getItemBySlot(slot);
+-                if (!itemStack.isEmpty()) {
+-                    slots.add(Pair.of(slot, itemStack.copy()));
 -                }
 -            }
 -
--            if (!list.isEmpty()) {
--                consumer.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), list, true)); // Paper - data sanitization
+-            if (!slots.isEmpty()) {
+-                broadcast.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), slots, true)); // Paper - data sanitization
 -            }
 -            ((LivingEntity) this.entity).detectEquipmentUpdates(); // CraftBukkit - SPIGOT-3789: sync again immediately after sending
-+            livingEntityx.sendEquipment(consumer, player);
++            livingEntity.sendEquipment(broadcast, player); // Slice
          }
  
          if (!this.entity.getPassengers().isEmpty()) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 6f49b5e5888a6296b929e465a5ef87dc49bd4516..3f1aade00d88d5b5ef59399e3f2ba7109e4236c0 100644
+index 3a4da514c163e7565fc241835db52c464a5c4734..585a781a565936a5ab153d095de5570e1883dd85 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -328,6 +328,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-         return this.brainProvider().makeBrain(dynamic);
+@@ -339,6 +339,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         return new Brain<>();
      }
  
 +    // Slice start
@@ -64,26 +64,26 @@ index 6f49b5e5888a6296b929e465a5ef87dc49bd4516..3f1aade00d88d5b5ef59399e3f2ba710
 +    // Slice end
 +
      @Override
-     public void kill(ServerLevel level) {
+     public void kill(final ServerLevel level) {
          this.hurtServer(level, this.damageSources().genericKill(), Float.MAX_VALUE);
-@@ -3492,6 +3497,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-         if (map != null) {
-             this.handleHandSwap(map);
-             if (!map.isEmpty()) {
+@@ -3564,6 +3569,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         if (changedItems != null) {
+             this.handleHandSwap(changedItems);
+             if (!changedItems.isEmpty()) {
 +                cachedEquipmentPacket.clear(); // Slice - Must invalidate cached equipment map if we have changes
-                 this.handleEquipmentChanges(map);
+                 this.handleEquipmentChanges(changedItems);
              }
          }
-@@ -3589,7 +3595,25 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-             list.add(Pair.of(equipmentSlot, itemStack1));
-             this.lastEquipmentItems.put(equipmentSlot, itemStack1);
+@@ -3661,7 +3667,25 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+             itemsToSend.add(Pair.of(slot, newItemToStore));
+             this.lastEquipmentItems.put(slot, newItemToStore);
          });
--        ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), list, true)); // Paper - data sanitization
+-        ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), itemsToSend, true)); // Paper - data sanitization
 +
 +        // Slice start
 +        net.minecraft.server.level.ChunkMap.TrackedEntity entityTracker = ((ServerLevel) this.level()).getChunkSource().chunkMap.entityMap.get(getId());
 +        if (entityTracker != null) {
-+            ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(this.getId(), list);
++            ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(this.getId(), itemsToSend);
 +            for (net.minecraft.server.network.ServerPlayerConnection playerConnection : entityTracker.seenBy) {
 +                ServerPlayer player = playerConnection.getPlayer();
 +                org.bukkit.event.player.PlayerReceiveEquipmentEvent event = new org.bukkit.event.player.PlayerReceiveEquipmentEvent(player.getBukkitEntity(), getBukkitEntity());
@@ -91,7 +91,7 @@ index 6f49b5e5888a6296b929e465a5ef87dc49bd4516..3f1aade00d88d5b5ef59399e3f2ba710
 +
 +                String tag = event.getTag();
 +                if (tag != null) {
-+                    playerConnection.send(new ClientboundSetEquipmentPacket(this.getId(), list, this, false, tag));
++                    playerConnection.send(new ClientboundSetEquipmentPacket(this.getId(), itemsToSend, this, false, tag));
 +                } else {
 +                    playerConnection.send(packet);
 +                }
@@ -100,8 +100,8 @@ index 6f49b5e5888a6296b929e465a5ef87dc49bd4516..3f1aade00d88d5b5ef59399e3f2ba710
 +        // Slice end
      }
  
-     protected void tickHeadTurn(float yBodyRot) {
-@@ -4833,4 +4857,85 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     protected void tickHeadTurn(final float yBodyRotT) {
+@@ -4912,4 +4936,85 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
  
      public record Fallsounds(SoundEvent small, SoundEvent big) {
      }

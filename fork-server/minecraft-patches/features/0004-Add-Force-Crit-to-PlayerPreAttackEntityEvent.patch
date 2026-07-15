@@ -5,15 +5,15 @@ Subject: [PATCH] Add Force Crit to PlayerPreAttackEntityEvent
 
 
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 7bf160cef8bd772d27d4a71f04d5d9861ef67984..c2c2d0d7e4d4cfc530c4eb98d5b52cea1d97ab1a 100644
+index 5d4b3ed09fe10f545d0720b2919f0d6c822d5196..742e6d2d3ae7d514cc32d71c2ae026d40f4b8cf2 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
-@@ -1048,7 +1048,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1049,7 +1049,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                      }
  
-                     f += weaponItem.getItem().getAttackDamageBonus(target, f, damageSource);
--                    boolean flag2 = flag && this.canCriticalAttack(target);
-+                    boolean flag2 = playerAttackEntityEvent.isForceCrit() || (flag && this.canCriticalAttack(target));
-                     flag2 = flag2 && !this.level().paperConfig().entities.behavior.disablePlayerCrits; // Paper - Toggleable player crits
-                     if (flag2) {
+                     baseDamage += attackingItemStack.getItem().getAttackDamageBonus(entity, baseDamage, damageSource);
+-                    boolean criticalAttack = fullStrengthAttack && this.canCriticalAttack(entity);
++                    boolean criticalAttack = playerAttackEntityEvent.isForceCrit() || (fullStrengthAttack && this.canCriticalAttack(entity)); // Slice - force crit
+                     criticalAttack = criticalAttack && !this.level().paperConfig().entities.behavior.disablePlayerCrits; // Paper - Toggleable player crits
+                     if (criticalAttack) {
                          damageSource = damageSource.critical(); // Paper - critical damage API

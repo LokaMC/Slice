@@ -5,10 +5,10 @@ Subject: [PATCH] Add Vanish, settable inv locations
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 88ce236b5ee31d556da04965527194f819196024..b0a5ccbcb8eb71a098878e541e138fc98ceb1e08 100644
+index ce3544f030c7699b0a5efa8caf8ae32ac13064b8..71403ea6e334c46e62cdebb751f86172f2facaa0 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -384,6 +384,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -398,6 +398,7 @@ public abstract class Entity
      public boolean isTemporarilyActive;
      public long activatedImmunityTick = Integer.MIN_VALUE;
      public boolean saveable = true; // Slice
@@ -16,12 +16,12 @@ index 88ce236b5ee31d556da04965527194f819196024..b0a5ccbcb8eb71a098878e541e138fc9
  
      public void inactiveTick() {
      }
-@@ -1382,7 +1383,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
-     }
- 
-     private boolean vibrationAndSoundEffectsFromBlock(BlockPos pos, BlockState state, boolean playStepSound, boolean broadcastGameEvent, Vec3 entityPos) {
--        if (state.isAir()) {
-+        if (vanished || state.isAir()) { // Slice
+@@ -1473,7 +1474,7 @@ public abstract class Entity
+     private boolean vibrationAndSoundEffectsFromBlock(
+         final BlockPos pos, final BlockState blockState, final boolean shouldSound, final boolean shouldVibrate, final Vec3 clippedMovement
+     ) {
+-        if (blockState.isAir()) {
++        if (vanished || blockState.isAir()) { // Slice
              return false;
-         } else {
-             boolean isStateClimbable = this.isStateClimbable(state);
+         }
+ 

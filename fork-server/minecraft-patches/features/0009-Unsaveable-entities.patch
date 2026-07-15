@@ -5,22 +5,22 @@ Subject: [PATCH] Unsaveable entities
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index af67b07722bb0125acd081dab767d7e7b360623b..648e046a72f1a0582898df83200282bfc1fa65d2 100644
+index 075e294333115738b25b64a390df323276cf39f9..9115b68139e343f531314f14008dfae515a49c83 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -559,6 +559,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
-         if (flag && (this.spawnEnemies || this.spawnFriendlies)) { // Paper
+@@ -564,6 +564,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         if (doMobSpawning && (this.spawnEnemies || this.spawnFriendlies)) { // Paper
              // Paper start - PlayerNaturallySpawnCreaturesEvent
-             for (ServerPlayer entityPlayer : this.level.players()) {
-+                if (entityPlayer.spawnsOwnMobs) continue; // Slice
-                 int chunkRange = Math.min(level.spigotConfig.mobSpawnRange, entityPlayer.getBukkitEntity().getViewDistance());
+             for (ServerPlayer player : this.level.players()) {
++                if (player.spawnsOwnMobs) continue; // Slice
+                 int chunkRange = Math.min(level.spigotConfig.mobSpawnRange, player.getBukkitEntity().getViewDistance());
                  chunkRange = Math.min(chunkRange, 8);
-                 entityPlayer.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(entityPlayer.getBukkitEntity(), (byte) chunkRange);
+                 player.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(player.getBukkitEntity(), (byte) chunkRange);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index d1c5b0c89cb9fdd2b824269a8dfd995d64d90c5e..88ce236b5ee31d556da04965527194f819196024 100644
+index 92884bd6f60cb2938c62194623544c8d3ca2a57a..ce3544f030c7699b0a5efa8caf8ae32ac13064b8 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -383,6 +383,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -397,6 +397,7 @@ public abstract class Entity
      public long activatedTick = Integer.MIN_VALUE;
      public boolean isTemporarilyActive;
      public long activatedImmunityTick = Integer.MIN_VALUE;
@@ -28,7 +28,7 @@ index d1c5b0c89cb9fdd2b824269a8dfd995d64d90c5e..88ce236b5ee31d556da04965527194f8
  
      public void inactiveTick() {
      }
-@@ -5239,6 +5240,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -5246,6 +5247,7 @@ public abstract class Entity
  
      @Override
      public boolean shouldBeSaved() {

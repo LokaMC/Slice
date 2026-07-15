@@ -5,10 +5,10 @@ Subject: [PATCH] Expose getBlockPosBelowThatAffectsMyMovement
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 2c68aae864a74adf70683eb3b17109aa96572413..073cff2ff325d3a05963acc7c3212e2e4ac38fcc 100644
+index e24744cc523f1ce3c7c8e27b14d3337a3f17f4bb..95d871a9df97abc338f7f75b3f025385e34248b5 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1322,4 +1322,12 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1332,4 +1332,12 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void broadcastHurtAnimation(@NotNull java.util.Collection<Player> players);
      // Paper end - broadcast hurt animation

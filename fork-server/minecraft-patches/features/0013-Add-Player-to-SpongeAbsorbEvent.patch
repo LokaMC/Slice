@@ -5,15 +5,15 @@ Subject: [PATCH] Add Player to SpongeAbsorbEvent
 
 
 diff --git a/net/minecraft/world/level/block/SpongeBlock.java b/net/minecraft/world/level/block/SpongeBlock.java
-index 298e51da2da64fdaa860108cc34e59d214b5f9a7..eec6a3fb09f4f022cc2a52e6b4177cd40190d36d 100644
+index 604bd261066fbbd98e1b95602187f0b6b3f63010..e0743ecaf58953994466fbf237c6df7e9f6c2700 100644
 --- a/net/minecraft/world/level/block/SpongeBlock.java
 +++ b/net/minecraft/world/level/block/SpongeBlock.java
-@@ -101,7 +101,8 @@ public class SpongeBlock extends Block {
+@@ -94,7 +94,8 @@ public class SpongeBlock extends Block {
          if (!snapshots.isEmpty()) {
-             final org.bukkit.block.Block sponge = org.bukkit.craftbukkit.block.CraftBlock.at(level, pos);
+             final org.bukkit.block.Block sponge = org.bukkit.craftbukkit.block.CraftBlock.at(level, startPos);
  
 -            org.bukkit.event.block.SpongeAbsorbEvent event = new org.bukkit.event.block.SpongeAbsorbEvent(sponge, (java.util.List<org.bukkit.block.BlockState>) (java.util.List) snapshots);
-+            Level.PendingBlockEvent blockEvent = level.pendingPlayerBlockEvents.remove(pos); // Paper
++            Level.PendingBlockEvent blockEvent = level.pendingPlayerBlockEvents.remove(startPos); // Paper
 +            org.bukkit.event.block.SpongeAbsorbEvent event = new org.bukkit.event.block.SpongeAbsorbEvent(sponge, blockEvent != null ? (org.bukkit.entity.Player) blockEvent.player.getBukkitEntity() : null, (java.util.List<org.bukkit.block.BlockState>) (java.util.List) snapshots);
              if (!event.callEvent()) {
                  return false;

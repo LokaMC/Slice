@@ -5,22 +5,22 @@ Subject: [PATCH] Add Vanish, settable inv locations
 
 
 diff --git a/net/minecraft/server/ServerScoreboard.java b/net/minecraft/server/ServerScoreboard.java
-index 04a62e5ab9c0d0b9b7959280b0e0ea3ff388c017..fa616b275b9f04a69d2c7a7ff1ab32ff691ede4b 100644
+index 7ffd683c42557052d7bfa963d87e68f4e8f62d6c..43afb8435476e727075976138c28dd7a1c20f4a0 100644
 --- a/net/minecraft/server/ServerScoreboard.java
 +++ b/net/minecraft/server/ServerScoreboard.java
 @@ -196,6 +196,7 @@ public class ServerScoreboard extends Scoreboard {
  
      @Override
-     public void onTeamChanged(PlayerTeam team) {
-+        if (!team.broadcastsChanges()) return;
+     public void onTeamChanged(final PlayerTeam team) {
++        if (!team.broadcastsChanges()) return; // Slice
          super.onTeamChanged(team);
          this.broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false)); // CraftBukkit
          this.updateTeamWaypoints(team);
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 11efd5d2ce1b2056fcf12bdfc2bd6e85d7f9a8ce..b017a081d99c98abcd9dfdf5a6cac9f2355c858e 100644
+index 4f68ddc1da21dc665619df3d404396f35ab68bd6..264c14295e40260be696f0a4e6adbf30286897c1 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
-@@ -1779,6 +1779,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1778,6 +1778,7 @@ public abstract class Player extends Avatar implements ContainerUser {
  
      @Override
      protected Entity.MovementEmission getMovementEmission() {
@@ -29,18 +29,18 @@ index 11efd5d2ce1b2056fcf12bdfc2bd6e85d7f9a8ce..b017a081d99c98abcd9dfdf5a6cac9f2
      }
  
 diff --git a/net/minecraft/world/scores/PlayerTeam.java b/net/minecraft/world/scores/PlayerTeam.java
-index 3feafbe8a953ea7fba8bc6f2351c61d9c865b83d..f5418b20d3a5074241231d66a8c44667497d19db 100644
+index 2bdbb8451974f0b8d6e94d390ac735f4ccffd954..f12a28cdb27dd43b2635b9f4076909056e3d75b9 100644
 --- a/net/minecraft/world/scores/PlayerTeam.java
 +++ b/net/minecraft/world/scores/PlayerTeam.java
-@@ -33,6 +33,7 @@ public class PlayerTeam extends Team {
-     private ChatFormatting color = ChatFormatting.RESET;
+@@ -36,6 +36,7 @@ public class PlayerTeam extends Team {
+     private Optional<TeamColor> color = Optional.empty();
      private Team.CollisionRule collisionRule = Team.CollisionRule.ALWAYS;
      private final Style displayNameStyle;
 +    private boolean broadcastChanges = true; // Slice
  
-     public PlayerTeam(Scoreboard scoreboard, String name) {
+     public PlayerTeam(final Scoreboard scoreboard, final String name) {
          this.scoreboard = scoreboard;
-@@ -57,6 +58,16 @@ public class PlayerTeam extends Team {
+@@ -60,6 +61,16 @@ public class PlayerTeam extends Team {
          );
      }
  

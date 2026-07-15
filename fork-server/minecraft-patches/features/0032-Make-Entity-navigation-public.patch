@@ -5,15 +5,15 @@ Subject: [PATCH] Make Entity navigation public
 
 
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 92175cc019750e829fcad7691a937024c2649882..a3492521c5560bec221d3514bb536ab2f8473833 100644
+index c2dd2da4bfb7d65ad2730ba1ce771e2b488beda4..b95f43322f7c7f433fa4e17639d95213dd265420 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
-@@ -133,7 +133,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+@@ -138,7 +138,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
      protected MoveControl moveControl;
      protected JumpControl jumpControl;
      private final BodyRotationControl bodyRotationControl;
 -    protected PathNavigation navigation;
 +    public PathNavigation navigation; // Slice
-     public GoalSelector goalSelector;
+     protected final GoalSelector goalSelector;
      public net.minecraft.world.entity.ai.goal.@Nullable FloatGoal goalFloat; // Paper - Allow nerfed mobs to jump and float
      public GoalSelector targetSelector;

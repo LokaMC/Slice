@@ -5,10 +5,10 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 9d5b405cd7fad082b2f03ec21fa57bbfb3f46d72..3d08277d10b401be45f0caf8566c65ce4c5492ec 100644
+index 1a8a9c90c7c0a4e0cf1c866658ec770844e55551..a5bbc1f40a46c3d23115437773e33444e7337265 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2591,7 +2591,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2590,7 +2590,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
                  this.sendHealthUpdate();
              }
          }

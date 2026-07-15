@@ -1,6 +1,6 @@
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1152,6 +_,18 @@
+@@ -1153,6 +_,18 @@
          this.world.noSave = !value;
      }
  

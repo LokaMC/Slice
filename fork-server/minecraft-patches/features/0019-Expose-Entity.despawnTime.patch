@@ -5,10 +5,10 @@ Subject: [PATCH] Expose Entity.despawnTime
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index fa4397460db1b7bb7b0c6acf4d6479089f5a8386..12288af8f5d82000ebbb2435e5d649532a6d6d40 100644
+index c94eee03749f4b685db53ebf1460a14b0713ca2a..237713ca7c93aaf3168eeee853ce32790790e505 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -375,7 +375,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -389,7 +389,7 @@ public abstract class Entity
      // Paper end
      public boolean freezeLocked = false; // Paper - Freeze Tick Lock API
      public boolean fixedPose = false; // Paper - Expand Pose API

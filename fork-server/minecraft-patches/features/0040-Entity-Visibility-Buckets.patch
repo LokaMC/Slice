@@ -5,56 +5,26 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..d6a026f7739d4aa84f921dd2a962234f8e11d7b5 100644
+index 68151ce05e7009f28dda0470c744920cbd5f4a27..df8d6406897d562d82cafb981ee6e485db897188 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -306,6 +306,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -335,6 +335,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
      private final Set<String> pluginsBlockingSleep = new java.util.HashSet<>(); // Paper - API to allow/disallow tick sleeping
      public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
 +    // Slice start - visibility bucket queue
-+    //
-+    // Single throttled queue for entity visibility bucket updates. Entity setters / modifiers push
-+    // pending mask writes into per-entity slots and add the entity here. The drain in tickChildren
-+    // pops up to visibilityBucketUpdateBudgetPerTick entities (FIFO), commits each entity's pending
-+    // masks, and immediately re-runs tracker updatePlayer for nearby viewers / trackers in the
-+    // same iteration. By staggering both the field writes and the resulting tracker updates,
-+    // moonrise$tick only sees N changed entities per tick instead of a bulk flip all at once.
-+    //
-+    // ReferenceLinkedOpenHashSet (identity-hashed - Entity does not override equals, and
-+    // insertion-ordered so the drain is FIFO). Main-thread only; no synchronization.
 +    public final Set<net.minecraft.world.entity.Entity> pendingVisibilityBucketWrites = new it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet<>();
-+
-+    // Per-tick cap on entities drained from pendingVisibilityBucketWrites. Each unit covers one
-+    // entity's mask commit plus its tracker refresh (O(N) updatePlayer calls where N = players in
-+    // level + tracked entities), so this is roughly "N players' worth of spawn/despawn packets
-+    // per tick". <= 0 drains the whole queue.
 +    public int visibilityBucketUpdateBudgetPerTick = 5;
-+    // Runtime toggle for the visibility bucket diagnostic logging (drain / transition / spawn
-+    // decisions, player entities only). Mutable and public so plugin code can flip it on demand
-+    // (e.g. MinecraftServer.VIS_DEBUG = true) rather than via a JVM flag - the output is very noisy,
-+    // so it is meant to be enabled only around a specific repro. Not volatile; main-thread only.
 +    public static boolean VIS_DEBUG = false;
 +    // Slice end
      // Paper start - improve tick loop
-     public final ca.spottedleaf.moonrise.common.time.TickData tickTimes1s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
-     public final ca.spottedleaf.moonrise.common.time.TickData tickTimes5s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
-@@ -1798,6 +1822,57 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-             }
-         }
+     public final ca.spottedleaf.common.time.TickData tickTimes1s  = new ca.spottedleaf.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
+     public final ca.spottedleaf.common.time.TickData tickTimes5s  = new ca.spottedleaf.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
+@@ -1811,6 +1816,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         profiler.push("levels");
+         this.updateEffectiveRespawnData();
  
 +        // Slice start - drain queued visibility bucket refresh from prior tick
-+        // Pops up to visibilityBucketUpdateBudgetPerTick entities (FIFO). Mask writes already
-+        // landed at the call site; this loop refreshes trackers so spawn / despawn packets catch
-+        // up to the new visibility relation, AND mirrors the hidePlayer / showPlayer pattern by
-+        // sending PlayerInfoUpdate / PlayerInfoRemove on bucket-driven seenBy transitions for
-+        // player entities. PlayerList#placeNewPlayer gates the join-time PlayerInfoUpdate on
-+        // canSee; a peer that becomes bucket-visible post-join (the addPairing path) would
-+        // otherwise receive AddEntity with no profile entry and the client silently drops the
-+        // spawn. We intentionally do NOT send PlayerInfo packets on vanilla view-distance
-+        // transitions (per-tick tracker tick path) - those keep vanilla tab-list-persists-out-of-
-+        // view behaviour. Capped budget bounds per-tick state-transition load on mass bucket
-+        // flips; leftovers ride to the next tick. Main-thread only; no synchronization.
 +        if (!this.pendingVisibilityBucketWrites.isEmpty()) {
 +            final int budget = this.visibilityBucketUpdateBudgetPerTick;
 +            final int cap = (budget <= 0) ? Integer.MAX_VALUE : budget;
@@ -95,13 +65,13 @@ index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..d6a026f7739d4aa84f921dd2a962234f
 +        // Slice end
 +
          this.isIteratingOverLevels = true; // Paper - Throw exception on world create while being ticked
-         for (ServerLevel serverLevel : this.getAllLevels()) {
-             serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
+         for (ServerLevel level : this.getAllLevels()) {
+             level.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..5b9e67e78079bb4907c7edc4330745ad7fe159f7 100644
+index d106b195c26cbed452a3caf102725c57d4868dca..cc3814ce22d0838c9cea1f70d1d0c6bcaf1bbb26 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1386,6 +1386,20 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1388,6 +1388,20 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      if (this.seenBy.add(player.connection)) {
                          // Paper start - entity tracking events
                          if (io.papermc.paper.event.player.PlayerTrackEntityEvent.getHandlerList().getRegisteredListeners().length == 0 || new io.papermc.paper.event.player.PlayerTrackEntityEvent(player.getBukkitEntity(), this.entity.getBukkitEntity()).callEvent()) {
@@ -122,33 +92,12 @@ index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..5b9e67e78079bb4907c7edc4330745ad
                          this.serverEntity.addPairing(player);
                          if (this.seenBy.size() == 1) {
                              ChunkMap.this.level.debugSynchronizers().registerEntity(this.entity);
-@@ -1432,5 +1446,48 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
-                 this.updatePlayer(serverPlayer);
+@@ -1434,5 +1448,27 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+                 this.updatePlayer(player);
              }
          }
 +
-+        // Slice start - bucket-driven refresh path. For player entities, delegates to the
-+        // existing CraftPlayer#trackAndShowEntity / #untrackAndHideEntity methods (i.e. the
-+        // showPlayer / hidePlayer code path) so PlayerInfoUpdate / PlayerInfoRemove + tracker
-+        // pairing + PlayerShow/HideEntityEvent are kept in lockstep with vanilla visibility
-+        // toggles. Direction picked from (wasSeen, canSee):
-+        //   wasSeen | canSee | action
-+        //   --------+--------+---------------------------------------------
-+        //    false  |  true  | trackAndShowEntity (PlayerInfoUpdate, updatePlayer adds iff in range)
-+        //    true   |  false | untrackAndHideEntity (removePlayer, PlayerInfoRemove)
-+        //    else            | no-op (visibility relation unchanged; range-only deltas are the
-+        //                              per-tick tracker tick's responsibility)
-+        // Packet cost matches the historical plugin pattern of looping showPlayer / hidePlayer
-+        // over world.players() - PlayerInfoUpdate may go to a viewer who is out of range, same
-+        // as the showPlayer API. Per-tick volume is bounded by visibilityBucketUpdateBudgetPerTick.
-+        //
-+        // For non-player entities there is no PlayerInfo to manage, so we drop straight into
-+        // updatePlayer to refresh the tracker pairing.
-+        //
-+        // BEHAVIOR NOTE: PlayerShowEntityEvent / PlayerHideEntityEvent now fire on bucket-driven
-+        // transitions in addition to hidePlayer / showPlayer API calls. The event Javadoc reads
-+        // "Called when a hidden entity is shown to a player" which covers this; plugins that
-+        // were keying off these events as a hidePlayer-API signal will see additional fires.
++        // Slice start - bucket-driven refresh path
 +        public void updatePlayerForBucketTransition(ServerPlayer player) {
 +            if (this.entity == player) return;
 +            if (!(this.entity instanceof ServerPlayer)) {
@@ -172,10 +121,10 @@ index 2b9c838fc8e0f65f03b38c06bbed9cd3cb1a8261..5b9e67e78079bb4907c7edc4330745ad
      }
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index f445de3ac547779a2b9efa1c2f41da9aff800d53..0c0b1cdb77fcd3d1b948c56a7095be2abc2d79bc 100644
+index 6fe4e12088d4ffeae45afb9d8ad42fae71bfe4ee..ae356c70c062dada8f1a3c100481597a3e19a440 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -388,6 +388,77 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -402,6 +402,77 @@ public abstract class Entity
      public int trackingRange; // Slice
      public boolean inWaterOverride; // Slice
      public float extraHitboxAmount; // Slice

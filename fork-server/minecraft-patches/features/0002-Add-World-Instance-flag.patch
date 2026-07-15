@@ -5,12 +5,12 @@ Subject: [PATCH] Add World Instance flag
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index dc65503a2d785d64d37b76b0303f51cf66d9769a..e29001263dc6f182bcda0b60f018d446cda9c1b7 100644
+index 02bd74f2ed7f34233e3543c8e70ae754adb8aa25..3593bb5308ab7c222a662d519e50000277e09bf3 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -228,6 +228,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
-     public boolean hasPhysicsEvent = true; // Paper - BlockPhysicsEvent
-     public boolean hasEntityMoveEvent; // Paper - Add EntityMoveEvent
+@@ -237,6 +237,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
+     public final org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer persistentDataContainer = new org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
      private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current)
 +    public boolean instance; // Slice
  

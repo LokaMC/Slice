@@ -5,10 +5,10 @@ Subject: [PATCH] Add ObjectId
 
 
 diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
-index f2a1693a1ef03dafa33442d61f73f91bd6202370..ffcb4ac132ca5e86fe08528eedb97eba01f021b0 100644
+index ef089ad40e1b994bc4bee52717899937acbd1e27..3303888081eb1561f8e646e5edae47cee5ce6fe8 100644
 --- a/src/main/java/org/bukkit/entity/HumanEntity.java
 +++ b/src/main/java/org/bukkit/entity/HumanEntity.java
-@@ -31,6 +31,11 @@ import org.jspecify.annotations.Nullable;
+@@ -32,6 +32,11 @@ import org.jspecify.annotations.Nullable;
  @NullMarked
  public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder {
  

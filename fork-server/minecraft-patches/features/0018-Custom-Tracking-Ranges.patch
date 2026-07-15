@@ -5,10 +5,10 @@ Subject: [PATCH] Custom Tracking Ranges
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 958aecdf6292228b5fbf7ade459b5f654c555778..fa4397460db1b7bb7b0c6acf4d6479089f5a8386 100644
+index 14cae05c26ed8f1cf1fe7d2e151da316c4d78a54..c94eee03749f4b685db53ebf1460a14b0713ca2a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -385,6 +385,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -399,6 +399,7 @@ public abstract class Entity
      public long activatedImmunityTick = Integer.MIN_VALUE;
      public boolean saveable = true; // Slice
      public boolean vanished; // Slice

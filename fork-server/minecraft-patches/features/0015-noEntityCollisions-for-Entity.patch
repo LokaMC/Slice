@@ -5,7 +5,7 @@ Subject: [PATCH] noEntityCollisions for Entity
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-index de764da80793d272ff597b4a0742ce785838799a..51cfffe9b42d55ca159f031b02e392920e045ee4 100644
+index 15568f598b8c61cf92563b6a7f8cae526b84484e..b0c7d876e1bde362eefe6807d42361af02b3433c 100644
 --- a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 @@ -2078,6 +2078,7 @@ public final class CollisionUtil {
@@ -17,10 +17,10 @@ index de764da80793d272ff597b4a0742ce785838799a..51cfffe9b42d55ca159f031b02e39292
  
          boolean ret = false;
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b0a5ccbcb8eb71a098878e541e138fc98ceb1e08..958aecdf6292228b5fbf7ade459b5f654c555778 100644
+index 71403ea6e334c46e62cdebb751f86172f2facaa0..14cae05c26ed8f1cf1fe7d2e151da316c4d78a54 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -404,6 +404,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -418,6 +418,7 @@ public abstract class Entity
      private int sectionY = Integer.MIN_VALUE;
      private int sectionZ = Integer.MIN_VALUE;
      private boolean updatingSectionStatus;

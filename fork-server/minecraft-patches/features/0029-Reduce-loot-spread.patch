@@ -5,15 +5,15 @@ Subject: [PATCH] Reduce loot spread
 
 
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index e70d645a4d1fadb293b228acc8efeec14342c7ed..b5e24e1d024312e058b46fd00d7be232d4a1dd5e 100644
+index a4e743925d2e9c5b3771033097cc582b6edd3e13..d76aaa5230a8f6b6ebd5e9c7eb95912e07a65ebc 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -4172,7 +4172,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-             }
+@@ -4244,7 +4244,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         }
  
-             if (randomizeMotion) {
--                float f = this.random.nextFloat() * 0.5F;
-+                float f = this.random.nextFloat() * 0.3F; // Slice - Lower from 0.5 for less cartoonish loot spread
-                 float f1 = this.random.nextFloat() * (float) (Math.PI * 2);
-                 itemEntity.setDeltaMovement(-Mth.sin(f1) * f, 0.2F, Mth.cos(f1) * f);
-             } else {
+         if (randomly) {
+-            float pow = this.random.nextFloat() * 0.5F;
++            float pow = this.random.nextFloat() * 0.3F; // Slice - Lower from 0.5 for less cartoonish loot spread
+             float dir = this.random.nextFloat() * (float) (Math.PI * 2);
+             entity.setDeltaMovement(-Mth.sin(dir) * pow, 0.2F, Mth.cos(dir) * pow);
+         } else {

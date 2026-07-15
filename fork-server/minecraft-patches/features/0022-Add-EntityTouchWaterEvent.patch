@@ -5,20 +5,17 @@ Subject: [PATCH] Add EntityTouchWaterEvent
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 12288af8f5d82000ebbb2435e5d649532a6d6d40..7c43b8a543ef62d184ba528b28826dd788a70458 100644
+index 237713ca7c93aaf3168eeee853ce32790790e505..55d730bb55fe5fa8fbf7a4dc2aa4576b72e26f4d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -2058,11 +2058,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
-         } else if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
+@@ -2183,7 +2183,10 @@ public abstract class Entity
+             this.resetFallDistance();
              if (!this.wasTouchingWater && !this.firstTick) {
                  this.doWaterSplashEffect();
-+                new io.papermc.paper.event.entity.EntityTouchWaterEvent(getBukkitEntity(), true).callEvent();
++                new io.papermc.paper.event.entity.EntityTouchWaterEvent(getBukkitEntity(), true).callEvent(); // Slice
              }
- 
-             this.resetFallDistance();
-             this.wasTouchingWater = true;
-         } else {
-+            if (this.wasTouchingWater) new io.papermc.paper.event.entity.EntityTouchWaterEvent(getBukkitEntity(), false).callEvent();
-             this.wasTouchingWater = false;
++        } else if (this.wasTouchingWater) {
++            new io.papermc.paper.event.entity.EntityTouchWaterEvent(getBukkitEntity(), false).callEvent(); // Slice
          }
-     }
+ 
+         this.wasTouchingWater = inWater;

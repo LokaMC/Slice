@@ -5,19 +5,19 @@ Subject: [PATCH] Add LeafBlockTickEvent
 
 
 diff --git a/net/minecraft/world/level/block/LeavesBlock.java b/net/minecraft/world/level/block/LeavesBlock.java
-index d5b114dca7b28d910f03ae3468e891d5d9863897..faf491ad7cd3fffe4c7caa7a385dc530ed19b1b0 100644
+index 23ff958d35aa9199f361aa88cca7fd676f035709..811ea506b708c192d243805d9da07c52fd9b6c5d 100644
 --- a/net/minecraft/world/level/block/LeavesBlock.java
 +++ b/net/minecraft/world/level/block/LeavesBlock.java
 @@ -60,14 +60,16 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
  
      @Override
-     protected boolean isRandomlyTicking(BlockState state) {
+     protected boolean isRandomlyTicking(final BlockState state) {
 -        return state.getValue(DISTANCE) == 7 && !state.getValue(PERSISTENT);
 +        return true; //state.getValue(DISTANCE) == 7 && !state.getValue(PERSISTENT);
      }
  
      @Override
-     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+     protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
 +        org.bukkit.craftbukkit.block.CraftBlock block = org.bukkit.craftbukkit.block.CraftBlock.at(level, pos);
 +        new io.papermc.paper.event.block.LeafBlockTickEvent(block).callEvent();
          if (this.decaying(state)) {

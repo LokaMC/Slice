@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id("io.papermc.paperweight.patcher") version "2.0.0-beta.19"
+    id("io.papermc.paperweight.patcher") version "2.0.0-beta.21"
 }
 
 paperweight {
@@ -36,7 +36,7 @@ subprojects {
 
     extensions.configure<JavaPluginExtension> {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(25)
         }
     }
 
@@ -51,7 +51,7 @@ subprojects {
     }
     tasks.withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.name()
-        options.release = 21
+        options.release = 25
         options.isFork = true
     }
     tasks.withType<Javadoc> {
@@ -77,5 +77,12 @@ subprojects {
             }
              */
         }
+    }
+}
+
+tasks.register("copyJar") {
+    copy {
+        from("fork-server/build/libs/fork-bundler-26.2-R0.1-SNAPSHOT.jar")
+        into("C:/Loka/pts262/")
     }
 }

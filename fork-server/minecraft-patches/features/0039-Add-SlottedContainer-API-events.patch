@@ -5,114 +5,114 @@ Subject: [PATCH] Add SlottedContainer API events
 
 
 diff --git a/net/minecraft/world/level/block/ChiseledBookShelfBlock.java b/net/minecraft/world/level/block/ChiseledBookShelfBlock.java
-index cea0f015290137a5284f4a3021c954272b3db543..5e799b74930040af9efa31e27cd2c20afef7d9a0 100644
+index b7d7f1acf8e5cb3dddb7fb39fe003d25a9a41840..51163e23825c4d0ae480a540aa2d620d8af4b931 100644
 --- a/net/minecraft/world/level/block/ChiseledBookShelfBlock.java
 +++ b/net/minecraft/world/level/block/ChiseledBookShelfBlock.java
-@@ -114,6 +114,16 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
- 
-     private static void addBook(Level level, BlockPos pos, Player player, ChiseledBookShelfBlockEntity blockEntity, ItemStack bookStack, int slot) {
+@@ -133,6 +133,16 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
+         final int slot
+     ) {
          if (!level.isClientSide()) {
 +            // Slice start - PlayerInsertItemIntoSlottedContainer
 +            io.papermc.paper.event.player.PlayerInsertItemIntoSlottedContainer insertEvent = new io.papermc.paper.event.player.PlayerInsertItemIntoSlottedContainer(
 +                (org.bukkit.entity.Player) player.getBukkitEntity(),
 +                org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
 +                slot,
-+                org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(bookStack)
++                org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemStack)
 +            );
 +            if (!insertEvent.callEvent()) return;
 +            // Slice end - PlayerInsertItemIntoSlottedContainer
 +
-             player.awardStat(Stats.ITEM_USED.get(bookStack.getItem()));
-             SoundEvent soundEvent = bookStack.is(Items.ENCHANTED_BOOK)
+             player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
+             SoundEvent soundEvent = itemStack.is(Items.ENCHANTED_BOOK)
                  ? SoundEvents.CHISELED_BOOKSHELF_INSERT_ENCHANTED
-@@ -125,6 +135,14 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
- 
-     private static void removeBook(Level level, BlockPos pos, Player player, ChiseledBookShelfBlockEntity blockEntity, int slot) {
+@@ -146,6 +156,14 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
+         final Level level, final BlockPos pos, final Player player, final ChiseledBookShelfBlockEntity bookshelfBlock, final int slot
+     ) {
          if (!level.isClientSide()) {
 +            io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer event = new io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer(
 +                    (org.bukkit.entity.Player) player.getBukkitEntity(),
 +                    org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
 +                    slot,
-+                    org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(blockEntity.getItem(slot))
++                    org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(bookshelfBlock.getItem(slot))
 +            );
 +            if (!event.callEvent()) return;
 +
-             ItemStack itemStack = blockEntity.removeItem(slot, 1);
-             SoundEvent soundEvent = itemStack.is(Items.ENCHANTED_BOOK)
+             ItemStack retrievedBook = bookshelfBlock.removeItem(slot, 1);
+             SoundEvent soundEvent = retrievedBook.is(Items.ENCHANTED_BOOK)
                  ? SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED
 diff --git a/net/minecraft/world/level/block/ShelfBlock.java b/net/minecraft/world/level/block/ShelfBlock.java
-index 235a01fd28999cae9dd5ba7aa8f18096c89d32f5..f204c701bb629ddb36a735fb054b0850f700577b 100644
+index 8a1313a10b6afeee86ea2245da4bd9beb28d1d84..ba576fb5e557b5ae32ef47b8a663def2981ff713 100644
 --- a/net/minecraft/world/level/block/ShelfBlock.java
 +++ b/net/minecraft/world/level/block/ShelfBlock.java
-@@ -168,6 +168,27 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
-                 if (level.isClientSide()) {
-                     return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
-                 } else if (!state.getValue(POWERED)) {
-+                    // Slice start - Slotted Container events
-+                    if (!stack.isEmpty()) {
-+                        io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer swapEvent = new io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer(
-+                            (org.bukkit.entity.Player) player.getBukkitEntity(),
-+                            org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
-+                            hitSlot.getAsInt(),
-+                            org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(stack),
-+                            org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(shelfBlockEntity.getItem(hitSlot.getAsInt()))
-+                        );
-+                        if (!swapEvent.callEvent()) return InteractionResult.FAIL;
-+                    } else if (!shelfBlockEntity.getItem(hitSlot.getAsInt()).isEmpty()) {
-+                        io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer takeEvent = new io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer(
-+                            (org.bukkit.entity.Player) player.getBukkitEntity(),
-+                            org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
-+                            hitSlot.getAsInt(),
-+                            org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(shelfBlockEntity.getItem(hitSlot.getAsInt()))
-+                        );
-+                        if (!takeEvent.callEvent()) return InteractionResult.FAIL;
-+                    }
-+                    // Slice end - PlayerSwapItemWithSlottedContainer
+@@ -179,6 +179,27 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+             }
+ 
+             if (!state.getValue(POWERED)) {
++                // Slice start - Slotted Container events
++                if (!itemStack.isEmpty()) {
++                    io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer swapEvent = new io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer(
++                        (org.bukkit.entity.Player) player.getBukkitEntity(),
++                        org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
++                        hitSlot.getAsInt(),
++                        org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemStack),
++                        org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(shelfBlockEntity.getItem(hitSlot.getAsInt()))
++                    );
++                    if (!swapEvent.callEvent()) return InteractionResult.FAIL;
++                } else if (!shelfBlockEntity.getItem(hitSlot.getAsInt()).isEmpty()) {
++                    io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer takeEvent = new io.papermc.paper.event.player.PlayerTakeItemFromSlottedContainer(
++                        (org.bukkit.entity.Player) player.getBukkitEntity(),
++                        org.bukkit.craftbukkit.block.CraftBlock.at(level, pos),
++                        hitSlot.getAsInt(),
++                        org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(shelfBlockEntity.getItem(hitSlot.getAsInt()))
++                    );
++                    if (!takeEvent.callEvent()) return InteractionResult.FAIL;
++                }
++                // Slice end - PlayerSwapItemWithSlottedContainer
 +
-                     boolean flag = swapSingleItem(stack, player, shelfBlockEntity, hitSlot.getAsInt(), inventory);
-                     if (flag) {
-                         this.playSound(level, pos, stack.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
-@@ -182,7 +203,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
-                     return InteractionResult.SUCCESS.heldItemTransformedTo(stack);
-                 } else {
-                     ItemStack selectedItem = inventory.getSelectedItem();
--                    boolean flag1 = this.swapHotbar(level, pos, inventory);
-+                    boolean flag1 = this.swapHotbar(level, pos, player, inventory);
-                     if (!flag1) {
-                         return InteractionResult.CONSUME;
-                     } else {
-@@ -211,7 +232,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
-         return !itemStack.isEmpty();
+                 boolean itemRemoved = swapSingleItem(itemStack, player, shelfBlockEntity, hitSlot.getAsInt(), inventory);
+                 if (itemRemoved) {
+                     this.playSound(level, pos, itemStack.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
+@@ -193,7 +214,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+                 return InteractionResult.SUCCESS.heldItemTransformedTo(itemStack);
+             } else {
+                 ItemStack previousItem = inventory.getSelectedItem();
+-                boolean anySwapped = this.swapHotbar(level, pos, inventory);
++                boolean anySwapped = this.swapHotbar(level, pos, player, inventory); // Slice
+                 if (!anySwapped) {
+                     return InteractionResult.CONSUME;
+                 }
+@@ -223,7 +244,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+         return !removedItem.isEmpty();
      }
  
--    private boolean swapHotbar(Level level, BlockPos pos, Inventory inventory) {
-+    private boolean swapHotbar(Level level, BlockPos pos, Player player, Inventory inventory) {
-         List<BlockPos> allBlocksConnectedTo = this.getAllBlocksConnectedTo(level, pos);
-         if (allBlocksConnectedTo.isEmpty()) {
+-    private boolean swapHotbar(final Level level, final BlockPos pos, final Inventory inventory) {
++    private boolean swapHotbar(final Level level, final BlockPos pos, final Player player, final Inventory inventory) { // Slice
+         List<BlockPos> connectedBlocks = this.getAllBlocksConnectedTo(level, pos);
+         if (connectedBlocks.isEmpty()) {
              return false;
-@@ -224,10 +245,22 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
-                     for (int i1 = 0; i1 < shelfBlockEntity.getContainerSize(); i1++) {
-                         int i2 = 9 - (allBlocksConnectedTo.size() - i) * shelfBlockEntity.getContainerSize() + i1;
-                         if (i2 >= 0 && i2 <= inventory.getContainerSize()) {
--                            ItemStack itemStack = inventory.removeItemNoUpdate(i2);
--                            ItemStack itemStack1 = shelfBlockEntity.swapItemNoUpdate(i1, itemStack);
-+                            ItemStack itemStack = inventory.getItem(i2);
-+                            ItemStack itemStack1 = shelfBlockEntity.getItem(i1);
-                             if (!itemStack.isEmpty() || !itemStack1.isEmpty()) {
--                                inventory.setItem(i2, itemStack1);
-+                                // Slice start - PlayerSwapItemWithSlottedContainer
-+                                io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer swapEvent = new io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer(
-+                                    (org.bukkit.entity.Player) player.getBukkitEntity(),
-+                                    org.bukkit.craftbukkit.block.CraftBlock.at(level, allBlocksConnectedTo.get(i)),
-+                                    i1,
-+                                    org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemStack),
-+                                    org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemStack1)
-+                                );
-+                                if (!swapEvent.callEvent()) continue;
-+                                // Slice end - PlayerSwapItemWithSlottedContainer
-+                                ItemStack removed = inventory.removeItemNoUpdate(i2);
-+                                ItemStack swapped = shelfBlockEntity.swapItemNoUpdate(i1, removed);
-+                                inventory.setItem(i2, swapped);
-                                 flag = true;
-                             }
+@@ -237,10 +258,22 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+                 for (int slot = 0; slot < shelfPart.getContainerSize(); slot++) {
+                     int inventorySlot = 9 - (connectedBlocks.size() - shelfPartIndex) * shelfPart.getContainerSize() + slot;
+                     if (inventorySlot >= 0 && inventorySlot <= inventory.getContainerSize()) {
+-                        ItemStack placedInventoryItem = inventory.removeItemNoUpdate(inventorySlot);
+-                        ItemStack removedShelfItem = shelfPart.swapItemNoUpdate(slot, placedInventoryItem);
++                        ItemStack placedInventoryItem = inventory.getItem(inventorySlot);
++                        ItemStack removedShelfItem = shelfPart.getItem(slot);
+                         if (!placedInventoryItem.isEmpty() || !removedShelfItem.isEmpty()) {
+-                            inventory.setItem(inventorySlot, removedShelfItem);
++                            // Slice start - PlayerSwapItemWithSlottedContainer
++                            io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer swapEvent = new io.papermc.paper.event.player.PlayerSwapItemWithSlottedContainer(
++                                (org.bukkit.entity.Player) player.getBukkitEntity(),
++                                org.bukkit.craftbukkit.block.CraftBlock.at(level, connectedBlocks.get(shelfPartIndex)),
++                                slot,
++                                org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(placedInventoryItem),
++                                org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(removedShelfItem)
++                            );
++                            if (!swapEvent.callEvent()) continue;
++                            // Slice end - PlayerSwapItemWithSlottedContainer
++                            ItemStack removed = inventory.removeItemNoUpdate(inventorySlot);
++                            ItemStack swapped = shelfPart.swapItemNoUpdate(slot, removed);
++                            inventory.setItem(inventorySlot, swapped);
+                             anySwapped = true;
                          }
+                     }

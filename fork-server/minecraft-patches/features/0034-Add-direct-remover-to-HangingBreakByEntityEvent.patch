@@ -5,15 +5,15 @@ Subject: [PATCH] Add direct remover to HangingBreakByEntityEvent
 
 
 diff --git a/net/minecraft/world/entity/decoration/BlockAttachedEntity.java b/net/minecraft/world/entity/decoration/BlockAttachedEntity.java
-index a1ad3c95eec470cbae6e47ea2f0063b42cb1271e..10500f4979331bd676abe59f2fbfff03aef20910 100644
+index 4710725d63fbff6c40b5915442c0a476fcef1620..914049eec8b5a4b5190c497b09e398bc23ac4fef 100644
 --- a/net/minecraft/world/entity/decoration/BlockAttachedEntity.java
 +++ b/net/minecraft/world/entity/decoration/BlockAttachedEntity.java
-@@ -95,7 +95,7 @@ public abstract class BlockAttachedEntity extends Entity {
-                 Entity damager = (!damageSource.isDirect() && damageSource.getEntity() != null) ? damageSource.getEntity() : damageSource.getDirectEntity(); // Paper - fix DamageSource API
-                 org.bukkit.event.hanging.HangingBreakEvent event;
-                 if (damager != null) {
--                    event = new org.bukkit.event.hanging.HangingBreakByEntityEvent((org.bukkit.entity.Hanging) this.getBukkitEntity(), damager.getBukkitEntity(), damageSource.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.EXPLOSION : org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.ENTITY);
-+                    event = new org.bukkit.event.hanging.HangingBreakByEntityEvent((org.bukkit.entity.Hanging) this.getBukkitEntity(), damager.getBukkitEntity(), damageSource.getDirectEntity() != null ? damageSource.getDirectEntity().getBukkitEntity() : null, damageSource.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.EXPLOSION : org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.ENTITY); // Slice - add direct damage source
-                 } else {
-                     event = new org.bukkit.event.hanging.HangingBreakEvent((org.bukkit.entity.Hanging) this.getBukkitEntity(), damageSource.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.EXPLOSION : org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.DEFAULT);
-                 }
+@@ -98,7 +98,7 @@ public abstract class BlockAttachedEntity extends Entity {
+             Entity damager = source.getDirectEntity();
+             final org.bukkit.event.hanging.HangingBreakEvent event;
+             if (damager != null) {
+-                event = new org.bukkit.event.hanging.HangingBreakByEntityEvent((org.bukkit.entity.Hanging) this.getBukkitEntity(), damager.getBukkitEntity(), new org.bukkit.craftbukkit.damage.CraftDamageSource(source), source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.EXPLOSION : org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.ENTITY);
++                event = new org.bukkit.event.hanging.HangingBreakByEntityEvent((org.bukkit.entity.Hanging) this.getBukkitEntity(), damager.getBukkitEntity(), new org.bukkit.craftbukkit.damage.CraftDamageSource(source), source.getDirectEntity() != null ? source.getDirectEntity().getBukkitEntity() : null, source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.EXPLOSION : org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.ENTITY); // Slice - add direct remover
+             } else {
+                 event = new org.bukkit.event.hanging.HangingBreakEvent((org.bukkit.entity.Hanging) this.getBukkitEntity(), source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.EXPLOSION : org.bukkit.event.hanging.HangingBreakEvent.RemoveCause.DEFAULT);
+             }

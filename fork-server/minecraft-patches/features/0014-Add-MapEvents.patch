@@ -5,10 +5,10 @@ Subject: [PATCH] Add MapEvents
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index e29001263dc6f182bcda0b60f018d446cda9c1b7..b8b60398ab141b895f1ab36b0310668e2bf87520 100644
+index 3593bb5308ab7c222a662d519e50000277e09bf3..be681e6b1aeed6215f6ab99daab7a105baae4b71 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2268,6 +2268,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+@@ -2342,6 +2342,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      public MapId getFreeMapId() {
@@ -20,102 +20,6 @@ index e29001263dc6f182bcda0b60f018d446cda9c1b7..b8b60398ab141b895f1ab36b0310668e
 +            return new MapId(newIndex);
 +        }
 +        // Slice end
-         return this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.TYPE).getNextMapId();
+         return this.getServer().getDataStorage().computeIfAbsent(MapIndex.TYPE).getNextMapId();
      }
  
-diff --git a/net/minecraft/world/level/storage/DimensionDataStorage.java b/net/minecraft/world/level/storage/DimensionDataStorage.java
-index 34c57ba5d670fdc146161d5cf8d9c4e92b58560f..b6f82db064d9998b03aabac8c2478487181b3892 100644
---- a/net/minecraft/world/level/storage/DimensionDataStorage.java
-+++ b/net/minecraft/world/level/storage/DimensionDataStorage.java
-@@ -39,6 +39,9 @@ import org.slf4j.Logger;
- public class DimensionDataStorage implements AutoCloseable {
-     private static final Logger LOGGER = LogUtils.getLogger();
-     public final Map<SavedDataType<?>, Optional<SavedData>> cache = new HashMap<>();
-+    // Slice start - async map load
-+    private final java.util.Set<SavedDataType<?>> pendingLoads = new java.util.HashSet<>(); // Slice - Async map pending loads
-+    // Slice end
-     private final DataFixer fixerUpper;
-     private final HolderLookup.Provider registries;
-     private final Path dataFolder;
-@@ -67,11 +70,21 @@ public class DimensionDataStorage implements AutoCloseable {
- 
-     public <T extends SavedData> @Nullable T get(SavedDataType<T> type) {
-         Optional<SavedData> optional = this.cache.get(type);
--        if (optional == null) {
--            optional = Optional.ofNullable(this.readSavedData(type));
--            this.cache.put(type, optional);
-+        if (optional != null) {
-+            return (T)optional.orElse(null);
-         }
--
-+        // Slice start - async map load: never block the main thread on plugin-backed map I/O.
-+        // Cache miss for a map_* type schedules the load on the dimension-data I/O pool and
-+        // returns null for this tick; callers of getMapData already null-check and skip.
-+        if (type.id().startsWith("map_")) {
-+            if (this.pendingLoads.add(type)) {
-+                this.scheduleAsyncMapLoad(type);
-+            }
-+            return null;
-+        }
-+        // Slice end
-+        optional = Optional.ofNullable(this.readSavedData(type));
-+        this.cache.put(type, optional);
-         return (T)optional.orElse(null);
-     }
- 
-@@ -93,7 +106,55 @@ public class DimensionDataStorage implements AutoCloseable {
-         return null;
-     }
- 
-+    // Slice start - async map load
-+    private <T extends SavedData> void scheduleAsyncMapLoad(SavedDataType<T> type) {
-+        CompletableFuture.runAsync(() -> {
-+            CompoundTag tagFromDisk = null;
-+            try {
-+                int mapId = Integer.parseInt(type.id().substring("map_".length()));
-+                io.papermc.paper.event.server.MapLoadEvent event = new io.papermc.paper.event.server.MapLoadEvent(mapId);
-+                event.callEvent();
-+                java.io.ByteArrayInputStream buf = event.getBuf();
-+                if (buf != null) {
-+                    tagFromDisk = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
-+                } else if (Files.exists(this.getDataFile(type.id()))) {
-+                    tagFromDisk = this.readTagFromDisk(
-+                        type.id(), type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version()
-+                    );
-+                }
-+            } catch (Exception e) {
-+                LOGGER.error("Async load failed for {}", type.id(), e);
-+            }
-+            final CompoundTag finalTag = tagFromDisk;
-+            net.minecraft.server.MinecraftServer.getServer().execute(() -> this.installLoadedMap(type, finalTag));
-+        }, Util.DIMENSION_DATA_IO_POOL);
-+    }
-+
-+    private <T extends SavedData> void installLoadedMap(SavedDataType<T> type, @Nullable CompoundTag tag) {
-+        this.pendingLoads.remove(type);
-+        // Respect any set() that arrived while we were loading.
-+        if (this.cache.containsKey(type)) {
-+            return;
-+        }
-+        if (tag == null) {
-+            this.cache.put(type, Optional.empty());
-+            return;
-+        }
-+        try {
-+            RegistryOps<Tag> registryOps = this.registries.createSerializationContext(NbtOps.INSTANCE);
-+            Optional<T> parsed = type.codec()
-+                .parse(registryOps, tag.get("data"))
-+                .resultOrPartial(string -> LOGGER.error("Failed to parse async-loaded saved data for '{}': {}", type, string));
-+            this.cache.put(type, parsed.map(d -> (SavedData) d));
-+        } catch (Exception e) {
-+            LOGGER.error("Error installing async-loaded saved data for {}", type.id(), e);
-+            this.cache.put(type, Optional.empty());
-+        }
-+    }
-+    // Slice end
-+
-     public <T extends SavedData> void set(SavedDataType<T> type, T value) {
-+        this.pendingLoads.remove(type); // Slice - async map load: a fresh set() supersedes any in-flight async load.
-         this.cache.put(type, Optional.of(value));
-         value.setDirty();
-     }

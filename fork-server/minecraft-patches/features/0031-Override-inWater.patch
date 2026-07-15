@@ -5,10 +5,10 @@ Subject: [PATCH] Override inWater
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b6cddcabc2c464fe3cf9a4f120dbb732cab21008..c410e0aba82ee48e633d3b9f9733a14716bb5cc5 100644
+index 4c55d6eb4895f270f151298f0c4133f1c35afca4..3efa1c91a0a2fa60422dfa853e875af845184e00 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -386,6 +386,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -400,6 +400,7 @@ public abstract class Entity
      public boolean saveable = true; // Slice
      public boolean vanished; // Slice
      public int trackingRange; // Slice
@@ -16,7 +16,7 @@ index b6cddcabc2c464fe3cf9a4f120dbb732cab21008..c410e0aba82ee48e633d3b9f9733a147
  
      public void inactiveTick() {
      }
-@@ -1999,7 +2000,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2131,7 +2132,7 @@ public abstract class Entity
      }
  
      public boolean isInWater() {
@@ -25,12 +25,12 @@ index b6cddcabc2c464fe3cf9a4f120dbb732cab21008..c410e0aba82ee48e633d3b9f9733a147
      }
  
      public boolean isInRain() {
-@@ -2168,7 +2169,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -2276,7 +2277,7 @@ public abstract class Entity
      }
  
-     public boolean isEyeInFluid(TagKey<Fluid> fluidTag) {
--        return this.fluidOnEyes.contains(fluidTag);
-+        return inWaterOverride || this.fluidOnEyes.contains(fluidTag);
+     public boolean isEyeInFluid(final TagKey<Fluid> type) {
+-        return this.fluidInteraction.isEyeInFluid(type);
++        return inWaterOverride || this.fluidInteraction.isEyeInFluid(type); // Slice
      }
  
      public boolean isInLava() {

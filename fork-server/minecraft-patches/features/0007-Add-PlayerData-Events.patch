@@ -5,18 +5,18 @@ Subject: [PATCH] Add PlayerData Events
 
 
 diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
-index 6b254d2d91c19e81edac13a00ad646092f958382..91d90ba6ce9121d09a456e576649a29e4e75b66b 100644
+index f5beb001b938072e78c0ead7e0ad0499784ed1cf..e9212ccc682241c50dc59e7589147c6579f2719e 100644
 --- a/net/minecraft/stats/ServerStatsCounter.java
 +++ b/net/minecraft/stats/ServerStatsCounter.java
 @@ -94,7 +94,7 @@ public class ServerStatsCounter extends StatsCounter {
              FileUtil.createDirectoriesSafe(this.file.getParent());
  
-             try (Writer bufferedWriter = Files.newBufferedWriter(this.file, StandardCharsets.UTF_8)) {
--                GSON.toJson(this.toJson(), GSON.newJsonWriter(bufferedWriter));
-+                GSON.toJson(this.serialize(), GSON.newJsonWriter(bufferedWriter));
+             try (Writer writer = Files.newBufferedWriter(this.file, StandardCharsets.UTF_8)) {
+-                GSON.toJson(this.toJson(), GSON.newJsonWriter(writer));
++                GSON.toJson(this.serialize(), GSON.newJsonWriter(writer));
              }
-         } catch (JsonIOException | IOException var6) {
-             LOGGER.error("Couldn't save stats to {}", this.file, var6);
+         } catch (IOException | JsonIOException e) {
+             LOGGER.error("Couldn't save stats to {}", this.file, e);
 @@ -126,11 +126,16 @@ public class ServerStatsCounter extends StatsCounter {
              );
      }
@@ -28,30 +28,30 @@ index 6b254d2d91c19e81edac13a00ad646092f958382..91d90ba6ce9121d09a456e576649a29e
 +    }
 +
 +    public JsonObject serialize() { // Slice end
-         JsonObject jsonObject = new JsonObject();
-         jsonObject.add("stats", STATS_CODEC.encodeStart(JsonOps.INSTANCE, this.stats).getOrThrow());
-         jsonObject.addProperty("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
--        return jsonObject;
-+        return jsonObject; // Slice
+         JsonObject result = new JsonObject();
+         result.add("stats", STATS_CODEC.encodeStart(JsonOps.INSTANCE, this.stats).getOrThrow());
+         result.addProperty("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
+-        return result;
++        return result; // Slice
      }
  
      public void markAllDirty() {
 diff --git a/net/minecraft/world/level/storage/PlayerDataStorage.java b/net/minecraft/world/level/storage/PlayerDataStorage.java
-index b8ef50bc3d07890c9da2c98d5f009a3adc52f4b0..3654e3123df9629ea8a322ed9fe80773b47bc6ce 100644
+index eddb6ebe3fa50a818e54079b73ba117be0abd195..ca1a1fe63977d8586cd7142ab8c4793ee81ef95e 100644
 --- a/net/minecraft/world/level/storage/PlayerDataStorage.java
 +++ b/net/minecraft/world/level/storage/PlayerDataStorage.java
 @@ -32,6 +32,7 @@ public class PlayerDataStorage {
  
-     public void save(Player player) {
+     public void save(final Player player) {
          if (org.spigotmc.SpigotConfig.disablePlayerDataSaving) return; // Spigot
 +        if (!new com.destroystokyo.paper.event.player.PlayerSaveDataEvent((org.bukkit.entity.Player) player.getBukkitEntity()).callEvent()) return; // Slice
-         try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(player.problemPath(), LOGGER)) {
-             TagValueOutput tagValueOutput = TagValueOutput.createWithContext(scopedCollector, player.registryAccess());
-             player.saveWithoutId(tagValueOutput);
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(player.problemPath(), LOGGER)) {
+             TagValueOutput output = TagValueOutput.createWithContext(reporter, player.registryAccess());
+             player.saveWithoutId(output);
 @@ -91,6 +92,19 @@ public class PlayerDataStorage {
      }
  
-     public Optional<CompoundTag> load(NameAndId nameAndId) {
+     public Optional<CompoundTag> load(final NameAndId nameAndId) {
 +        // Slice start - If event supplies playerdata, use it. Otherwise just load from disk as usual
 +        com.destroystokyo.paper.event.player.PlayerLoadDataEvent event = new com.destroystokyo.paper.event.player.PlayerLoadDataEvent(nameAndId.id());
 +        org.bukkit.Bukkit.getPluginManager().callEvent(event);
@@ -65,6 +65,6 @@ index b8ef50bc3d07890c9da2c98d5f009a3adc52f4b0..3654e3123df9629ea8a322ed9fe80773
 +        }
 +        // Slice end
 +
-         Optional<CompoundTag> optional = this.load(nameAndId, ".dat");
-         if (optional.isEmpty()) {
+         Optional<CompoundTag> optTag = this.load(nameAndId, ".dat");
+         if (optTag.isEmpty()) {
              this.backup(nameAndId, ".dat");

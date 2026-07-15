@@ -5,17 +5,17 @@ Subject: [PATCH] Allow opening covered chests
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftEnderChest.java b/src/main/java/org/bukkit/craftbukkit/block/CraftEnderChest.java
-index cb2a78e6ca5187298288372b02cf2a1bcaea408f..e81a7ef660c5427c33974ffb706277e2ae1f1e92 100644
+index 2a9243e416bb75f8e942b08a7d3d22bd6ba4df47..60292ee5902ac08010cadbb6e0dfde373bb12b6a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftEnderChest.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftEnderChest.java
-@@ -62,9 +62,7 @@ public class CraftEnderChest extends CraftBlockEntityState<EnderChestBlockEntity
-     // Paper start - More Chest Block API
+@@ -50,9 +50,7 @@ public class CraftEnderChest extends CraftBlockEntityState<EnderChestBlockEntity
+ 
      @Override
      public boolean isBlocked() {
 -        // Uses the same logic as EnderChestBlock's check for opening container
--        final net.minecraft.core.BlockPos abovePos = this.getPosition().above();
+-        final BlockPos abovePos = this.getPosition().above();
 -        return this.isPlaced() && this.getWorldHandle().getBlockState(abovePos).isRedstoneConductor(this.getWorldHandle(), abovePos);
-+        return false; // Slice
++        return false; // Slice - Allow opening covered chests
      }
-     // Paper end - More Chest Block API
- }
+ 
+     @Override

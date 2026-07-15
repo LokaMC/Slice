@@ -5,10 +5,10 @@ Subject: [PATCH] Unsaveable entities
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 073cff2ff325d3a05963acc7c3212e2e4ac38fcc..3ce25da05adc3d7380a099e059e695a9fc8c732f 100644
+index 95d871a9df97abc338f7f75b3f025385e34248b5..0a5ab13e55c14daedb969adcdc4e0fd664a04bfd 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1330,4 +1330,19 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1340,4 +1340,19 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      org.bukkit.block.Block getBlockStandingOn();
      // Slice end

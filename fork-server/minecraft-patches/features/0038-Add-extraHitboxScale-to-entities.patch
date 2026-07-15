@@ -5,10 +5,10 @@ Subject: [PATCH] Add extraHitboxScale to entities
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index c410e0aba82ee48e633d3b9f9733a14716bb5cc5..f445de3ac547779a2b9efa1c2f41da9aff800d53 100644
+index 3efa1c91a0a2fa60422dfa853e875af845184e00..6fe4e12088d4ffeae45afb9d8ad42fae71bfe4ee 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -387,6 +387,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -401,6 +401,7 @@ public abstract class Entity
      public boolean vanished; // Slice
      public int trackingRange; // Slice
      public boolean inWaterOverride; // Slice
@@ -16,11 +16,13 @@ index c410e0aba82ee48e633d3b9f9733a14716bb5cc5..f445de3ac547779a2b9efa1c2f41da9a
  
      public void inactiveTick() {
      }
-@@ -4473,6 +4474,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -4601,7 +4602,9 @@ public abstract class Entity
+         return this.bb;
      }
  
-     public final void setBoundingBox(AABB bb) {
-+        bb = bb.inflate(extraHitboxAmount);
+-    public final void setBoundingBox(final AABB bb) {
++    public final void setBoundingBox(AABB bb) {
++        bb = bb.inflate(extraHitboxAmount); // Slice
 +
          // CraftBukkit start - block invalid bounding boxes
          double minX = bb.minX,

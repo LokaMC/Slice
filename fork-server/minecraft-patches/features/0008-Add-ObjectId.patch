@@ -5,10 +5,10 @@ Subject: [PATCH] Add ObjectId
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3bf618f1d756bad7755a87803132bd731e7c41be..d1c5b0c89cb9fdd2b824269a8dfd995d64d90c5e 100644
+index 1530810cdb74810e37e3e22ce4fcda4ee7511055..92884bd6f60cb2938c62194623544c8d3ca2a57a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -196,7 +196,17 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+@@ -208,7 +208,17 @@ public abstract class Entity
              // Paper start - Folia schedulers
              synchronized (this) {
                  if (this.bukkitEntity == null) {

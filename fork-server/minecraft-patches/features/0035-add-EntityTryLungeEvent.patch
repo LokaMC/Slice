@@ -4,16 +4,15 @@ Date: Wed, 21 Jan 2026 10:33:02 -0600
 Subject: [PATCH] add EntityTryLungeEvent
 
 
-diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index b5e24e1d024312e058b46fd00d7be232d4a1dd5e..8dadc5f96d1062fd4c66c8f4340d30b25632ebcd 100644
---- a/net/minecraft/world/entity/LivingEntity.java
-+++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -2210,7 +2210,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-     }
- 
-     public void lungeForwardMaybe() {
--        if (this.level() instanceof ServerLevel serverLevel) {
-+        if (this.level() instanceof ServerLevel serverLevel && new io.papermc.paper.event.entity.EntityTryLungeEvent(getBukkitLivingEntity()).callEvent()) {
-             EnchantmentHelper.doLungeEffects(serverLevel, this);
-         }
-     }
+diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
+index 0d981b86fa7ee8713e2a419fc2f377defbc2ed9c..b192c0b1d1607a074882fe3ba9e2f86be292e125 100644
+--- a/net/minecraft/world/item/enchantment/Enchantment.java
++++ b/net/minecraft/world/item/enchantment/Enchantment.java
+@@ -356,6 +356,7 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+             e -> {
+                 int level = enchantmentLevel;
+                 if (user instanceof LivingEntity livingEntity) {
++                    if (!new io.papermc.paper.event.entity.EntityTryLungeEvent(livingEntity.getBukkitLivingEntity()).callEvent()) return; // Slice
+                     final io.papermc.paper.event.entity.EntityLungeEvent event = new io.papermc.paper.event.entity.EntityLungeEvent(livingEntity.getBukkitLivingEntity(), level);
+                     if (!event.callEvent()) {
+                         return;

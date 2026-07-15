@@ -5,29 +5,29 @@ Subject: [PATCH] Allow opening covered chests
 
 
 diff --git a/net/minecraft/world/level/block/ChestBlock.java b/net/minecraft/world/level/block/ChestBlock.java
-index fa2dce759419f62825000718361f47c6f208cdb2..9647349f3066a5380a235cc49d2d3c61e41fe400 100644
+index 4bd84b80199c7f625475ca62da02266d871a8639..80d140188fbcfd22055362f085ed696cc974cc4c 100644
 --- a/net/minecraft/world/level/block/ChestBlock.java
 +++ b/net/minecraft/world/level/block/ChestBlock.java
-@@ -370,8 +370,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements
+@@ -348,8 +348,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements
      }
  
-     public static boolean isBlockedChestByBlock(BlockGetter level, BlockPos pos) {
--        BlockPos blockPos = pos.above();
--        return level.getBlockState(blockPos).isRedstoneConductor(level, blockPos);
-+        return false;
+     private static boolean isBlockedChestByBlock(final BlockGetter level, final BlockPos pos) {
+-        BlockPos above = pos.above();
+-        return level.getBlockState(above).isRedstoneConductor(level, above);
++        return false; // Slice - Allow opening covered chests
      }
  
-     private static boolean isCatSittingOnChest(LevelAccessor level, BlockPos pos) {
+     private static boolean isCatSittingOnChest(final LevelAccessor level, final BlockPos pos) {
 diff --git a/net/minecraft/world/level/block/EnderChestBlock.java b/net/minecraft/world/level/block/EnderChestBlock.java
-index 383e8285d366c7f594b0b4ff55b367970c9b69e4..5e6fe59758cea2bc87b642f5852f00cf0f660dbe 100644
+index f1a5b9670dd04b800a8d755f32364458a16d924a..b54860bc562a1963dedaef7572928e2a92a3127e 100644
 --- a/net/minecraft/world/level/block/EnderChestBlock.java
 +++ b/net/minecraft/world/level/block/EnderChestBlock.java
-@@ -78,7 +78,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
-         PlayerEnderChestContainer enderChestInventory = player.getEnderChestInventory();
-         if (enderChestInventory != null && level.getBlockEntity(pos) instanceof EnderChestBlockEntity enderChestBlockEntity) {
-             BlockPos blockPos = pos.above();
--            if (level.getBlockState(blockPos).isRedstoneConductor(level, blockPos)) { // Paper - diff on change; make sure that EnderChest#isBlocked uses the same logic
-+            if (false) { // level.getBlockState(blockPos).isRedstoneConductor(level, blockPos)) { // Paper - diff on change; make sure that EnderChest#isBlocked uses the same logic
+@@ -83,7 +83,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
+         PlayerEnderChestContainer container = player.getEnderChestInventory();
+         if (container != null && level.getBlockEntity(pos) instanceof EnderChestBlockEntity enderChest) {
+             BlockPos above = pos.above();
+-            if (level.getBlockState(above).isRedstoneConductor(level, above)) { // Paper - diff on change; make sure that EnderChest#isBlocked uses the same logic
++            if (false) { // level.getBlockState(above).isRedstoneConductor(level, above)) { // Slice - Allow opening covered chests // Paper - diff on change; make sure that EnderChest#isBlocked uses the same logic
                  return InteractionResult.SUCCESS;
-             } else {
-                 // Paper start - Fix InventoryOpenEvent cancellation - moved up;
+             }
+ 

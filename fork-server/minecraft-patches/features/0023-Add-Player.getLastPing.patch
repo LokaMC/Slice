@@ -5,7 +5,7 @@ Subject: [PATCH] Add Player.getLastPing
 
 
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
-index b8a4b4cc02a2fc6b70f4b840796eed501aad6239..eaa9d2bdb1c9fc3b739c7999dec617c54d8be19c 100644
+index 5dbb2849f32ac3418f8fdf76c04022d7e9dc165b..7dc80511b9da9d881bcfe6dd3b090c55669643c7 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 @@ -45,6 +45,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
@@ -16,15 +16,15 @@ index b8a4b4cc02a2fc6b70f4b840796eed501aad6239..eaa9d2bdb1c9fc3b739c7999dec617c5
      private final io.papermc.paper.util.KeepAlive keepAlive; // Paper - improve keepalives
      private volatile boolean suspendFlushingOnServerThread = false;
      // CraftBukkit start
-@@ -64,6 +65,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+@@ -63,6 +64,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
          this.connection = connection;
          //this.keepAliveTime = Util.getMillis(); // Paper - improve keepalives
          this.latency = cookie.latency();
 +        this.lastLatency = this.latency; // Paper
          this.transferred = cookie.transferred();
          // Paper start
-         this.playerBrand = cookie.brandName();
-@@ -114,6 +116,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+         this.clientBrand = cookie.clientBrand();
+@@ -113,6 +115,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
              this.keepAlive.pingCalculator5s.update(response);
  
              this.latency = this.keepAlive.pingCalculator5s.getAvgLatencyMS();
@@ -32,12 +32,12 @@ index b8a4b4cc02a2fc6b70f4b840796eed501aad6239..eaa9d2bdb1c9fc3b739c7999dec617c5
              return;
          }
  
-@@ -459,6 +462,8 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+@@ -446,6 +449,8 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
          return this.latency;
      }
  
 +    public int lastLatency() { return this.lastLatency; } // Paper
 +
-     protected CommonListenerCookie createCookie(ClientInformation clientInformation) {
-         return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred, this.playerBrand, this.pluginMessagerChannels, this.keepAlive); // Paper
-     }
+     protected CommonListenerCookie createCookie(final ClientInformation clientInformation) {
+         // Paper start - listener handoff should reset pending keepalive expectations
+         return new CommonListenerCookie(

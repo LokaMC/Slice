@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 6215e2773ec41782db8a66e49661462dd01ff145..bd5e32553b9cc6bcba88000dafcb3bef8fda0c44 100644
+index dcb372bba932f455fe55881aad3d56edf6fda811..3932bbe00f2ad34eeb3490f3d1634e2fc86a24b0 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1386,4 +1386,151 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1396,4 +1396,151 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setDespawnTime(int ticks);
      // Slice end

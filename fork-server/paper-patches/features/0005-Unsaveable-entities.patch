@@ -5,10 +5,10 @@ Subject: [PATCH] Unsaveable entities
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 98f4c471f5770c5e5a11e6929253eebcb5fe47fd..0bf8de195a88d5906c2db6d5b1d73aac0950f391 100644
+index 59c640af00ecd757440c5eaca721c388a4fd3948..a6ccf8fda15b3ff89e5513e65c5a74fc9b7c2d34 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1338,4 +1338,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1346,4 +1346,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          return this.entity.level().getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
      }
      // Slice end

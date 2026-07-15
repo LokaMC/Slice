@@ -5,10 +5,10 @@ Subject: [PATCH] Force equipment update before piercing weapon attack
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index dd6dce15e04721f0de3ce1efb76a53144925773e..be4da58c4aefd8b99eeb2d00337834c2d6f49673 100644
+index 19a457003eb62f448539783e71ce1faf57d03edb..183f74e2b8af94b90a80b9c09608537008cf46cd 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -1924,6 +1924,7 @@ public class ServerGamePacketListenerImpl
+@@ -1952,6 +1952,7 @@ public class ServerGamePacketListenerImpl
  
                          PiercingWeapon piercingWeapon = itemInHand.get(DataComponents.PIERCING_WEAPON);
                          if (piercingWeapon != null) {

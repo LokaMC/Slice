@@ -5,15 +5,15 @@ Subject: [PATCH] Mute block-attached entity error
 
 
 diff --git a/net/minecraft/world/entity/decoration/BlockAttachedEntity.java b/net/minecraft/world/entity/decoration/BlockAttachedEntity.java
-index 10500f4979331bd676abe59f2fbfff03aef20910..31ce66b7f0a8fe5e196b2d4ecbdbdd23a3b5ec6e 100755
+index 914049eec8b5a4b5190c497b09e398bc23ac4fef..2fecb12c74897fd7c6aeacccd69ef46f8ad4aea9 100644
 --- a/net/minecraft/world/entity/decoration/BlockAttachedEntity.java
 +++ b/net/minecraft/world/entity/decoration/BlockAttachedEntity.java
-@@ -166,7 +166,7 @@ public abstract class BlockAttachedEntity extends Entity {
-         if (blockPos != null && blockPos.closerThan(this.blockPosition(), 16.0)) {
-             this.pos = blockPos;
+@@ -168,7 +168,7 @@ public abstract class BlockAttachedEntity extends Entity {
+         if (storedPos != null && storedPos.closerThan(this.blockPosition(), 16.0)) {
+             this.pos = storedPos;
          } else {
--            LOGGER.error("Block-attached entity at invalid position: {}", blockPos);
-+//            LOGGER.error("Block-attached entity at invalid position: {}", blockPos);
+-            LOGGER.error("Block-attached entity at invalid position: {}", storedPos);
++//            LOGGER.error("Block-attached entity at invalid position: {}", storedPos); // Slice
          }
      }
  
