@@ -8,15 +8,18 @@ diff --git a/net/minecraft/world/level/storage/SavedDataStorage.java b/net/minec
 index f359e53024019f35aaa5cd8477da708bda2fc57a..1bbbd8227e72709801d8e1864be12bef20bd8f26 100644
 --- a/net/minecraft/world/level/storage/SavedDataStorage.java
 +++ b/net/minecraft/world/level/storage/SavedDataStorage.java
-@@ -208,6 +208,12 @@ public class SavedDataStorage implements AutoCloseable {
+@@ -208,6 +208,15 @@ public class SavedDataStorage implements AutoCloseable {
  
          try {
              FileUtil.createDirectoriesSafe(path.getParent());
 +            // Slice start - Add DimensionDataStorageEvents
-+            java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
-+            NbtIo.writeCompressed(tag, buf);
-+            io.papermc.paper.event.server.DimensionDataStorageSaveEvent event = new io.papermc.paper.event.server.DimensionDataStorageSaveEvent(type.id().toString(), buf);
-+            if (!event.callEvent()) return;
++            // Saves run on an async IO pool and can fire during datapack load before Bukkit.server is set; skip the event until the server is up.
++            if (org.bukkit.Bukkit.getServer() != null) {
++                java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
++                NbtIo.writeCompressed(tag, buf);
++                io.papermc.paper.event.server.DimensionDataStorageSaveEvent event = new io.papermc.paper.event.server.DimensionDataStorageSaveEvent(type.id().toString(), buf);
++                if (!event.callEvent()) return;
++            }
 +            // Slice end - Add DimensionDataStorageEvents
              NbtIo.writeCompressed(tag, path);
          } catch (IOException e) {
