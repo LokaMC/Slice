@@ -4,16 +4,27 @@ Date: Wed, 21 Jan 2026 10:33:02 -0600
 Subject: [PATCH] add EntityTryLungeEvent
 
 
-diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index b5e24e1d024312e058b46fd00d7be232d4a1dd5e..8dadc5f96d1062fd4c66c8f4340d30b25632ebcd 100644
---- a/net/minecraft/world/entity/LivingEntity.java
-+++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -2210,7 +2210,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
+index 0d42a7248e59cc05181da6e9918acf38dab0ac4f..77f2e779b28f18facaf8dfa02234d778879c4a09 100644
+--- a/net/minecraft/world/item/enchantment/Enchantment.java
++++ b/net/minecraft/world/item/enchantment/Enchantment.java
+@@ -317,7 +317,18 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
+         applyEffects(
+             this.getEffects(EnchantmentEffectComponents.POST_PIERCING_ATTACK),
+             entityContext(level, enchantmentLevel, entity, entity.position()),
+-            enchantmentEntityEffect -> enchantmentEntityEffect.apply(level, enchantmentLevel, item, entity, entity.position())
++            // Slice start - EntityTryLungeEvent / EntityLungeEvent - only fires for an actual spear lunge (POST_PIERCING_ATTACK effect), not every attack swing
++            enchantmentEntityEffect -> {
++                int lungePower = enchantmentLevel;
++                if (entity instanceof LivingEntity livingEntity) {
++                    if (!new io.papermc.paper.event.entity.EntityTryLungeEvent(livingEntity.getBukkitLivingEntity()).callEvent()) return;
++                    io.papermc.paper.event.entity.EntityLungeEvent event = new io.papermc.paper.event.entity.EntityLungeEvent(livingEntity.getBukkitLivingEntity(), lungePower);
++                    if (!event.callEvent()) return;
++                    lungePower = event.getLungePower();
++                }
++                enchantmentEntityEffect.apply(level, lungePower, item, entity, entity.position());
++            }
++            // Slice end - EntityTryLungeEvent / EntityLungeEvent
+         );
      }
  
-     public void lungeForwardMaybe() {
--        if (this.level() instanceof ServerLevel serverLevel) {
-+        if (this.level() instanceof ServerLevel serverLevel && new io.papermc.paper.event.entity.EntityTryLungeEvent(getBukkitLivingEntity()).callEvent()) {
-             EnchantmentHelper.doLungeEffects(serverLevel, this);
-         }
-     }
