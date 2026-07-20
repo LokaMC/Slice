@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cryptite <cryptite@gmail.com>
+Date: Fri, 31 Jul 2026 18:01:53 -0500
+Subject: [PATCH] Stagger world autosave
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index 8100abcdc441fc0f039ca61ab0c5c5feaec4411c..17e1b67a01963e3022e5e1371c182212d1f85cdd 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -2900,6 +2900,16 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+     public void setShardedFight(boolean value);
+     // Slice end
+ 
++    // Slice start
++    /**
++     * Offsets which tick within the autosave interval this world's full save
++     * (level.dat write) runs on, so many worlds don't all save on the same tick.
++     * Only meaningful in [0, ticks-per.autosave); 0 (default) = vanilla timing.
++     */
++    public int getAutoSaveOffsetTicks();
++    public void setAutoSaveOffsetTicks(int ticks);
++    // Slice end
++
+     /**
+      * Sets the Difficulty of the world.
+      *
