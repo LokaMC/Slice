@@ -5,10 +5,10 @@ Subject: [PATCH] Player AFK
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 3d08277d10b401be45f0caf8566c65ce4c5492ec..0c776f08a5828fce72bb83c67c870a01ba04cbc9 100644
+index 888eba84a0ed9939feabaa84a66228fae7e17444..304c605e2dc0fc254fdd04f8180a207b47938f87 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3303,6 +3303,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -3327,6 +3327,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          return this.getHandle().connection.playerGameConnection;
      }
  

@@ -4,8 +4,21 @@ Date: Wed, 14 Jan 2026 10:06:30 -0600
 Subject: [PATCH] Smooth teleports
 
 
+diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+index 7129c5e1920008ac54f3a8ac83f5589396f4e4e9..a1404e33870e3e44bcf023cee7b79054288dbcbd 100644
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+@@ -440,7 +440,7 @@ public final class RegionizedPlayerChunkLoader {
+             // Note: drop isAlive() check so that chunks properly unload client-side when the player dies
+             ((ChunkSystemChunkHolder)((ChunkSystemServerLevel)this.world).moonrise$getChunkTaskScheduler().chunkHolderManager
+                 .getChunkHolder(chunkX, chunkZ).vanillaChunkHolder).moonrise$removeReceivedChunk(this.player);
+-            this.player.connection.send(new ClientboundForgetLevelChunkPacket(new ChunkPos(chunkX, chunkZ)));
++            if (!this.player.smoothWorldTeleport) this.player.connection.send(new ClientboundForgetLevelChunkPacket(new ChunkPos(chunkX, chunkZ))); // Slice - the new world's chunk loader re-sends chunks which overwrite client-side in place
+             // Paper start - PlayerChunkUnloadEvent
+             if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
+                 new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey), player.getBukkitEntity()).callEvent();
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 79c804245c7f41a5a7f062e1c5e01760adde7d84..b2ec10e0649b659faa920d15116e7e57274f691f 100644
+index 79c804245c7f41a5a7f062e1c5e01760adde7d84..cfdd16dbf2c5af8ce8c8a7e4eb419e3c7930975e 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -433,6 +433,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -16,6 +29,15 @@ index 79c804245c7f41a5a7f062e1c5e01760adde7d84..b2ec10e0649b659faa920d15116e7e57
  
      // Paper start - rewrite chunk system
      private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
+@@ -1529,7 +1530,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+             } else {
+                 this.isChangingDimension = true;
+                 LevelData levelData = level.getLevelData();
+-                this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(level), ClientboundRespawnPacket.KEEP_ALL_DATA));
++                if (!this.smoothWorldTeleport) this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(level), ClientboundRespawnPacket.KEEP_ALL_DATA)); // Slice
+                 this.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
+                 PlayerList playerList = this.server.getPlayerList();
+                 playerList.sendPlayerPermissionLevel(this);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
 index 989ac565c47a70c7947cb7315d0f5c2cfecd0363..82bd70c7bf2926b585b80e5582377ed45cbf0077 100644
 --- a/net/minecraft/server/players/PlayerList.java

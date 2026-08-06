@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cryptite <cryptite@gmail.com>
+Date: Wed, 5 Aug 2026 15:21:36 -0500
+Subject: [PATCH] fix corrupted beehives
+
+
+diff --git a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
+index c989b7d52e16d93e65afb0f921d514c68b814921..abb4e2a308e8b80132b2df1a77d8c7f68876db9d 100644
+--- a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
+@@ -438,7 +438,15 @@ public class BeehiveBlockEntity extends BlockEntity {
+                 )
+                 .apply(instance, BeehiveBlockEntity.Occupant::new)
+         );
+-        public static final Codec<List<BeehiveBlockEntity.Occupant>> LIST_CODEC = CODEC.listOf();
++        // Slice start - Drop corrupted bee occupants (empty/missing entity_data in legacy data) instead of failing the whole list
++        public static final Codec<List<BeehiveBlockEntity.Occupant>> LIST_CODEC = Codec.of(
++            CODEC.listOf(),
++            Codec.PASSTHROUGH.listOf().map(dynamics -> dynamics.stream()
++                .map(dynamic -> CODEC.parse(dynamic).result())
++                .flatMap(java.util.Optional::stream)
++                .toList())
++        );
++        // Slice end - Drop corrupted bee occupants
+         public static final StreamCodec<RegistryFriendlyByteBuf, BeehiveBlockEntity.Occupant> STREAM_CODEC = StreamCodec.composite(
+             TypedEntityData.streamCodec(EntityType.STREAM_CODEC),
+             BeehiveBlockEntity.Occupant::entityData,

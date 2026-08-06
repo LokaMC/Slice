@@ -5,10 +5,10 @@ Subject: [PATCH] Add Player.getLastPing
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index bde6b00a669a7154ad5eb98a69647dabfb255ca1..9d5b405cd7fad082b2f03ec21fa57bbfb3f46d72 100644
+index 66d5db455d02e13b0e8c7b3ce25fb922a7609de3..5ce583e93366d856632d4af31c1c7715556ef7a8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2714,6 +2714,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2738,6 +2738,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          return this.getHandle().connection.latency();
      }
  

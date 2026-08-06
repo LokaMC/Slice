@@ -79,3 +79,10 @@ subprojects {
         }
     }
 }
+
+tasks.register<Copy>("copyJar") {
+    doNotTrackState("Copies into a live server directory with locked files")
+    dependsOn(":fork-server:createMojmapBundlerJar")
+    from("fork-server/build/libs/fork-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar")
+    into("C:/Loka/pts1211/")
+}
