@@ -120,10 +120,10 @@ index dc968ae9360b9b22d9d4cf00cc0169d3cc973872..d9e98c6dca429ecff6db8dbc1757a2f4
      // Slice end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 0277ae82ffc9918351cb5422e84fe11bbaf7dd35..c41a38cc6a4670b679df2784be026a367acc8948 100644
+index c4ee1ce9c8ab22a55c0ec4dd27b83c51fc7b97eb..e296e8840cb37220a3e0f2afad2e094342f37026 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -1874,7 +1874,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -1898,7 +1898,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          return true;
      }
  
@@ -133,7 +133,7 @@ index 0277ae82ffc9918351cb5422e84fe11bbaf7dd35..c41a38cc6a4670b679df2784be026a36
          // Remove this entity from the hidden player's EntityTrackerEntry
          // Paper start
          Entity other = ((CraftEntity) entity).getHandle();
-@@ -1955,7 +1956,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -1979,7 +1980,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          return true;
      }
  
@@ -143,7 +143,7 @@ index 0277ae82ffc9918351cb5422e84fe11bbaf7dd35..c41a38cc6a4670b679df2784be026a36
          this.trackAndShowEntity(entity, null);
      }
  
-@@ -2067,14 +2069,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -2091,14 +2093,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
      public boolean canSee(org.bukkit.entity.Entity entity) {
          if (this == entity) return true; // SPIGOT-7312
  

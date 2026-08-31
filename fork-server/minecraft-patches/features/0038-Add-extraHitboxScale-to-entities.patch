@@ -5,7 +5,7 @@ Subject: [PATCH] Add extraHitboxScale to entities
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 3efa1c91a0a2fa60422dfa853e875af845184e00..6fe4e12088d4ffeae45afb9d8ad42fae71bfe4ee 100644
+index 3efa1c91a0a2fa60422dfa853e875af845184e00..dcd4e827354cc4ceb26442e9bb60fdd86af96b4b 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -401,6 +401,7 @@ public abstract class Entity
@@ -16,14 +16,25 @@ index 3efa1c91a0a2fa60422dfa853e875af845184e00..6fe4e12088d4ffeae45afb9d8ad42fae
  
      public void inactiveTick() {
      }
-@@ -4601,7 +4602,9 @@ public abstract class Entity
-         return this.bb;
+diff --git a/net/minecraft/world/entity/projectile/ProjectileUtil.java b/net/minecraft/world/entity/projectile/ProjectileUtil.java
+index 7a94272f5d773ead519f4ddee908722e3f4cbd7a..aa0f47d9ead0b69e50f055247be0d1421866e5af 100644
+--- a/net/minecraft/world/entity/projectile/ProjectileUtil.java
++++ b/net/minecraft/world/entity/projectile/ProjectileUtil.java
+@@ -75,7 +75,7 @@ public final class ProjectileUtil {
+             to = hitResult.getLocation();
+         }
+ 
+-        HitResult entityHit = getEntityHitResult(level, source, from, to, source.getBoundingBox().expandTowards(delta).inflate(1.0), matching, entityMargin);
++        HitResult entityHit = getEntityHitResult(level, source, from, to, source.getBoundingBox().expandTowards(delta).inflate(1.0 + source.extraHitboxAmount), matching, entityMargin); // Slice - widen candidate search to cover the enlarged hit margin
+         if (entityHit != null) {
+             hitResult = entityHit;
+         }
+@@ -151,7 +151,7 @@ public final class ProjectileUtil {
      }
  
--    public final void setBoundingBox(final AABB bb) {
-+    public final void setBoundingBox(AABB bb) {
-+        bb = bb.inflate(extraHitboxAmount); // Slice
-+
-         // CraftBukkit start - block invalid bounding boxes
-         double minX = bb.minX,
-                 minY = bb.minY,
+     public static float computeMargin(final Entity source) {
+-        return Math.max(0.0F, Math.min(0.3F, (source.tickCount - 2) / 20.0F));
++        return Math.max(0.0F, Math.min(0.3F, (source.tickCount - 2) / 20.0F)) + source.extraHitboxAmount; // Slice - let a projectile enlarge the margin its own hit-scan inflates targets by
+     }
+ 
+     public static @Nullable EntityHitResult getEntityHitResult(

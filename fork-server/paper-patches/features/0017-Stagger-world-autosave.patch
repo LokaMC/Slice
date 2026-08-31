@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cryptite <cryptite@gmail.com>
+Date: Sat, 8 Aug 2026 10:52:05 -0500
+Subject: [PATCH] Stagger world autosave
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 796f850dc6a202bc829043dbb095b4db39dd54d4..427f360a60f6356c62f3798548e654ef152d31d3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1177,6 +1177,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+     }
+     // Slice end
+ 
++    // Slice start
++    @Override
++    public int getAutoSaveOffsetTicks() {
++        return world.autoSaveOffsetTicks;
++    }
++
++    @Override
++    public void setAutoSaveOffsetTicks(int ticks) {
++        world.autoSaveOffsetTicks = ticks;
++    }
++    // Slice end
++
+     @Override
+     public void setDifficulty(Difficulty difficulty) {
+         this.getHandle().getServer().setDifficulty(this.getHandle(), CraftDifficulty.toMinecraft(difficulty), null, true);

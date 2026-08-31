@@ -80,9 +80,9 @@ subprojects {
     }
 }
 
-tasks.register("copyJar") {
-    copy {
-        from("fork-server/build/libs/fork-bundler-26.2-R0.1-SNAPSHOT.jar")
-        into("C:/Loka/pts262/")
-    }
+tasks.register<Copy>("copyJar") {
+    doNotTrackState("Copies into a live server directory with locked files")
+    dependsOn(":fork-server:createBundlerJar")
+    from("fork-server/build/libs/fork-bundler-26.2-R0.1-SNAPSHOT.jar")
+    into("C:/Loka/pts262/")
 }

@@ -23,3 +23,102 @@ index 3593bb5308ab7c222a662d519e50000277e09bf3..be681e6b1aeed6215f6ab99daab7a105
          return this.getServer().getDataStorage().computeIfAbsent(MapIndex.TYPE).getNextMapId();
      }
  
+diff --git a/net/minecraft/world/level/storage/SavedDataStorage.java b/net/minecraft/world/level/storage/SavedDataStorage.java
+index 58ba4023b9506ee4de919215f974d31551f08ce1..e1ecc6b4127d25447f7e8959de3382d98b4f6b5a 100644
+--- a/net/minecraft/world/level/storage/SavedDataStorage.java
++++ b/net/minecraft/world/level/storage/SavedDataStorage.java
+@@ -41,6 +41,9 @@ import org.slf4j.Logger;
+ public class SavedDataStorage implements AutoCloseable {
+     private static final Logger LOGGER = LogUtils.getLogger();
+     public final Map<SavedDataType<?>, Optional<SavedData>> cache = new HashMap<>();
++    // Slice start - async map load
++    private final java.util.Set<SavedDataType<?>> pendingLoads = new java.util.HashSet<>(); // Slice - Async map pending loads
++    // Slice end
+     private final DataFixer fixerUpper;
+     private final HolderLookup.Provider registries;
+     private final Path dataFolder;
+@@ -75,11 +78,21 @@ public class SavedDataStorage implements AutoCloseable {
+ 
+     public <T extends SavedData> @Nullable T get(final SavedDataType<T> type) {
+         Optional<SavedData> data = this.cache.get(type);
+-        if (data == null) {
+-            data = Optional.ofNullable(this.readSavedData(type));
+-            this.cache.put(type, data);
++        if (data != null) {
++            return (T)data.orElse(null);
+         }
+-
++        // Slice start - async map load: never block the main thread on plugin-backed map I/O.
++        // Cache miss for a map type schedules the load on the dimension-data I/O pool and
++        // returns null for this tick; callers of getMapData already null-check and skip.
++        if (type.id().getPath().startsWith("maps/")) {
++            if (this.pendingLoads.add(type)) {
++                this.scheduleAsyncMapLoad(type);
++            }
++            return null;
++        }
++        // Slice end
++        data = Optional.ofNullable(this.readSavedData(type));
++        this.cache.put(type, data);
+         return (T)data.orElse(null);
+     }
+ 
+@@ -101,7 +114,58 @@ public class SavedDataStorage implements AutoCloseable {
+         return null;
+     }
+ 
++    // Slice start - async map load
++    private <T extends SavedData> void scheduleAsyncMapLoad(final SavedDataType<T> type) {
++        CompletableFuture.runAsync(() -> {
++            CompoundTag tagFromDisk = null;
++            try {
++                int mapId = Integer.parseInt(type.id().getPath().substring("maps/".length()));
++                io.papermc.paper.event.server.MapLoadEvent event = new io.papermc.paper.event.server.MapLoadEvent(mapId);
++                event.callEvent();
++                java.io.ByteArrayInputStream buf = event.getBuf();
++                if (buf != null) {
++                    tagFromDisk = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
++                } else {
++                    Path dataFile = this.getDataFile(type.id());
++                    if (Files.exists(dataFile)) {
++                        tagFromDisk = this.readTagFromDisk(
++                            dataFile, type.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version()
++                        );
++                    }
++                }
++            } catch (Exception e) {
++                LOGGER.error("Async load failed for {}", type.id(), e);
++            }
++            final CompoundTag finalTag = tagFromDisk;
++            net.minecraft.server.MinecraftServer.getServer().execute(() -> this.installLoadedMap(type, finalTag));
++        }, Util.DIMENSION_DATA_IO_POOL);
++    }
++
++    private <T extends SavedData> void installLoadedMap(final SavedDataType<T> type, final @Nullable CompoundTag tag) {
++        this.pendingLoads.remove(type);
++        // Respect any set() that arrived while we were loading.
++        if (this.cache.containsKey(type)) {
++            return;
++        }
++        if (tag == null) {
++            this.cache.put(type, Optional.empty());
++            return;
++        }
++        try {
++            RegistryOps<Tag> registryOps = this.registries.createSerializationContext(NbtOps.INSTANCE);
++            Optional<T> parsed = type.codec()
++                .parse(registryOps, tag.get("data"))
++                .resultOrPartial(string -> LOGGER.error("Failed to parse async-loaded saved data for '{}': {}", type, string));
++            this.cache.put(type, parsed.map(d -> (SavedData) d));
++        } catch (Exception e) {
++            LOGGER.error("Error installing async-loaded saved data for {}", type.id(), e);
++            this.cache.put(type, Optional.empty());
++        }
++    }
++    // Slice end
++
+     public <T extends SavedData> void set(final SavedDataType<T> type, final T data) {
++        this.pendingLoads.remove(type); // Slice - async map load: a fresh set() supersedes any in-flight async load.
+         this.cache.put(type, Optional.of(data));
+         data.setDirty();
+     }

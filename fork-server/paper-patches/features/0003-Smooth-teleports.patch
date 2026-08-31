@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cryptite <cryptite@gmail.com>
+Date: Wed, 14 Jan 2026 11:38:02 -0600
+Subject: [PATCH] Smooth teleports
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index ad51146ef274106d542bf416cd47d0ebcd17e7c6..2f096d420fe66fa39e8ca768e571ac7493144585 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1327,6 +1327,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+         return this.getHandle().isShiftKeyDown();
+     }
+ 
++    // Slice start
++    public void teleportWithoutRespawn(Location location) {
++        ServerPlayer serverPlayer = getHandle();
++        if (serverPlayer.connection == null) {
++            return;
++        }
++        if (location.getWorld() != this.getWorld() && !serverPlayer.passengers.isEmpty()) {
++            return;
++        }
++        serverPlayer.smoothWorldTeleport = true;
++        try {
++            // Fully relative teleport: position/rotation go out as deltas from current state, so the
++            // client applies them to its own predicted position instead of snapping back to the
++            // server's (velocity is likewise preserved rather than zeroed)
++            net.minecraft.world.phys.Vec3 delta = org.bukkit.craftbukkit.util.CraftLocation.toVec3(location).subtract(serverPlayer.position());
++            serverPlayer.teleport(new net.minecraft.world.level.portal.TeleportTransition(
++                ((CraftWorld) location.getWorld()).getHandle(),
++                delta,
++                net.minecraft.world.phys.Vec3.ZERO,
++                location.getYaw() - serverPlayer.getYRot(),
++                location.getPitch() - serverPlayer.getXRot(),
++                java.util.EnumSet.of(
++                    net.minecraft.world.entity.Relative.X, net.minecraft.world.entity.Relative.Y, net.minecraft.world.entity.Relative.Z,
++                    net.minecraft.world.entity.Relative.Y_ROT, net.minecraft.world.entity.Relative.X_ROT,
++                    net.minecraft.world.entity.Relative.DELTA_X, net.minecraft.world.entity.Relative.DELTA_Y, net.minecraft.world.entity.Relative.DELTA_Z),
++                net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING,
++                org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.PLUGIN));
++        } finally {
++            serverPlayer.smoothWorldTeleport = false;
++        }
++    }
++    // Slice end
++
+     @Override
+     public boolean isSprinting() {
+         return this.getHandle().isSprinting();

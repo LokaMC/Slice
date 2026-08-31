@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cryptite <cryptite@gmail.com>
+Date: Sat, 8 Aug 2026 10:51:42 -0500
+Subject: [PATCH] Stagger world autosave
+
+Adds World.setAutoSaveOffsetTicks: offsets which tick within the autosave
+interval a world runs its full save (level.dat write) on. With many loaded
+worlds (isles: 32) all full saves land on the same boundary tick, freezing
+the main thread ~700ms every 5 minutes (2026-07-31 investigation).
+Also honors setAutoSave(false) in the incremental autosave path, which
+previously rewrote level.dat for no-save worlds anyway.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index df8d6406897d562d82cafb981ee6e485db897188..ebd8eead07484975757cafa231cf6f3b91241f4a 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -1646,8 +1646,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                 this.saveGlobalData(false);
+             }
+             for (final ServerLevel level : this.getAllLevels()) {
++                if (level.noSave) continue; // Slice - honor setAutoSave(false); the full save below rewrote level.dat for every world regardless
+                 if (level.paperConfig().chunks.autoSaveInterval.value() > 0) {
+-                    level.saveIncrementally(fullSave);
++                    // Slice start - stagger world autosave; full saves (level.dat writes) for many worlds
++                    // on the same boundary tick stack into a single multi-hundred-ms tick
++                    final boolean levelFullSave = this.autosavePeriod > 0 && (this.tickCount + level.autoSaveOffsetTicks) % this.autosavePeriod == 0;
++                    level.saveIncrementally(levelFullSave);
++                    // Slice end - stagger world autosave
+                 }
+             }
+         } finally {
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 31e8d17d054d899d31b7ef97371ce9ff274fd9d9..782b85427fc162a9c94fe6bbef3d8e6f3e67e061 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -239,6 +239,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+     private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current)
+     public boolean instance; // Slice
+     public boolean shardedFight; // Slice
++    public int autoSaveOffsetTicks; // Slice - stagger world autosave
+ 
+     @Override
+     public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
