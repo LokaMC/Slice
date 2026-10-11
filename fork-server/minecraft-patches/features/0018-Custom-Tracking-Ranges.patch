@@ -5,10 +5,10 @@ Subject: [PATCH] Custom Tracking Ranges
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 14cae05c26ed8f1cf1fe7d2e151da316c4d78a54..c94eee03749f4b685db53ebf1460a14b0713ca2a 100644
+index fedde16b843bef7784e43e03ea283bf83e072db2..b09ed66f91ac4d79105441cbea32e9f199f92a42 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -399,6 +399,7 @@ public abstract class Entity
+@@ -405,6 +405,7 @@ public abstract class Entity
      public long activatedImmunityTick = Integer.MIN_VALUE;
      public boolean saveable = true; // Slice
      public boolean vanished; // Slice

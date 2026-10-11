@@ -5,10 +5,10 @@ Subject: [PATCH] Add Vanish, settable inv locations
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 0a5ab13e55c14daedb969adcdc4e0fd664a04bfd..8cd3965a6db91080c54c22d7c7ae28d42bdc2f97 100644
+index 29a974f1485bca916317ea5d80941b38911482f6..66b6227e1bb55794068ec98241d8f6d52e812275 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1355,4 +1355,20 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1382,4 +1382,20 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setSaveable(boolean saveable);
      // Slice end

@@ -1,0 +1,84 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cryptite <cryptite@gmail.com>
+Date: Fri, 9 Oct 2026 17:13:11 -0500
+Subject: [PATCH] Smooth entity interpolation
+
+
+diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
+index 68675926ee85f738b3693a76fc29b80b80c717ed..29e02113990fdb51965e9bef98f7e7382c8d8ead 100644
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -248,6 +248,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         org.spigotmc.WatchdogThread.doStart(org.spigotmc.SpigotConfig.timeoutTime, org.spigotmc.SpigotConfig.restartOnCrash); // Paper - start watchdog thread
+         consoleThread.start(); // Paper - Enhance console tab completions for brigadier commands; start console thread after MinecraftServer.console & PaperConfig are initialized
+         io.papermc.paper.command.PaperCommands.registerCommands(this); // Paper - setup /paper command
++        this.server.getCommandMap().register("smoothinterp", "Slice", new com.n9works.slice.SmoothInterpolationCommand()); // Slice - smooth interpolation
+         this.server.spark.registerCommandBeforePlugins(this.server); // Paper - spark
+         com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics(); // Paper - start metrics
+         com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // Paper - load version history now
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index dd12c056d104f1380e7e0b60f309493b876468c0..af2f873f5ae78326c16a4af9328de202edc75da4 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -175,10 +175,18 @@ public class ServerEntity {
+             } else if (this.entity instanceof AbstractMinecart minecart && minecart.getBehavior() instanceof NewMinecartBehavior newMinecartBehavior) {
+                 this.handleMinecartPosRot(newMinecartBehavior, yRotn, xRotn, shouldSendRotation);
+             } else {
++                // Slice start - smooth interpolation; off-schedule player fires keep the position path for the next scheduled send
++                boolean deferPosition = com.n9works.slice.SmoothInterpolation.scheduledPlayerPositions
++                    && this.entity instanceof ServerPlayer
++                    && !this.updateInterval.test(this.tickCount)
++                    && !this.forceStateResync
++                    && !this.wasRiding;
++                MovementPacket<ClientGamePacketListener> packet = null;
++                if (!deferPosition) {
++                // Slice end - smooth interpolation
+                 this.teleportDelay++;
+                 PositionPath position = this.interpolationTracker.getPositionPath(currentPosition);
+                 this.interpolationTracker.clear();
+-                MovementPacket<ClientGamePacketListener> packet;
+                 if (this.entity instanceof AbstractArrow) {
+                     packet = this.createMovePacket(position, yRotn, xRotn, true, true);
+                 } else {
+@@ -192,6 +200,7 @@ public class ServerEntity {
+                     boolean shouldSendPosition = positionChanged || this.tickCount % 60 == 0;
+                     packet = this.createMovePacket(position, yRotn, xRotn, shouldSendPosition, shouldSendRotation);
+                 }
++                } // Slice - smooth interpolation
+ 
+                 if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity livingEntity && livingEntity.isFallFlying()) {
+                     Vec3 movement = this.entity.getDeltaMovement();
+@@ -229,7 +238,7 @@ public class ServerEntity {
+                     this.sendDirtyEntityData();
+                 }
+ 
+-                this.wasRiding = false;
++                if (!deferPosition) this.wasRiding = false; // Slice - smooth interpolation
+             }
+ 
+             byte yHeadRot = Mth.packDegrees(this.entity.getYHeadRot());
+diff --git a/net/minecraft/world/entity/SteppedInterpolationTracker.java b/net/minecraft/world/entity/SteppedInterpolationTracker.java
+index cd1ce498f661024cd38f7fc9286a757b69398c38..7a130bdccf399d00b2694cd50fa6655a3a88d1a9 100644
+--- a/net/minecraft/world/entity/SteppedInterpolationTracker.java
++++ b/net/minecraft/world/entity/SteppedInterpolationTracker.java
+@@ -48,6 +48,20 @@ public class SteppedInterpolationTracker extends InterpolationHandler.NoOpInterp
+     @Override
+     public PositionPath getPositionPath(final Vec3 currentPosition) {
+         this.addStep(currentPosition);
++        // Slice start - smooth interpolation; the client interpolates each step over exactly its tickOffset, pad short paths to updateInterval + 1
++        if (!this.trackedSteps.isEmpty() && com.n9works.slice.SmoothInterpolation.padSteps && this.entity.getType().hasUpdateInterval()) {
++            int totalTicks = 0;
++            for (PositionStep step : this.trackedSteps) {
++                totalTicks += step.tickOffset();
++            }
++
++            int minTicks = this.entity.getType().updateInterval() + 1;
++            if (totalTicks < minTicks) {
++                PositionStep last = this.trackedSteps.getLast();
++                this.trackedSteps.set(this.trackedSteps.size() - 1, new PositionStep(last.position(), last.tickOffset() + minTicks - totalTicks));
++            }
++        }
++        // Slice end - smooth interpolation
+         return this.trackedSteps.isEmpty() ? PositionPath.of(currentPosition) : PositionPath.stepped(List.copyOf(this.trackedSteps));
+     }
+ 

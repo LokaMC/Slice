@@ -13,10 +13,10 @@ previously rewrote level.dat for no-save worlds anyway.
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index df8d6406897d562d82cafb981ee6e485db897188..ebd8eead07484975757cafa231cf6f3b91241f4a 100644
+index 76ce0566272ff6c584bf09d66e5e2842dbdff18b..ec237bd9bcc878a75cf7c8e2042a57973b58e7a2 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1646,8 +1646,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1627,8 +1627,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  this.saveGlobalData(false);
              }
              for (final ServerLevel level : this.getAllLevels()) {
@@ -32,10 +32,10 @@ index df8d6406897d562d82cafb981ee6e485db897188..ebd8eead07484975757cafa231cf6f3b
              }
          } finally {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 31e8d17d054d899d31b7ef97371ce9ff274fd9d9..782b85427fc162a9c94fe6bbef3d8e6f3e67e061 100644
+index e2c3b2fb9e081a21005c84c6e58053ab436dc85b..e07ea191aedc1a8be0200560dff2ebee2cc42212 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -239,6 +239,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -241,6 +241,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current)
      public boolean instance; // Slice
      public boolean shardedFight; // Slice

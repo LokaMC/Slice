@@ -5,10 +5,10 @@ Subject: [PATCH] Add SlottedContainer API events
 
 
 diff --git a/net/minecraft/world/level/block/ChiseledBookShelfBlock.java b/net/minecraft/world/level/block/ChiseledBookShelfBlock.java
-index b7d7f1acf8e5cb3dddb7fb39fe003d25a9a41840..51163e23825c4d0ae480a540aa2d620d8af4b931 100644
+index d9859833c7dc78c212b2d637f84b711a197baf2d..ad44f5cc3b3a0c0204c61551fb0c732e2dd670c4 100644
 --- a/net/minecraft/world/level/block/ChiseledBookShelfBlock.java
 +++ b/net/minecraft/world/level/block/ChiseledBookShelfBlock.java
-@@ -133,6 +133,16 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
+@@ -127,6 +127,16 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
          final int slot
      ) {
          if (!level.isClientSide()) {
@@ -25,7 +25,7 @@ index b7d7f1acf8e5cb3dddb7fb39fe003d25a9a41840..51163e23825c4d0ae480a540aa2d620d
              player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
              SoundEvent soundEvent = itemStack.is(Items.ENCHANTED_BOOK)
                  ? SoundEvents.CHISELED_BOOKSHELF_INSERT_ENCHANTED
-@@ -146,6 +156,14 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
+@@ -140,6 +150,14 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
          final Level level, final BlockPos pos, final Player player, final ChiseledBookShelfBlockEntity bookshelfBlock, final int slot
      ) {
          if (!level.isClientSide()) {
@@ -41,10 +41,10 @@ index b7d7f1acf8e5cb3dddb7fb39fe003d25a9a41840..51163e23825c4d0ae480a540aa2d620d
              SoundEvent soundEvent = retrievedBook.is(Items.ENCHANTED_BOOK)
                  ? SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED
 diff --git a/net/minecraft/world/level/block/ShelfBlock.java b/net/minecraft/world/level/block/ShelfBlock.java
-index 8a1313a10b6afeee86ea2245da4bd9beb28d1d84..ba576fb5e557b5ae32ef47b8a663def2981ff713 100644
+index 683e94d86b1e0eb0a287608270ec8e36cdef6ae3..b8b0cd54835acd55f133d4df7007d7ed0204e2fe 100644
 --- a/net/minecraft/world/level/block/ShelfBlock.java
 +++ b/net/minecraft/world/level/block/ShelfBlock.java
-@@ -179,6 +179,27 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -172,6 +172,27 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
              }
  
              if (!state.getValue(POWERED)) {
@@ -72,8 +72,8 @@ index 8a1313a10b6afeee86ea2245da4bd9beb28d1d84..ba576fb5e557b5ae32ef47b8a663def2
                  boolean itemRemoved = swapSingleItem(itemStack, player, shelfBlockEntity, hitSlot.getAsInt(), inventory);
                  if (itemRemoved) {
                      this.playSound(level, pos, itemStack.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
-@@ -193,7 +214,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
-                 return InteractionResult.SUCCESS.heldItemTransformedTo(itemStack);
+@@ -186,7 +207,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+                 return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(itemStack);
              } else {
                  ItemStack previousItem = inventory.getSelectedItem();
 -                boolean anySwapped = this.swapHotbar(level, pos, inventory);
@@ -81,7 +81,7 @@ index 8a1313a10b6afeee86ea2245da4bd9beb28d1d84..ba576fb5e557b5ae32ef47b8a663def2
                  if (!anySwapped) {
                      return InteractionResult.CONSUME;
                  }
-@@ -223,7 +244,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -216,7 +237,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
          return !removedItem.isEmpty();
      }
  
@@ -90,7 +90,7 @@ index 8a1313a10b6afeee86ea2245da4bd9beb28d1d84..ba576fb5e557b5ae32ef47b8a663def2
          List<BlockPos> connectedBlocks = this.getAllBlocksConnectedTo(level, pos);
          if (connectedBlocks.isEmpty()) {
              return false;
-@@ -237,10 +258,22 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
+@@ -230,10 +251,22 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                  for (int slot = 0; slot < shelfPart.getContainerSize(); slot++) {
                      int inventorySlot = 9 - (connectedBlocks.size() - shelfPartIndex) * shelfPart.getContainerSize() + slot;
                      if (inventorySlot >= 0 && inventorySlot <= inventory.getContainerSize()) {

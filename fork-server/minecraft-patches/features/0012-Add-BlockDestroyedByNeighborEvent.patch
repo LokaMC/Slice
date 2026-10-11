@@ -5,10 +5,10 @@ Subject: [PATCH] Add BlockDestroyedByNeighborEvent
 
 
 diff --git a/net/minecraft/server/level/ServerPlayerGameMode.java b/net/minecraft/server/level/ServerPlayerGameMode.java
-index 27bdb82793250b33b457fe027c003948000857c9..79b4df6d3ab6ae0956d54dbfe0d5590574a81d0b 100644
+index 81487e9840845de76f58e83cc57b173b5945bab4..1623dcbb933f1905f4b2d0dc291c1406103618e3 100644
 --- a/net/minecraft/server/level/ServerPlayerGameMode.java
 +++ b/net/minecraft/server/level/ServerPlayerGameMode.java
-@@ -394,6 +394,7 @@ public class ServerPlayerGameMode {
+@@ -425,6 +425,7 @@ public class ServerPlayerGameMode {
          this.level.captureDrops = new java.util.ArrayList<>();
          // CraftBukkit end
          BlockState adjustedState = block.playerWillDestroy(this.level, pos, state, this.player);
@@ -16,7 +16,7 @@ index 27bdb82793250b33b457fe027c003948000857c9..79b4df6d3ab6ae0956d54dbfe0d55905
          boolean changed = this.level.removeBlock(pos, false);
          if (SharedConstants.DEBUG_BLOCK_BREAK) {
              LOGGER.info("server broke {} {} -> {}", pos, adjustedState, this.level.getBlockState(pos));
-@@ -419,6 +420,7 @@ public class ServerPlayerGameMode {
+@@ -450,6 +451,7 @@ public class ServerPlayerGameMode {
          // CraftBukkit start
          List<net.minecraft.world.entity.item.ItemEntity> itemsToDrop = this.level.captureDrops; // Paper - capture all item additions to the world
          this.level.captureDrops = null; // Paper - capture all item additions to the world; Remove this earlier so that we can actually drop stuff
@@ -25,22 +25,22 @@ index 27bdb82793250b33b457fe027c003948000857c9..79b4df6d3ab6ae0956d54dbfe0d55905
              org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, bState, this.player, itemsToDrop); // Paper - capture all item additions to the world
          }
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 44a7590558fa73fb570f76ba7a4e7db1415d08f7..d06d77c29a62c0418e3dd1f271a3f5df2b4a8de0 100644
+index 00861318771cd184c9f75a9a036deee9ec2ba310..d4f3cd1e232b8c183543ddf64bcbc4d8876cc750 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
-@@ -380,6 +380,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
-         DataComponentPatch previousPatch = this.components.asPatch();
-         int previousCount = this.getCount();
-         ServerLevel level = (ServerLevel) context.getLevel();
-+        if (player != null) level.pendingPlayerBlockEvents.put(pos, new Level.PendingBlockEvent(pos, player)); // Paper
-         boolean isBonemeal = usedItem == Items.BONE_MEAL;
+@@ -381,6 +381,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
+             DataComponentPatch previousPatch = this.components.asPatch();
+             int previousCount = this.getCount();
+             ServerLevel level = (ServerLevel) context.getLevel();
++            if (player != null) level.pendingPlayerBlockEvents.put(pos, new Level.PendingBlockEvent(pos, player)); // Paper
+             boolean isBonemeal = usedItem == Items.BONE_MEAL;
  
-         if (!(usedItem instanceof BucketItem)) {
+             if (!(usedItem instanceof BucketItem)) {
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 9286d9bcf3ec4069e77d3133f3d7bf29b2370c5a..d0599e39fc460ad66f7fc0bdbb7b175d0d201234 100644
+index 21878bd770f6c0bc10dd0a67be5bd94d7e16f741..e39c28fad5c54be5303d9a0ab2fd167e447e8a41 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -176,6 +176,28 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -174,6 +174,28 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
      public final Map<ServerExplosion.CacheKey, Float> explosionDensityCache = new java.util.HashMap<>(); // Paper - Optimize explosions
      public java.util.ArrayDeque<net.minecraft.world.level.block.RedstoneTorchBlock.Toggle> redstoneUpdateInfos; // Paper - Faster redstone torch rapid clock removal; Move from Map in BlockRedstoneTorch to here
  
@@ -69,7 +69,7 @@ index 9286d9bcf3ec4069e77d3133f3d7bf29b2370c5a..d0599e39fc460ad66f7fc0bdbb7b175d
      public CraftWorld getWorld() {
          return this.world;
      }
-@@ -1209,6 +1231,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+@@ -1202,6 +1224,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
              return false;
          }
  
@@ -84,10 +84,10 @@ index 9286d9bcf3ec4069e77d3133f3d7bf29b2370c5a..d0599e39fc460ad66f7fc0bdbb7b175d
 +        }
 +        // Paper end
 +
-         FluidState fluidState = this.getFluidState(pos);
          // Paper start - BlockDestroyEvent; while the above removeBlock method looks very similar
          // they are NOT used with same intent and the above should not fire this event. The above method is more of a BlockSetToAirEvent,
-@@ -1702,6 +1735,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+         // it doesn't imply destruction of a block that plays a sound effect / drops an item.
+@@ -1703,6 +1736,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
                  this.capturedBlockEntities.put(pos.immutable(), blockEntity);
                  return;
              }
@@ -96,10 +96,10 @@ index 9286d9bcf3ec4069e77d3133f3d7bf29b2370c5a..d0599e39fc460ad66f7fc0bdbb7b175d
              this.getChunkAt(pos).addAndRegisterBlockEntity(blockEntity);
          }
 diff --git a/net/minecraft/world/level/block/DoublePlantBlock.java b/net/minecraft/world/level/block/DoublePlantBlock.java
-index a65b487e8c32deb0f931815ca7d8e31ce42a5e67..e3ef49d81433393b397adbebfd77ee54d0ce0703 100644
+index 8d8f558da8643a62130318e24b7d7a88addff9b7..74e786d065650fec8a57e53f1387e97584b05f33 100644
 --- a/net/minecraft/world/level/block/DoublePlantBlock.java
 +++ b/net/minecraft/world/level/block/DoublePlantBlock.java
-@@ -129,6 +129,16 @@ public class DoublePlantBlock extends VegetationBlock {
+@@ -124,6 +124,16 @@ public class DoublePlantBlock extends VegetationBlock {
          if (part == DoubleBlockHalf.UPPER) {
              BlockPos bottomPos = pos.below();
              BlockState bottomState = level.getBlockState(bottomPos);
@@ -117,10 +117,10 @@ index a65b487e8c32deb0f931815ca7d8e31ce42a5e67..e3ef49d81433393b397adbebfd77ee54
                  BlockState blockState = bottomState.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
                  level.setBlock(bottomPos, blockState, Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index c78d77089e34c4bb559f173b449bfb7d91b05d5c..a26847a6eee707c0641da1b029b0e2e6c422ab84 100644
+index bebfe5b72c1dd812c480de3311ad36ca8d96466b..43284a2219cc9eba23ac7dbdea14f779f48c8c22 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -872,9 +872,22 @@ public abstract class BlockBehaviour implements FeatureElement {
+@@ -871,9 +871,22 @@ public abstract class BlockBehaviour implements FeatureElement {
  
          public final void updateNeighbourShapes(final LevelAccessor level, final BlockPos pos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
              BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();

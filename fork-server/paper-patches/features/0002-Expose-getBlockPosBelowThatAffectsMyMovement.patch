@@ -5,11 +5,11 @@ Subject: [PATCH] Expose getBlockPosBelowThatAffectsMyMovement
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index e45f9514e4b593111e827a2fc083381aa8072f67..59c640af00ecd757440c5eaca721c388a4fd3948 100644
+index 078083c88f336afd8bfe69c770c6d3ac486e826f..617491c66962c8e011b0a426040ebc21ccc56740 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1339,4 +1339,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
-         return this.entity.get(io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type)) != null;
+@@ -1367,4 +1367,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         return this.getHandleRaw().get(PaperDataComponentType.bukkitToMinecraft(type)) != null;
      }
  
 +    // Slice start

@@ -5,10 +5,10 @@ Subject: [PATCH] Add dropLoot option to Block.breakNaturally
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index afbf9c70f69b02e7b92a8382aa9fb9f1132b7bf8..2ad6abca3d52d1cf1653f92b7f681c36b823983a 100644
+index 0ab39922e53ebeb044958f99b7f0f06391d78d31..3a3ff75f27616c88ce97bfa9d7f41e76d9b1a595 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-@@ -454,12 +454,24 @@ public class CraftBlock implements Block {
+@@ -468,12 +468,24 @@ public class CraftBlock implements Block {
      }
  
      @Override
@@ -33,7 +33,7 @@ index afbf9c70f69b02e7b92a8382aa9fb9f1132b7bf8..2ad6abca3d52d1cf1653f92b7f681c36
          // Order matters here, need to drop before setting to air so skulls can get their data
          BlockState state = this.getBlockState();
          net.minecraft.world.level.block.Block block = state.getBlock();
-@@ -467,7 +479,7 @@ public class CraftBlock implements Block {
+@@ -481,7 +493,7 @@ public class CraftBlock implements Block {
          boolean result = false;
  
          // Modelled off Player#hasCorrectToolForDrops

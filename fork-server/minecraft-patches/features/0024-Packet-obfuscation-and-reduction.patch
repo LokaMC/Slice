@@ -5,7 +5,7 @@ Subject: [PATCH] Packet obfuscation and reduction
 
 
 diff --git a/net/minecraft/network/syncher/SynchedEntityData.java b/net/minecraft/network/syncher/SynchedEntityData.java
-index 0075164bf057271d63a8b97473aa5c41c03eac91..c42b349ec5f2a44b50bb0f6f748cb7cc05772cb5 100644
+index bdb4f9f5052fa5c919783b9cbe744c4c55cf9cae..558a4e6f329c8d2a320c82681765de31fc7324bb 100644
 --- a/net/minecraft/network/syncher/SynchedEntityData.java
 +++ b/net/minecraft/network/syncher/SynchedEntityData.java
 @@ -54,11 +54,27 @@ public class SynchedEntityData {
@@ -160,10 +160,10 @@ index 0075164bf057271d63a8b97473aa5c41c03eac91..c42b349ec5f2a44b50bb0f6f748cb7cc
  
      public record DataValue<T>(int id, EntityDataSerializer<T> serializer, T value) {
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index e9f54ee0d58205b8116dd63bfc18d38325650b04..fb5e1fbe52cc75fda88c4ff16d894843476a3d46 100644
+index f53f37d600129db4f1affe127ada9132614ad0b5..dd12c056d104f1380e7e0b60f309493b876468c0 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
-@@ -69,6 +69,7 @@ public class ServerEntity {
+@@ -76,6 +76,7 @@ public class ServerEntity {
      private boolean wasRiding;
      private boolean wasOnGround;
      private @Nullable List<SynchedEntityData.DataValue<?>> trackedDataValues;
@@ -171,7 +171,7 @@ index e9f54ee0d58205b8116dd63bfc18d38325650b04..fb5e1fbe52cc75fda88c4ff16d894843
      private final Set<net.minecraft.server.network.ServerPlayerConnection> trackedPlayers; // Paper
  
      public ServerEntity(
-@@ -86,7 +87,9 @@ public class ServerEntity {
+@@ -99,7 +100,9 @@ public class ServerEntity {
          this.lastSentXRot = Mth.packDegrees(entity.getXRot());
          this.lastSentYHeadRot = Mth.packDegrees(entity.getYHeadRot());
          this.wasOnGround = entity.onGround();
@@ -182,7 +182,7 @@ index e9f54ee0d58205b8116dd63bfc18d38325650b04..fb5e1fbe52cc75fda88c4ff16d894843
      }
  
      // Paper start - fix desync when a player is added to the tracker
-@@ -328,20 +331,31 @@ public class ServerEntity {
+@@ -364,20 +367,31 @@ public class ServerEntity {
  
          Packet<ClientGamePacketListener> packet = this.entity.getAddEntityPacket(this);
          broadcast.accept(packet);
@@ -224,7 +224,7 @@ index e9f54ee0d58205b8116dd63bfc18d38325650b04..fb5e1fbe52cc75fda88c4ff16d894843
          }
  
          if (this.entity instanceof LivingEntity livingEntity) {
-@@ -381,23 +395,58 @@ public class ServerEntity {
+@@ -417,23 +431,58 @@ public class ServerEntity {
          return Mth.unpackDegrees(this.lastSentYHeadRot);
      }
  
@@ -288,10 +288,10 @@ index e9f54ee0d58205b8116dd63bfc18d38325650b04..fb5e1fbe52cc75fda88c4ff16d894843
  
              attributes.clear();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 55d730bb55fe5fa8fbf7a4dc2aa4576b72e26f4d..3c0fb43cfed1eaa73f9541f68e0f73c74a1b28ff 100644
+index 19e50e0a10bff1277c409f6730ca54dcaf6442e1..e31491b748f69a97494484dedef36def14f4b117 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -3811,7 +3811,7 @@ public abstract class Entity
+@@ -3907,7 +3907,7 @@ public abstract class Entity
              }
              return;
          }
@@ -301,11 +301,11 @@ index 55d730bb55fe5fa8fbf7a4dc2aa4576b72e26f4d..3c0fb43cfed1eaa73f9541f68e0f73c7
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 585a781a565936a5ab153d095de5570e1883dd85..a4e743925d2e9c5b3771033097cc582b6edd3e13 100644
+index 9d2dca95eebdcf3a54a1feed7a3c7aa1d260f204..b1971b9835c9e7375d5da22b66f851bebb9ed6c4 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -307,6 +307,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-     public int invulnerableDuration = LivingEntity.INVULNERABLE_DURATION; // Paper - configurable invulnerable duration
+@@ -306,6 +306,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     public int invulnerableDuration = LivingEntity.DAMAGE_COOLDOWN_DURATION; // Paper - configurable invulnerable duration
      // CraftBukkit end
  
 +    public boolean broadcastsPotionEffects = true; // Slice
@@ -314,7 +314,7 @@ index 585a781a565936a5ab153d095de5570e1883dd85..a4e743925d2e9c5b3771033097cc582b
      protected LivingEntity(final EntityType<? extends LivingEntity> type, final Level level) {
          super(type, level);
          this.attributes = new AttributeMap(DefaultAttributes.getSupplier(type));
-@@ -319,6 +322,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -318,6 +321,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.setYRot(this.random.nextFloat() * (float) (Math.PI * 2));
          this.yHeadRot = this.getYRot();
          this.brain = this.makeBrain(Brain.Packed.EMPTY);
@@ -322,7 +322,7 @@ index 585a781a565936a5ab153d095de5570e1883dd85..a4e743925d2e9c5b3771033097cc582b
      }
  
      @Override
-@@ -985,6 +989,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -983,6 +987,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                  effect.tickClient();
              }
  
@@ -331,7 +331,7 @@ index 585a781a565936a5ab153d095de5570e1883dd85..a4e743925d2e9c5b3771033097cc582b
              List<ParticleOptions> particles = this.entityData.get(DATA_EFFECT_PARTICLES);
              if (!particles.isEmpty()) {
                  boolean isAmbient = this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
-@@ -1017,6 +1023,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1015,6 +1021,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      private void updateSynchronizedMobEffectParticles() {
@@ -345,7 +345,7 @@ index 585a781a565936a5ab153d095de5570e1883dd85..a4e743925d2e9c5b3771033097cc582b
          List<ParticleOptions> visibleEffectParticles = this.activeEffects
              .values()
              .stream()
-@@ -1027,6 +1040,38 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -1025,6 +1038,38 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.entityData.set(DATA_EFFECT_AMBIENCE_ID, areAllEffectsAmbient(this.activeEffects.values()));
      }
  
@@ -406,7 +406,7 @@ index 68bad6752bd313ca3ebde7fd4e3b2c46c5dee3ef..96f45d1e1fb09e9f794ab0bcae5ea8ef
  
      public @Nullable AttributeInstance getInstance(final Holder<Attribute> attribute) {
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 742e6d2d3ae7d514cc32d71c2ae026d40f4b8cf2..4f68ddc1da21dc665619df3d404396f35ab68bd6 100644
+index ca524daa34267e70a457292792bbe424a317c932..4e33302148f3473929c9272ce58476e379e5cd82 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -543,7 +543,7 @@ public abstract class Player extends Avatar implements ContainerUser {

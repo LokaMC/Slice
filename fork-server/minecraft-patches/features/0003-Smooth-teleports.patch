@@ -5,7 +5,7 @@ Subject: [PATCH] Smooth teleports
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
-index 0743659c9f1122088adad4992b93649efc9ba873..d907451f1197523bb3794dfb5ff8ae91c898b30b 100644
+index 45c927417d34ddd48c92116efd9b5777bfc52e35..2af09b9f4f3eb21656d5312213ad59c8caeb6816 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
 @@ -458,7 +458,7 @@ public final class RegionizedPlayerChunkLoader {
@@ -18,10 +18,10 @@ index 0743659c9f1122088adad4992b93649efc9ba873..d907451f1197523bb3794dfb5ff8ae91
              if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
                  new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey()), player.getBukkitEntity()).callEvent();
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index c063fa617ea79b758b9c4ef0456889a91e341ad4..d58181ffbc23660088dcf369e240aaee42c3b94d 100644
+index 23b3a82ab3e1c6abc85000d9285470cb12300a6b..4ef237e7ac8aefbe39b81d37772a6f2b498ac94c 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -441,6 +441,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -446,6 +446,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
      public boolean isRealPlayer; // Paper
      public com.destroystokyo.paper.event.entity.@Nullable PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper - PlayerNaturallySpawnCreaturesEvent
      public org.bukkit.event.player.PlayerQuitEvent.@Nullable QuitReason quitReason = null; // Paper - Add API for quit reason; there are a lot of changes to do if we change all methods leading to the event
@@ -29,7 +29,7 @@ index c063fa617ea79b758b9c4ef0456889a91e341ad4..d58181ffbc23660088dcf369e240aaee
  
      // Paper start - rewrite chunk system
      private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
-@@ -1543,7 +1544,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1582,7 +1583,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
          this.isChangingDimension = true;
          LevelData levelData = newLevel.getLevelData();
@@ -39,10 +39,10 @@ index c063fa617ea79b758b9c4ef0456889a91e341ad4..d58181ffbc23660088dcf369e240aaee
          PlayerList playerList = this.server.getPlayerList();
          playerList.sendPlayerPermissionLevel(this);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index baec5d072b8f2d9379dba850b04e881e5267ca6b..3360cdb11fb999d211e532ed5e6096b4d5b07600 100644
+index a7f589970a04e520eb5cbe6dfeb333bc9cd479a8..b514a8aa3a5602a3cacff91c30660f1993e207ab 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -636,7 +636,7 @@ public abstract class PlayerList {
+@@ -643,7 +643,7 @@ public abstract class PlayerList {
          byte dataToKeep = keepAllPlayerData ? ClientboundRespawnPacket.KEEP_ATTRIBUTE_MODIFIERS : 0;
          ServerLevel playerLevel = player.level();
          LevelData levelData = playerLevel.getLevelData();
@@ -51,7 +51,7 @@ index baec5d072b8f2d9379dba850b04e881e5267ca6b..3360cdb11fb999d211e532ed5e6096b4
          player.connection.internalTeleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot()); // Paper
          player.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getRespawnData()));
          player.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
-@@ -1010,7 +1010,7 @@ public abstract class PlayerList {
+@@ -1017,7 +1017,7 @@ public abstract class PlayerList {
              // CraftBukkit end
          }
  

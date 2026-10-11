@@ -5,10 +5,10 @@ Subject: [PATCH] fix corrupted beehives
 
 
 diff --git a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
-index 0bbce88f95c8f96d865f3c58e830e5aa006e48bb..869007176a5f19c322a910a494d087a9ae1d6e49 100644
+index c91631e7544dd913e03e5c46d85f0250389d4082..9150f837ed9b4127964eadd762b428960822118c 100644
 --- a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
-@@ -430,7 +430,15 @@ public class BeehiveBlockEntity extends BlockEntity {
+@@ -424,7 +424,15 @@ public class BeehiveBlockEntity extends BlockEntity {
                  )
                  .apply(i, BeehiveBlockEntity.Occupant::new)
          );

@@ -5,10 +5,10 @@ Subject: [PATCH] Custom Tracking Ranges
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 8cd3965a6db91080c54c22d7c7ae28d42bdc2f97..549a89634bfec241f6480ec78ce016853c167309 100644
+index 66b6227e1bb55794068ec98241d8f6d52e812275..2cb697646f09102c5d39c93c85fdf29efa2c0ba7 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1371,4 +1371,17 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1398,4 +1398,17 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setVanished(boolean vanished);
      // Slice end

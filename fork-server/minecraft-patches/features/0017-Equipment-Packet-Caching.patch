@@ -26,10 +26,10 @@ index 05baba9103362ce3bd840867695a76c323785180..d20b079ea60f5e803ff5bd2c450b35f3
          this.entity = input.readVarInt();
          this.slots = Lists.newArrayList();
 diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
-index 60af82925d2f7e605bf7340cf01f1a5668f4d725..e9f54ee0d58205b8116dd63bfc18d38325650b04 100644
+index e46f95b19da1c14f240ec6697f22b5e220e0a835..f53f37d600129db4f1affe127ada9132614ad0b5 100644
 --- a/net/minecraft/server/level/ServerEntity.java
 +++ b/net/minecraft/server/level/ServerEntity.java
-@@ -345,19 +345,7 @@ public class ServerEntity {
+@@ -381,19 +381,7 @@ public class ServerEntity {
          }
  
          if (this.entity instanceof LivingEntity livingEntity) {
@@ -51,10 +51,10 @@ index 60af82925d2f7e605bf7340cf01f1a5668f4d725..e9f54ee0d58205b8116dd63bfc18d383
  
          if (!this.entity.getPassengers().isEmpty()) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 3a4da514c163e7565fc241835db52c464a5c4734..585a781a565936a5ab153d095de5570e1883dd85 100644
+index d32b58dfd7439f253e48f7a3f059f9154596cc02..9d2dca95eebdcf3a54a1feed7a3c7aa1d260f204 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -339,6 +339,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -338,6 +338,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          return new Brain<>();
      }
  
@@ -66,7 +66,7 @@ index 3a4da514c163e7565fc241835db52c464a5c4734..585a781a565936a5ab153d095de5570e
      @Override
      public void kill(final ServerLevel level) {
          this.hurtServer(level, this.damageSources().genericKill(), Float.MAX_VALUE);
-@@ -3564,6 +3569,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3559,6 +3564,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (changedItems != null) {
              this.handleHandSwap(changedItems);
              if (!changedItems.isEmpty()) {
@@ -74,14 +74,13 @@ index 3a4da514c163e7565fc241835db52c464a5c4734..585a781a565936a5ab153d095de5570e
                  this.handleEquipmentChanges(changedItems);
              }
          }
-@@ -3661,7 +3667,25 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-             itemsToSend.add(Pair.of(slot, newItemToStore));
-             this.lastEquipmentItems.put(slot, newItemToStore);
-         });
--        ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), itemsToSend, true)); // Paper - data sanitization
-+
+@@ -3660,7 +3666,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     }
+ 
+     private void updatePlayersWithNewEquipment(final ServerLevel level, final List<Pair<EquipmentSlot, ItemStack>> itemsToSend) {
+-        level.getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), itemsToSend, true)); // Paper - data sanitization
 +        // Slice start
-+        net.minecraft.server.level.ChunkMap.TrackedEntity entityTracker = ((ServerLevel) this.level()).getChunkSource().chunkMap.entityMap.get(getId());
++        net.minecraft.server.level.ChunkMap.TrackedEntity entityTracker = level.getChunkSource().chunkMap.entityMap.get(getId());
 +        if (entityTracker != null) {
 +            ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(this.getId(), itemsToSend);
 +            for (net.minecraft.server.network.ServerPlayerConnection playerConnection : entityTracker.seenBy) {
@@ -101,11 +100,10 @@ index 3a4da514c163e7565fc241835db52c464a5c4734..585a781a565936a5ab153d095de5570e
      }
  
      protected void tickHeadTurn(final float yBodyRotT) {
-@@ -4912,4 +4936,85 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
- 
-     public record Fallsounds(SoundEvent small, SoundEvent big) {
+@@ -5036,4 +5059,84 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+             return this.currentSwing != null;
+         }
      }
-+
 +
 +    // Slice start
 +    public static void invalidateCachedEquipment(String tag) {

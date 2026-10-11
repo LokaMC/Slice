@@ -5,12 +5,12 @@ Subject: [PATCH] Long-range tracking for spectators
 
 
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index 7f0df1c26f93d53b5925c564374f3e5fa6d966b3..d106b195c26cbed452a3caf102725c57d4868dca 100644
+index fd0b9f20fbdd523d51550fd6009b5011e6e7e6e6..b57076f1badb394bd19ed0b64d433b33cae3420a 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1363,7 +1363,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1414,7 +1414,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  double deltaToPlayerZ = player.getZ() - this.entity.getZ();
-                 // Paper end - remove allocation of Vec3D here
+                 // Paper end - remove allocation of Vec3 here
                  int playerViewDistance = ChunkMap.this.getPlayerViewDistance(player);
 -                double visibleRange = Math.min(this.getEffectiveRange(), playerViewDistance * 16);
 +                double visibleRange = player.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SPECTATOR ? 128 : Math.min(this.getEffectiveRange(), playerViewDistance * 16); // Slice

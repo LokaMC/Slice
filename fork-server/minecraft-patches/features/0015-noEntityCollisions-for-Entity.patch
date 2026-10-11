@@ -5,10 +5,10 @@ Subject: [PATCH] noEntityCollisions for Entity
 
 
 diff --git a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-index 15568f598b8c61cf92563b6a7f8cae526b84484e..b0c7d876e1bde362eefe6807d42361af02b3433c 100644
+index 54b2492c3ab6bf9ff52cec53dc4635f725f9eb4f..2a5ef11c97eccb2820dd13e097f79d1abc231b37 100644
 --- a/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
 +++ b/ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.java
-@@ -2078,6 +2078,7 @@ public final class CollisionUtil {
+@@ -2079,6 +2079,7 @@ public final class CollisionUtil {
  
      public static boolean getEntityHardCollisions(final Level world, final Entity entity, AABB aabb,
                                                    final List<AABB> into, final int collisionFlags, final Predicate<Entity> predicate) {
@@ -17,10 +17,10 @@ index 15568f598b8c61cf92563b6a7f8cae526b84484e..b0c7d876e1bde362eefe6807d42361af
  
          boolean ret = false;
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 71403ea6e334c46e62cdebb751f86172f2facaa0..14cae05c26ed8f1cf1fe7d2e151da316c4d78a54 100644
+index b4b114fc4cec428240fa985f4b2f38f46edacffc..fedde16b843bef7784e43e03ea283bf83e072db2 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -418,6 +418,7 @@ public abstract class Entity
+@@ -424,6 +424,7 @@ public abstract class Entity
      private int sectionY = Integer.MIN_VALUE;
      private int sectionZ = Integer.MIN_VALUE;
      private boolean updatingSectionStatus;

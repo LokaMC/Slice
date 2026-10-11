@@ -5,10 +5,10 @@ Subject: [PATCH] World.isShardedFightWorld
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index e2e7cd6c3ab5400830bcc39eff4c11ad821ed0b3..e3b09f76caa257c653af6f9e5dbf3e8dc219d6be 100644
+index 3a8067c4412696385e52d890f313ae9fb4329ee0..08665309afb170c8711f70422bd013974ac48d09 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -2920,6 +2920,11 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -2922,6 +2922,11 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      public void setInstance(boolean value);
      // Slice end
  

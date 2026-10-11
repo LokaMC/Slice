@@ -5,10 +5,10 @@ Subject: [PATCH] Add PlayerInsertBundleItemEvent
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 9115b68139e343f531314f14008dfae515a49c83..075e294333115738b25b64a390df323276cf39f9 100644
+index 15fc8954dca08936c7afc8fdffdc0f6fd53c78e2..c4cfb53e145d69666ffc27ef4ee0c50b54eb9143 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -564,7 +564,6 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -576,7 +576,6 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
          if (doMobSpawning && (this.spawnEnemies || this.spawnFriendlies)) { // Paper
              // Paper start - PlayerNaturallySpawnCreaturesEvent
              for (ServerPlayer player : this.level.players()) {
@@ -17,22 +17,22 @@ index 9115b68139e343f531314f14008dfae515a49c83..075e294333115738b25b64a390df3232
                  chunkRange = Math.min(chunkRange, 8);
                  player.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(player.getBukkitEntity(), (byte) chunkRange);
 diff --git a/net/minecraft/world/item/BundleItem.java b/net/minecraft/world/item/BundleItem.java
-index f64ecce370edc04c363db8bce7eda473e2764d27..e116a15b11cba1698a5fbed5f29d9fe246c99053 100644
+index a9f29eb86784c1b846ef7540f1229dcdd76c662c..b3a90d7a45e05fffc675b8e97fc1c4277cee953d 100644
 --- a/net/minecraft/world/item/BundleItem.java
 +++ b/net/minecraft/world/item/BundleItem.java
-@@ -65,6 +65,7 @@ public class BundleItem extends Item {
+@@ -66,6 +66,7 @@ public class BundleItem extends Item {
          ItemStack other = slot.getItem();
-         BundleContents.Mutable contents = new BundleContents.Mutable(initialContents);
+         BundleContents.Mutable contents = initialContents.asMutable();
          if (clickAction == ClickAction.PRIMARY && !other.isEmpty()) {
-+            if (!new io.papermc.paper.event.player.PlayerInsertBundleItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), self.getBukkitStack(), other.getBukkitStack()).callEvent()) return false; // Slice
++            if (!new io.papermc.paper.event.player.PlayerInsertBundleItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(self), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(other)).callEvent()) return false; // Slice
              if (contents.tryTransfer(slot, player) > 0) {
                  playInsertSound(player);
              } else {
-@@ -109,6 +110,7 @@ public class BundleItem extends Item {
+@@ -110,6 +111,7 @@ public class BundleItem extends Item {
  
-         BundleContents.Mutable contents = new BundleContents.Mutable(initialContents);
+         BundleContents.Mutable contents = initialContents.asMutable();
          if (clickAction == ClickAction.PRIMARY && !other.isEmpty()) {
-+            if (!new io.papermc.paper.event.player.PlayerInsertBundleItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), self.getBukkitStack(), other.getBukkitStack()).callEvent()) return false; // Slice
++            if (!new io.papermc.paper.event.player.PlayerInsertBundleItemEvent((org.bukkit.entity.Player) player.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(self), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitMirror(other)).callEvent()) return false; // Slice
              if (slot.allowModification(player) && contents.tryInsert(other) > 0) {
                  playInsertSound(player);
              } else {

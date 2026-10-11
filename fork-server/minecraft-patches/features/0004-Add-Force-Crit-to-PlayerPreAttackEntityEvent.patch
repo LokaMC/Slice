@@ -5,10 +5,10 @@ Subject: [PATCH] Add Force Crit to PlayerPreAttackEntityEvent
 
 
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 5d4b3ed09fe10f545d0720b2919f0d6c822d5196..742e6d2d3ae7d514cc32d71c2ae026d40f4b8cf2 100644
+index 4068dc1cea4edca196dc0c58b4804e94dd07881e..ca524daa34267e70a457292792bbe424a317c932 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
-@@ -1049,7 +1049,7 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1048,7 +1048,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                      }
  
                      baseDamage += attackingItemStack.getItem().getAttackDamageBonus(entity, baseDamage, damageSource);

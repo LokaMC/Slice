@@ -5,10 +5,10 @@ Subject: [PATCH] Add MapEvents
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 3593bb5308ab7c222a662d519e50000277e09bf3..be681e6b1aeed6215f6ab99daab7a105baae4b71 100644
+index 3c1daf4ff2394053668ff02e3ad206c79c7105bd..67a004c2472353f4d3ffb10df2a5ff0c0f9f424f 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2342,6 +2342,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2608,6 +2608,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      }
  
      public MapId getFreeMapId() {

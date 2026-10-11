@@ -5,10 +5,10 @@ Subject: [PATCH] World.isShardedFightWorld
 
 
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index be681e6b1aeed6215f6ab99daab7a105baae4b71..31e8d17d054d899d31b7ef97371ce9ff274fd9d9 100644
+index 67a004c2472353f4d3ffb10df2a5ff0c0f9f424f..e2c3b2fb9e081a21005c84c6e58053ab436dc85b 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -238,6 +238,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -240,6 +240,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
      public final org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer persistentDataContainer = new org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
      private final alternate.current.wire.WireHandler wireHandler = new alternate.current.wire.WireHandler(this); // Paper - optimize redstone (Alternate Current)
      public boolean instance; // Slice

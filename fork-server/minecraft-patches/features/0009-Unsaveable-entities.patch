@@ -5,10 +5,10 @@ Subject: [PATCH] Unsaveable entities
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 075e294333115738b25b64a390df323276cf39f9..9115b68139e343f531314f14008dfae515a49c83 100644
+index c4cfb53e145d69666ffc27ef4ee0c50b54eb9143..15fc8954dca08936c7afc8fdffdc0f6fd53c78e2 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -564,6 +564,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+@@ -576,6 +576,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
          if (doMobSpawning && (this.spawnEnemies || this.spawnFriendlies)) { // Paper
              // Paper start - PlayerNaturallySpawnCreaturesEvent
              for (ServerPlayer player : this.level.players()) {
@@ -17,10 +17,10 @@ index 075e294333115738b25b64a390df323276cf39f9..9115b68139e343f531314f14008dfae5
                  chunkRange = Math.min(chunkRange, 8);
                  player.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(player.getBukkitEntity(), (byte) chunkRange);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 92884bd6f60cb2938c62194623544c8d3ca2a57a..ce3544f030c7699b0a5efa8caf8ae32ac13064b8 100644
+index e662ce9f90d5b3f4c5cf7c8d980681c51eee4121..1b376de602ec9d26f3fc75a0900aef78909e34bf 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -397,6 +397,7 @@ public abstract class Entity
+@@ -403,6 +403,7 @@ public abstract class Entity
      public long activatedTick = Integer.MIN_VALUE;
      public boolean isTemporarilyActive;
      public long activatedImmunityTick = Integer.MIN_VALUE;
@@ -28,7 +28,7 @@ index 92884bd6f60cb2938c62194623544c8d3ca2a57a..ce3544f030c7699b0a5efa8caf8ae32a
  
      public void inactiveTick() {
      }
-@@ -5246,6 +5247,7 @@ public abstract class Entity
+@@ -5406,6 +5407,7 @@ public abstract class Entity
  
      @Override
      public boolean shouldBeSaved() {

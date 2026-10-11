@@ -5,10 +5,10 @@ Subject: [PATCH] Add LeafBlockTickEvent
 
 
 diff --git a/net/minecraft/world/level/block/LeavesBlock.java b/net/minecraft/world/level/block/LeavesBlock.java
-index 23ff958d35aa9199f361aa88cca7fd676f035709..811ea506b708c192d243805d9da07c52fd9b6c5d 100644
+index d0dba204ed4f709470d097ddf6448e432e5530bc..ddabad890dc0c9dd3de7129bbce064187909ba9c 100644
 --- a/net/minecraft/world/level/block/LeavesBlock.java
 +++ b/net/minecraft/world/level/block/LeavesBlock.java
-@@ -60,14 +60,16 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
+@@ -57,14 +57,16 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
  
      @Override
      protected boolean isRandomlyTicking(final BlockState state) {

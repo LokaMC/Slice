@@ -5,10 +5,10 @@ Subject: [PATCH] World.isShardedFightWorld
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index f59c3a6a5421b1ab31063b96ef71bbd8f2817bf7..796f850dc6a202bc829043dbb095b4db39dd54d4 100644
+index 110d66534258dcf67c7785a17f8b01add6789d7f..3d57f46272e5ebabe986da630ce8a31a9a474127 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1165,6 +1165,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+@@ -1164,6 +1164,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
      }
      // Slice end
  

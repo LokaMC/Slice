@@ -5,10 +5,10 @@ Subject: [PATCH] Add ObjectId
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-index 2aea80487ff1bc68e4aff21909658e307c0da956..5f62db05db09d7e47465b77403b4ab5338225cdc 100644
+index eb8ea3efb3e8ee77c4e766697d71f0632c0ff9b7..78978e3f9de54a8a72b08eadeac43fe697e5a905 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-@@ -84,6 +84,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+@@ -85,6 +85,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
      protected final PermissibleBase perm = new PermissibleBase(this);
      private boolean op;
      private GameMode mode;
@@ -16,7 +16,7 @@ index 2aea80487ff1bc68e4aff21909658e307c0da956..5f62db05db09d7e47465b77403b4ab53
  
      public CraftHumanEntity(final CraftServer server, final Player entity) {
          super(server, entity);
-@@ -107,6 +108,18 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+@@ -108,6 +109,18 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
          return this.getClass().getSimpleName() + "{name=" + this.getName() + ", uuid=" + this.getUniqueId() + '}';
      }
  

@@ -6,10 +6,10 @@ Subject: [PATCH] Stagger world autosave
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index e3b09f76caa257c653af6f9e5dbf3e8dc219d6be..f0b5d9c33648a8e9db420436fba6eab15daa2774 100644
+index 08665309afb170c8711f70422bd013974ac48d09..08732a248b91cf006702b7db16c7a856d2fb0fa7 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -2925,6 +2925,16 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
+@@ -2927,6 +2927,16 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
      public void setShardedFight(boolean value);
      // Slice end
  

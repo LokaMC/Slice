@@ -5,10 +5,10 @@ Subject: [PATCH] Override inWater
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 4c55d6eb4895f270f151298f0c4133f1c35afca4..3efa1c91a0a2fa60422dfa853e875af845184e00 100644
+index 50d060c9d453ec8e2e4c37847ad7240798feb096..7c71104d2a3a1c68010b724a12461751553c4648 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -400,6 +400,7 @@ public abstract class Entity
+@@ -406,6 +406,7 @@ public abstract class Entity
      public boolean saveable = true; // Slice
      public boolean vanished; // Slice
      public int trackingRange; // Slice
@@ -16,7 +16,7 @@ index 4c55d6eb4895f270f151298f0c4133f1c35afca4..3efa1c91a0a2fa60422dfa853e875af8
  
      public void inactiveTick() {
      }
-@@ -2131,7 +2132,7 @@ public abstract class Entity
+@@ -2174,7 +2175,7 @@ public abstract class Entity
      }
  
      public boolean isInWater() {
@@ -25,7 +25,7 @@ index 4c55d6eb4895f270f151298f0c4133f1c35afca4..3efa1c91a0a2fa60422dfa853e875af8
      }
  
      public boolean isInRain() {
-@@ -2276,7 +2277,7 @@ public abstract class Entity
+@@ -2323,7 +2324,7 @@ public abstract class Entity
      }
  
      public boolean isEyeInFluid(final TagKey<Fluid> type) {

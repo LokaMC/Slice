@@ -5,10 +5,10 @@ Subject: [PATCH] Allow inventory clicks in Spectator
 
 
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index f936da2a1ffef5fd84d8d63be3575fd06ac9a7b2..19a457003eb62f448539783e71ce1faf57d03edb 100644
+index ee52233d15df9de9f5a0a85dcac7f7f38f8c004d..8d0f09199ebe45f4e089c5365de271ba6e2b8f54 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -3053,7 +3053,7 @@ public class ServerGamePacketListenerImpl
+@@ -3113,7 +3113,7 @@ public class ServerGamePacketListenerImpl
          if (this.player.isImmobile()) return; // CraftBukkit
          this.player.resetLastActionTime();
          if (this.player.containerMenu.containerId == packet.containerId() && this.player.containerMenu.stillValid(this.player)) { // CraftBukkit

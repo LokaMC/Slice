@@ -5,10 +5,10 @@ Subject: [PATCH] Add PlayerLoadStatsEvent
 
 
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 3360cdb11fb999d211e532ed5e6096b4d5b07600..e4ba9e0ff0ceaf86d00e90e6affda11ea45929bd 100644
+index b514a8aa3a5602a3cacff91c30660f1993e207ab..b557ff0c579a9244e3c2816d18b28873c7db4012 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1173,7 +1173,7 @@ public abstract class PlayerList {
+@@ -1176,7 +1176,7 @@ public abstract class PlayerList {
      }
      public ServerStatsCounter getPlayerStats(final GameProfile gameProfile) {
              Path targetFile = this.locateStatsFile(gameProfile);

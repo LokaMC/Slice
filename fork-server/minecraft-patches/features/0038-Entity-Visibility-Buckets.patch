@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 68151ce05e7009f28dda0470c744920cbd5f4a27..df8d6406897d562d82cafb981ee6e485db897188 100644
+index c3bf41af0273e902f881cc070fcef6dd64abb063..76ce0566272ff6c584bf09d66e5e2842dbdff18b 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -335,6 +335,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -330,6 +330,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
      private final Set<String> pluginsBlockingSleep = new java.util.HashSet<>(); // Paper - API to allow/disallow tick sleeping
      public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
@@ -20,7 +20,7 @@ index 68151ce05e7009f28dda0470c744920cbd5f4a27..df8d6406897d562d82cafb981ee6e485
      // Paper start - improve tick loop
      public final ca.spottedleaf.common.time.TickData tickTimes1s  = new ca.spottedleaf.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
      public final ca.spottedleaf.common.time.TickData tickTimes5s  = new ca.spottedleaf.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
-@@ -1811,6 +1816,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1792,6 +1797,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          profiler.push("levels");
          this.updateEffectiveRespawnData();
  
@@ -68,10 +68,10 @@ index 68151ce05e7009f28dda0470c744920cbd5f4a27..df8d6406897d562d82cafb981ee6e485
          for (ServerLevel level : this.getAllLevels()) {
              level.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
 diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
-index d106b195c26cbed452a3caf102725c57d4868dca..cc3814ce22d0838c9cea1f70d1d0c6bcaf1bbb26 100644
+index b57076f1badb394bd19ed0b64d433b33cae3420a..88c81b23fe69d6fd76deb01fea5acf0bbd092a10 100644
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1388,6 +1388,20 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1439,6 +1439,20 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                      if (this.seenBy.add(player.connection)) {
                          // Paper start - entity tracking events
                          if (io.papermc.paper.event.player.PlayerTrackEntityEvent.getHandlerList().getRegisteredListeners().length == 0 || new io.papermc.paper.event.player.PlayerTrackEntityEvent(player.getBukkitEntity(), this.entity.getBukkitEntity()).callEvent()) {
@@ -92,7 +92,7 @@ index d106b195c26cbed452a3caf102725c57d4868dca..cc3814ce22d0838c9cea1f70d1d0c6bc
                          this.serverEntity.addPairing(player);
                          if (this.seenBy.size() == 1) {
                              ChunkMap.this.level.debugSynchronizers().registerEntity(this.entity);
-@@ -1434,5 +1448,27 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
+@@ -1485,5 +1499,27 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                  this.updatePlayer(player);
              }
          }
@@ -121,10 +121,10 @@ index d106b195c26cbed452a3caf102725c57d4868dca..cc3814ce22d0838c9cea1f70d1d0c6bc
      }
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 6fe4e12088d4ffeae45afb9d8ad42fae71bfe4ee..ae356c70c062dada8f1a3c100481597a3e19a440 100644
+index 49f6e932d39a5e50b5bbc03be46925ff17cf6353..de44be1d90246a84ac8261fffd5e627995dbf7c4 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -402,6 +402,77 @@ public abstract class Entity
+@@ -408,6 +408,77 @@ public abstract class Entity
      public int trackingRange; // Slice
      public boolean inWaterOverride; // Slice
      public float extraHitboxAmount; // Slice
