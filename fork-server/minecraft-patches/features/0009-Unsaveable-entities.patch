@@ -5,7 +5,7 @@ Subject: [PATCH] Unsaveable entities
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index c4cfb53e145d69666ffc27ef4ee0c50b54eb9143..15fc8954dca08936c7afc8fdffdc0f6fd53c78e2 100644
+index ef53d4d17222a882dd3d33575096c864a0a00a06..e56fb5a398da8ac777920f9b970cce04aa92acc4 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
 @@ -576,6 +576,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
@@ -17,7 +17,7 @@ index c4cfb53e145d69666ffc27ef4ee0c50b54eb9143..15fc8954dca08936c7afc8fdffdc0f6f
                  chunkRange = Math.min(chunkRange, 8);
                  player.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(player.getBukkitEntity(), (byte) chunkRange);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e662ce9f90d5b3f4c5cf7c8d980681c51eee4121..1b376de602ec9d26f3fc75a0900aef78909e34bf 100644
+index c94d4cd627318353855a5a58afbb2275c63390a3..b08a259f5f59149e0f8f116cb27a08750f2b063e 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -403,6 +403,7 @@ public abstract class Entity
@@ -28,7 +28,7 @@ index e662ce9f90d5b3f4c5cf7c8d980681c51eee4121..1b376de602ec9d26f3fc75a0900aef78
  
      public void inactiveTick() {
      }
-@@ -5406,6 +5407,7 @@ public abstract class Entity
+@@ -5408,6 +5409,7 @@ public abstract class Entity
  
      @Override
      public boolean shouldBeSaved() {

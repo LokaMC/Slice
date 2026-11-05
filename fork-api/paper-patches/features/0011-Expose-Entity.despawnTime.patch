@@ -5,10 +5,10 @@ Subject: [PATCH] Expose Entity.despawnTime
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 2cb697646f09102c5d39c93c85fdf29efa2c0ba7..5f0b22fd4c4e67f82d4e33b7b31c4075fe247121 100644
+index 6d1edf778e651490166cde42ebed9b4cc712e3a2..48dc12b3cac82bf97ca0dc81b9106366a03262a6 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1411,4 +1411,16 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1502,4 +1502,16 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
       */
      void setTrackingRange(int range);
      // Slice end

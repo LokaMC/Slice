@@ -5,10 +5,10 @@ Subject: [PATCH] Smooth teleports
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index f11ad0f2cdbb128dfa1f572903ad1b16b80c3e87..3dce641fcad5aa0045f7ecbff8aac861328a9874 100644
+index 5acf2cfcd939708bf7845dfbc9dc36ff80add8c1..803d3844af833914db6e39efc5d8b73168463520 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -1332,6 +1332,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+@@ -1336,6 +1336,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
          return this.getHandle().isShiftKeyDown();
      }
  

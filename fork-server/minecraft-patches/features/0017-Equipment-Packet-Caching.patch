@@ -51,7 +51,7 @@ index e46f95b19da1c14f240ec6697f22b5e220e0a835..f53f37d600129db4f1affe127ada9132
  
          if (!this.entity.getPassengers().isEmpty()) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index d32b58dfd7439f253e48f7a3f059f9154596cc02..9d2dca95eebdcf3a54a1feed7a3c7aa1d260f204 100644
+index a0d10e4c3f78128029125bae8e8e476208f28d42..12169fb9b4b989357bf6f88bf62db8e95a90dd90 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -338,6 +338,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -66,7 +66,7 @@ index d32b58dfd7439f253e48f7a3f059f9154596cc02..9d2dca95eebdcf3a54a1feed7a3c7aa1
      @Override
      public void kill(final ServerLevel level) {
          this.hurtServer(level, this.damageSources().genericKill(), Float.MAX_VALUE);
-@@ -3559,6 +3564,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3570,6 +3575,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (changedItems != null) {
              this.handleHandSwap(changedItems);
              if (!changedItems.isEmpty()) {
@@ -74,7 +74,7 @@ index d32b58dfd7439f253e48f7a3f059f9154596cc02..9d2dca95eebdcf3a54a1feed7a3c7aa1
                  this.handleEquipmentChanges(changedItems);
              }
          }
-@@ -3660,7 +3666,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -3671,7 +3677,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
      }
  
      private void updatePlayersWithNewEquipment(final ServerLevel level, final List<Pair<EquipmentSlot, ItemStack>> itemsToSend) {
@@ -100,7 +100,7 @@ index d32b58dfd7439f253e48f7a3f059f9154596cc02..9d2dca95eebdcf3a54a1feed7a3c7aa1
      }
  
      protected void tickHeadTurn(final float yBodyRotT) {
-@@ -5036,4 +5059,84 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -5047,4 +5070,84 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
              return this.currentSwing != null;
          }
      }

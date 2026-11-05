@@ -13,10 +13,10 @@ previously rewrote level.dat for no-save worlds anyway.
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 76ce0566272ff6c584bf09d66e5e2842dbdff18b..ec237bd9bcc878a75cf7c8e2042a57973b58e7a2 100644
+index 8c64db9a3770594b3ba0e1bf8d1cc2481c203436..30d7f70fe3b73c125f4d99708b8db2f6904a2b1f 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1627,8 +1627,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1629,8 +1629,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  this.saveGlobalData(false);
              }
              for (final ServerLevel level : this.getAllLevels()) {
@@ -32,7 +32,7 @@ index 76ce0566272ff6c584bf09d66e5e2842dbdff18b..ec237bd9bcc878a75cf7c8e2042a5797
              }
          } finally {
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index e2c3b2fb9e081a21005c84c6e58053ab436dc85b..e07ea191aedc1a8be0200560dff2ebee2cc42212 100644
+index 53ac6158990c844ef7a7d82cd5c278af1102eb2a..f40f4f45804b4c5b04bd3a3d894aa17e428c7d01 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -241,6 +241,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet

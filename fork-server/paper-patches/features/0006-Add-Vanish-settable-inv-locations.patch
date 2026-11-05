@@ -5,10 +5,10 @@ Subject: [PATCH] Add Vanish, settable inv locations
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 509d55f1c24407951ce1fff9ceafc6a1d4243a22..76c422b95bf13e71184573d18f8d7918696114d0 100644
+index af1d1384ce77f2b3b754b86ed36623afb13fbd9d..b1d6799f260103f4e745dde8ad7106d114931bba 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1386,4 +1386,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1460,4 +1460,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          this.entity.saveable = saveable;
      }
      // Slice end

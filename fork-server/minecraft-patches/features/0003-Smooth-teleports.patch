@@ -18,7 +18,7 @@ index 45c927417d34ddd48c92116efd9b5777bfc52e35..2af09b9f4f3eb21656d5312213ad59c8
              if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
                  new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(player.getBukkitEntity().getWorld().getChunkAt(new ChunkPos(chunkX, chunkZ).longKey()), player.getBukkitEntity()).callEvent();
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 23b3a82ab3e1c6abc85000d9285470cb12300a6b..4ef237e7ac8aefbe39b81d37772a6f2b498ac94c 100644
+index 1137be30f125cb79f05f3e5c104cdf8cca979ff1..9de3eaae094e6461269acd860ff8e70e6d234da0 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -446,6 +446,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
@@ -29,20 +29,22 @@ index 23b3a82ab3e1c6abc85000d9285470cb12300a6b..4ef237e7ac8aefbe39b81d37772a6f2b
  
      // Paper start - rewrite chunk system
      private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
-@@ -1582,7 +1583,7 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -1582,8 +1583,8 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
  
          this.isChangingDimension = true;
          LevelData levelData = newLevel.getLevelData();
+-        this.connection.restartClientLoadTimerAfterRespawn(); // Paper - reset client world load status on cross-dimension teleport
 -        this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(newLevel), ClientboundRespawnPacket.KEEP_ALL_DATA));
++        if (!this.smoothWorldTeleport) this.connection.restartClientLoadTimerAfterRespawn(); // Paper - reset client world load status on cross-dimension teleport // Slice - client never reloads on smooth teleport
 +        if (!this.smoothWorldTeleport) this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(newLevel), ClientboundRespawnPacket.KEEP_ALL_DATA)); // Slice
          this.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
          PlayerList playerList = this.server.getPlayerList();
          playerList.sendPlayerPermissionLevel(this);
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index a7f589970a04e520eb5cbe6dfeb333bc9cd479a8..b514a8aa3a5602a3cacff91c30660f1993e207ab 100644
+index 62f57eb254321902692550d0a86c24292ef9e87d..b3ee1e1ff866353975d12723322d61a87f46f32c 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -643,7 +643,7 @@ public abstract class PlayerList {
+@@ -644,7 +644,7 @@ public abstract class PlayerList {
          byte dataToKeep = keepAllPlayerData ? ClientboundRespawnPacket.KEEP_ATTRIBUTE_MODIFIERS : 0;
          ServerLevel playerLevel = player.level();
          LevelData levelData = playerLevel.getLevelData();
@@ -51,7 +53,7 @@ index a7f589970a04e520eb5cbe6dfeb333bc9cd479a8..b514a8aa3a5602a3cacff91c30660f19
          player.connection.internalTeleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot()); // Paper
          player.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getRespawnData()));
          player.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
-@@ -1017,7 +1017,7 @@ public abstract class PlayerList {
+@@ -1018,7 +1018,7 @@ public abstract class PlayerList {
              // CraftBukkit end
          }
  

@@ -5,10 +5,10 @@ Subject: [PATCH] Equipment Packet Caching
 
 
 diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
-index ab18c028fd800a7b2da91e5c32a4547beea1d92b..33a3ef0b0d3cf6323b7e17c7286cdb704cc41bf7 100644
+index fd75de933c11d336b14d7063227d4846102bbe80..707a4c5101dba9943f41a05e65d65206cc00540f 100644
 --- a/src/main/java/org/bukkit/entity/LivingEntity.java
 +++ b/src/main/java/org/bukkit/entity/LivingEntity.java
-@@ -1502,6 +1502,14 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+@@ -1517,6 +1517,14 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
      void setBodyYaw(float bodyYaw);
      // Paper end - body yaw API
  

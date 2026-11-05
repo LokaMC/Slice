@@ -5,10 +5,10 @@ Subject: [PATCH] Entity Visibility Buckets
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index c3bf41af0273e902f881cc070fcef6dd64abb063..76ce0566272ff6c584bf09d66e5e2842dbdff18b 100644
+index 7517b872794f3bbe556f3abbeb294f426c8da899..8c64db9a3770594b3ba0e1bf8d1cc2481c203436 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -330,6 +330,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -331,6 +331,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
      private final Set<String> pluginsBlockingSleep = new java.util.HashSet<>(); // Paper - API to allow/disallow tick sleeping
      public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
@@ -20,7 +20,7 @@ index c3bf41af0273e902f881cc070fcef6dd64abb063..76ce0566272ff6c584bf09d66e5e2842
      // Paper start - improve tick loop
      public final ca.spottedleaf.common.time.TickData tickTimes1s  = new ca.spottedleaf.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
      public final ca.spottedleaf.common.time.TickData tickTimes5s  = new ca.spottedleaf.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
-@@ -1792,6 +1797,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1794,6 +1799,46 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          profiler.push("levels");
          this.updateEffectiveRespawnData();
  
@@ -121,7 +121,7 @@ index b57076f1badb394bd19ed0b64d433b33cae3420a..88c81b23fe69d6fd76deb01fea5acf0b
      }
  }
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 49f6e932d39a5e50b5bbc03be46925ff17cf6353..de44be1d90246a84ac8261fffd5e627995dbf7c4 100644
+index f073d6116a92834354d24e8f0b8b2d6aebf5fca0..b0ec850bf34c80c3cc03c95fbbb027bf977a3e45 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -408,6 +408,77 @@ public abstract class Entity

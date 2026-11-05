@@ -5,10 +5,10 @@ Subject: [PATCH] Expose Entity.despawnTime
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 4934dcb9250f2cdd862374b6a76e9fb89c914d6e..3490a6dff799cea958acea88fff2574f677e6aba 100644
+index b7a17d345365919a1537673eea0b28f4677f2c43..84bbc0f9d3b02a1b893a905889c398172fe5785c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1410,4 +1410,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1484,4 +1484,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          this.entity.trackingRange = range;
      }
      // Slice end

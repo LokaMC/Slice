@@ -5,10 +5,10 @@ Subject: [PATCH] Don't send fire packets if player not on fire
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index e31491b748f69a97494484dedef36def14f4b117..50d060c9d453ec8e2e4c37847ad7240798feb096 100644
+index 261a7f085db030c814779b2cb9ed5e0d95931c9f..6f522052110a74af417692171be66500ca91f5ff 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -959,7 +959,11 @@ public abstract class Entity
+@@ -960,7 +960,11 @@ public abstract class Entity
  
          this.checkBelowWorld();
          if (!this.level().isClientSide()) {

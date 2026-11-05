@@ -5,10 +5,10 @@ Subject: [PATCH] Add EntityTouchWaterEvent
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index de5cdcd2688027577cff7eb3143cfa8822a5dc28..19e50e0a10bff1277c409f6730ca54dcaf6442e1 100644
+index e165fd84fd353f6164811127406faa29dda63c0b..890e6cab49cd6e6d4cbf58ed87c57dd8e1519636 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -2230,7 +2230,10 @@ public abstract class Entity
+@@ -2236,7 +2236,10 @@ public abstract class Entity
              this.resetFallDistance();
              if (!this.wasTouchingWater && !this.firstTick) {
                  this.doWaterSplashEffect();

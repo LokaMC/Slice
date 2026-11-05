@@ -5,10 +5,10 @@ Subject: [PATCH] Player AFK
 
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 87df3363b55257d2633d736e702fa0782cb1478d..8555b41083206229d0dfa73989eaeaf746ec945d 100644
+index 91d320e106afefb4ba4afd9d5921f970a19bfa4e..6d0fca5bab95d32dc01ddded7e59f559d72757f4 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -4107,4 +4107,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -4118,4 +4118,16 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @return the post-effects
       */
      PlayerPostEffects postEffects();

@@ -5,10 +5,10 @@ Subject: [PATCH] Reduce loot spread
 
 
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index b1971b9835c9e7375d5da22b66f851bebb9ed6c4..57f92727e05b08013ff431bd2a4b36224945b7a1 100644
+index fdcc18fe11903a73a79b3405cb629d339777c0c8..b3b24c68e9765bf30dc866d21ff6201a0f3ae5f7 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -4247,7 +4247,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+@@ -4258,7 +4258,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
  
          if (randomly) {

@@ -37,7 +37,7 @@ index 00861318771cd184c9f75a9a036deee9ec2ba310..d4f3cd1e232b8c183543ddf64bcbc4d8
  
              if (!(usedItem instanceof BucketItem)) {
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index 21878bd770f6c0bc10dd0a67be5bd94d7e16f741..e39c28fad5c54be5303d9a0ab2fd167e447e8a41 100644
+index ab49bb83b51a3ac210f4c51ec48c11036912149e..1ef8dfdee205e21b12febec2d3f32a562b5a860a 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -174,6 +174,28 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
@@ -117,10 +117,10 @@ index 8d8f558da8643a62130318e24b7d7a88addff9b7..74e786d065650fec8a57e53f1387e975
                  BlockState blockState = bottomState.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
                  level.setBlock(bottomPos, blockState, Block.UPDATE_ALL | Block.UPDATE_SUPPRESS_DROPS);
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index bebfe5b72c1dd812c480de3311ad36ca8d96466b..43284a2219cc9eba23ac7dbdea14f779f48c8c22 100644
+index 44fcc919a2de54c3ceb0fd0875aadaea083fabad..25ac4a002b2f278cc12b17326eaed77717f6f448 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -871,9 +871,22 @@ public abstract class BlockBehaviour implements FeatureElement {
+@@ -924,9 +924,22 @@ public abstract class BlockBehaviour implements FeatureElement {
  
          public final void updateNeighbourShapes(final LevelAccessor level, final BlockPos pos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
              BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();

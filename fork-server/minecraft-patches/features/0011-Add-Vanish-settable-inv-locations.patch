@@ -5,7 +5,7 @@ Subject: [PATCH] Add Vanish, settable inv locations
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 1b376de602ec9d26f3fc75a0900aef78909e34bf..b4b114fc4cec428240fa985f4b2f38f46edacffc 100644
+index b08a259f5f59149e0f8f116cb27a08750f2b063e..63738badb0e32578f63263d9d237ade7d0030c36 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -404,6 +404,7 @@ public abstract class Entity
@@ -16,7 +16,7 @@ index 1b376de602ec9d26f3fc75a0900aef78909e34bf..b4b114fc4cec428240fa985f4b2f38f4
  
      public void inactiveTick() {
      }
-@@ -1511,7 +1512,7 @@ public abstract class Entity
+@@ -1512,7 +1513,7 @@ public abstract class Entity
      private boolean vibrationAndSoundEffectsFromBlock(
          final BlockPos pos, final BlockState blockState, final boolean shouldSound, final boolean shouldVibrate, final Vec3 clippedMovement
      ) {

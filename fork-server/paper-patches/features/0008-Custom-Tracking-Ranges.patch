@@ -5,10 +5,10 @@ Subject: [PATCH] Custom Tracking Ranges
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 76c422b95bf13e71184573d18f8d7918696114d0..4934dcb9250f2cdd862374b6a76e9fb89c914d6e 100644
+index b1d6799f260103f4e745dde8ad7106d114931bba..b7a17d345365919a1537673eea0b28f4677f2c43 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1398,4 +1398,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1472,4 +1472,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          this.entity.vanished = vanished;
      }
      // Slice end

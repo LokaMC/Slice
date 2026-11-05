@@ -5,13 +5,13 @@ Subject: [PATCH] Expose getBlockPosBelowThatAffectsMyMovement
 
 
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 00376681df7492ac0e080dcb86284ce15d5acf70..4fecccf1a0364ae3a6d20a525bead53a5b8deb39 100644
+index 91e73dd4779bf97da7f029c56f95c4d9b9b2d5c8..880e8c943b7f53c4330264f92ccef2821f15d5be 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -1359,4 +1359,12 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+@@ -1450,4 +1450,12 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      * @param namespaced the namespaced of the rule
       */
-     void broadcastHurtAnimation(@NotNull java.util.Collection<Player> players);
-     // Paper end - broadcast hurt animation
+     void removeAdditionalAlliedRule(@NotNull Namespaced namespaced);
 +
 +    // Slice start
 +    /**

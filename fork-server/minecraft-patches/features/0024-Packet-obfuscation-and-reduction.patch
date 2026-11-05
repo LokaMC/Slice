@@ -288,20 +288,20 @@ index f53f37d600129db4f1affe127ada9132614ad0b5..dd12c056d104f1380e7e0b60f309493b
  
              attributes.clear();
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 19e50e0a10bff1277c409f6730ca54dcaf6442e1..e31491b748f69a97494484dedef36def14f4b117 100644
+index 890e6cab49cd6e6d4cbf58ed87c57dd8e1519636..261a7f085db030c814779b2cb9ed5e0d95931c9f 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -3907,7 +3907,7 @@ public abstract class Entity
-             }
-             return;
+@@ -3913,7 +3913,7 @@ public abstract class Entity
+             newAmount = event.getAmount();
          }
--        this.entityData.set(DATA_AIR_SUPPLY_ID, event.getAmount());
-+        this.entityData.set(DATA_AIR_SUPPLY_ID, event.getAmount(), getMaxAirSupply()); // Slice
-         // CraftBukkit end
+ 
+-        this.entityData.set(DATA_AIR_SUPPLY_ID, newAmount);
++        this.entityData.set(DATA_AIR_SUPPLY_ID, newAmount, getMaxAirSupply()); // Slice
+         // Paper end - EntityAirChangeEvent
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 9d2dca95eebdcf3a54a1feed7a3c7aa1d260f204..b1971b9835c9e7375d5da22b66f851bebb9ed6c4 100644
+index 12169fb9b4b989357bf6f88bf62db8e95a90dd90..fdcc18fe11903a73a79b3405cb629d339777c0c8 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -306,6 +306,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -406,7 +406,7 @@ index 68bad6752bd313ca3ebde7fd4e3b2c46c5dee3ef..96f45d1e1fb09e9f794ab0bcae5ea8ef
  
      public @Nullable AttributeInstance getInstance(final Holder<Attribute> attribute) {
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index ca524daa34267e70a457292792bbe424a317c932..4e33302148f3473929c9272ce58476e379e5cd82 100644
+index 0d28f5b24c3c15a51ae867adbe78f0725fa7cb1f..780761a8958954388f0f138171d5daef2991b104 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -543,7 +543,7 @@ public abstract class Player extends Avatar implements ContainerUser {
